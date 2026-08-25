@@ -12,7 +12,7 @@
 <body class="bg-[#0f1115] text-white p-6 font-sans">
 
     <!-- Header & Filters -->
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
         <div>
             <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold tracking-wide text-orange-500">HAIER MACHINE BREAKDOWN</h1>
@@ -21,22 +21,39 @@
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
         </div>
         
-        <div class="flex flex-wrap gap-3 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs">
-            <div class="flex gap-2 items-center bg-[#242b35] px-3 py-1.5 rounded border border-gray-700">
+        <div class="flex flex-wrap gap-2.5 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs items-center">
+            
+            <!-- Quick Date Buttons -->
+            <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+                <button onclick="setQuickDate('all')" id="btn-all" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">ทั้งหมด</button>
+                <button onclick="setQuickDate('today')" id="btn-today" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">วันนี้</button>
+                <button onclick="setQuickDate('week')" id="btn-week" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">สัปดาห์นี้</button>
+                <button onclick="setQuickDate('month')" id="btn-month" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">เดือนนี้</button>
+            </div>
+
+            <!-- Custom Date Range -->
+            <div class="flex gap-2 items-center bg-[#242b35] px-2.5 py-1 rounded border border-gray-700">
                 <div>
-                    <label class="block text-[10px] text-gray-400">ตั้งแต่วันที่</label>
-                    <input type="date" id="startDateFilter" class="bg-transparent text-white focus:outline-none">
+                    <label class="block text-[9px] text-gray-400">ตั้งแต่วันที่</label>
+                    <input type="date" id="startDateFilter" class="bg-transparent text-white focus:outline-none text-xs">
                 </div>
                 <span class="text-gray-500 mt-3">-</span>
                 <div>
-                    <label class="block text-[10px] text-gray-400">ถึงวันที่</label>
-                    <input type="date" id="endDateFilter" class="bg-transparent text-white focus:outline-none">
+                    <label class="block text-[9px] text-gray-400">ถึงวันที่</label>
+                    <input type="date" id="endDateFilter" class="bg-transparent text-white focus:outline-none text-xs">
                 </div>
             </div>
 
+            <!-- Month Picker -->
+            <div>
+                <label class="block text-[10px] text-gray-400 mb-1">เลือกเดือนเฉพาะ</label>
+                <input type="month" id="monthFilter" class="bg-[#242b35] text-white px-2.5 py-1.5 rounded border border-gray-700 focus:outline-none text-xs">
+            </div>
+
+            <!-- Line Filter -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">เลือก Line</label>
-                <select id="lineFilter" class="bg-[#242b35] text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
+                <select id="lineFilter" class="bg-[#242b35] text-white px-2.5 py-1.5 rounded border border-gray-700 focus:outline-none text-xs">
                     <option value="All">ทุก Line (All)</option>
                     <option value="A-Door">A-Door</option>
                     <option value="B-Door">B-Door</option>
@@ -46,18 +63,28 @@
                 </select>
             </div>
 
+            <!-- Shift Filter -->
             <div>
-                <label class="block text-[10px] text-gray-400 mb-1">กะการทำงาน (Shift)</label>
-                <select id="shiftFilter" class="bg-[#242b35] text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
+                <label class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
+                <select id="shiftFilter" class="bg-[#242b35] text-white px-2.5 py-1.5 rounded border border-gray-700 focus:outline-none text-xs">
                     <option value="All">ทุกกะ (All)</option>
-                    <option value="Day">กะกลางวัน (Day)</option>
-                    <option value="Night">กะกลางคืน (Night)</option>
+                    <option value="Day">Day</option>
+                    <option value="Night">Night</option>
                 </select>
             </div>
 
-            <div class="flex items-end gap-2">
+            <!-- Issue Category Filter -->
+            <div>
+                <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
+                <select id="issueFilter" class="bg-[#242b35] text-white px-2.5 py-1.5 rounded border border-gray-700 focus:outline-none text-xs max-w-[140px]">
+                    <option value="All">ทุกปัญหา (All)</option>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-end gap-1.5 mt-auto">
                 <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
-                <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรชข้อมูล</button>
+                <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
             </div>
         </div>
     </div>
@@ -112,7 +139,7 @@
             <div><label class="block text-gray-400 mb-1">LINE</label><select id="inputLine" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"><option value="A-Door">A-Door</option><option value="B-Door">B-Door</option><option value="C-Door">C-Door</option><option value="Bottom">Bottom</option><option value="DND">DND</option></select></div>
             <div><label class="block text-gray-400 mb-1">เครื่อง</label><input type="text" id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
             <div><label class="block text-gray-400 mb-1">Station</label><input type="text" id="inputStation" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
-            <div><label class="block text-gray-400 mb-1">ปัญหา</label><input type="text" id="inputIssue" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div><label class="block text-gray-400 mb-1">ปัญหา (Issue)</label><input type="text" id="inputIssue" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
             <div><label class="block text-gray-400 mb-1">สาเหตุ</label><input type="text" id="inputCause" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
             <div><label class="block text-gray-400 mb-1">ระยะเวลา (นาที)</label><input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
             <div class="col-span-2 md:col-span-4"><label class="block text-gray-400 mb-1">การแก้ไข</label><input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
@@ -158,10 +185,13 @@
             initCharts();
             fetchLogs();
 
+            // Event Listeners
             document.getElementById('lineFilter').addEventListener('change', updateDashboard);
             document.getElementById('shiftFilter').addEventListener('change', updateDashboard);
-            document.getElementById('startDateFilter').addEventListener('change', updateDashboard);
-            document.getElementById('endDateFilter').addEventListener('change', updateDashboard);
+            document.getElementById('issueFilter').addEventListener('change', updateDashboard);
+            document.getElementById('startDateFilter').addEventListener('change', () => { clearActiveQuickBtn(); updateDashboard(); });
+            document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickBtn(); updateDashboard(); });
+            document.getElementById('monthFilter').addEventListener('change', () => { clearActiveQuickBtn(); updateDashboard(); });
             document.getElementById('inputDate').valueAsDate = new Date();
         });
 
@@ -179,6 +209,7 @@
                 if (error) throw error;
 
                 logsData = data || [];
+                populateIssueDropdown();
                 updateDashboard();
             } catch (err) {
                 console.error("Error fetching data:", err);
@@ -186,6 +217,19 @@
             } finally {
                 statusEl.classList.add('hidden');
             }
+        }
+
+        // เติมตัวเลือกประเภทปัญหาลงใน Dropdown อัตโนมัติ
+        function populateIssueDropdown() {
+            const issueSelect = document.getElementById('issueFilter');
+            const currentSelected = issueSelect.value;
+            const issues = [...new Set(logsData.map(item => item.issue))].filter(Boolean).sort();
+
+            issueSelect.innerHTML = '<option value="All">ทุกปัญหา (All)</option>';
+            issues.forEach(issue => {
+                const selected = issue === currentSelected ? 'selected' : '';
+                issueSelect.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
+            });
         }
 
         function toggleForm() {
@@ -249,27 +293,82 @@
             }
         }
 
+        // ตั้งค่าปุ่มกดกรองด่วน (All, Today, Week, Month)
+        function setQuickDate(type) {
+            clearActiveQuickBtn();
+            document.getElementById(`btn-${type}`).classList.add('bg-orange-600', 'text-white', 'font-medium');
+            document.getElementById(`btn-${type}`).classList.remove('text-gray-300');
+
+            // เคลียร์ค่า input อื่นๆ
+            document.getElementById('startDateFilter').value = '';
+            document.getElementById('endDateFilter').value = '';
+            document.getElementById('monthFilter').value = '';
+
+            const today = new Date();
+            const formatDate = (d) => d.toISOString().split('T')[0];
+
+            if (type === 'today') {
+                const tStr = formatDate(today);
+                document.getElementById('startDateFilter').value = tStr;
+                document.getElementById('endDateFilter').value = tStr;
+            } else if (type === 'week') {
+                const firstDay = new Date(today);
+                firstDay.setDate(today.getDate() - today.getDay()); // วันอาทิตย์ต้นสัปดาห์
+                document.getElementById('startDateFilter').value = formatDate(firstDay);
+                document.getElementById('endDateFilter').value = formatDate(today);
+            } else if (type === 'month') {
+                const yearMonth = today.toISOString().slice(0, 7); // YYYY-MM
+                document.getElementById('monthFilter').value = yearMonth;
+            }
+
+            updateDashboard();
+        }
+
+        function clearActiveQuickBtn() {
+            ['all', 'today', 'week', 'month'].forEach(type => {
+                const btn = document.getElementById(`btn-${type}`);
+                btn.classList.remove('bg-orange-600', 'text-white', 'font-medium');
+                btn.classList.add('text-gray-300');
+            });
+        }
+
+        // ฟังก์ชันกรองข้อมูลตามเงื่อนไขทั้งหมด
         function getFilteredData() {
             const lineVal = document.getElementById('lineFilter').value;
             const shiftVal = document.getElementById('shiftFilter').value;
+            const issueVal = document.getElementById('issueFilter').value;
             const startDate = document.getElementById('startDateFilter').value;
             const endDate = document.getElementById('endDateFilter').value;
+            const monthVal = document.getElementById('monthFilter').value;
 
             return logsData.filter(item => {
-                const itemDate = item.date;
+                const itemDate = item.date; // รูปแบบ YYYY-MM-DD
+                
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
+                if (issueVal !== 'All' && item.issue !== issueVal) return false;
+
+                // กรองตามเลือกเดือนเฉพาะ (YYYY-MM)
+                if (monthVal) {
+                    if (!itemDate || !itemDate.startsWith(monthVal)) return false;
+                }
+
+                // กรองตามช่วงวันที่ (Start - End)
                 if (startDate && itemDate < startDate) return false;
                 if (endDate && itemDate > endDate) return false;
+
                 return true;
             });
         }
 
         function clearFilters() {
+            setQuickDate('all');
             document.getElementById('lineFilter').value = 'All';
             document.getElementById('shiftFilter').value = 'All';
+            document.getElementById('issueFilter').value = 'All';
             document.getElementById('startDateFilter').value = '';
             document.getElementById('endDateFilter').value = '';
+            document.getElementById('monthFilter').value = '';
             updateDashboard();
         }
 
@@ -278,7 +377,7 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาที่เลือก</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาหรือเงื่อนไขที่เลือก</td></tr>';
                 return;
             }
 
