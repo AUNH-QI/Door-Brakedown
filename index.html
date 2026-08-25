@@ -12,17 +12,31 @@
 <body class="bg-[#0f1115] text-white p-6 font-sans">
 
     <!-- Header & Filters -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold tracking-wide text-orange-500">HAIER MACHINE BREAKDOWN</h1>
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
         </div>
         
         <!-- Filter Controls -->
-        <div class="flex gap-3 bg-[#181c24] p-3 rounded-lg border border-gray-800">
+        <div class="flex flex-wrap gap-3 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs">
+            <!-- Filter: Date Range -->
+            <div class="flex gap-2 items-center bg-[#242b35] px-3 py-1.5 rounded border border-gray-700">
+                <div>
+                    <label class="block text-[10px] text-gray-400">ตั้งแต่วันที่</label>
+                    <input type="date" id="startDateFilter" class="bg-transparent text-white focus:outline-none">
+                </div>
+                <span class="text-gray-500 mt-3">-</span>
+                <div>
+                    <label class="block text-[10px] text-gray-400">ถึงวันที่</label>
+                    <input type="date" id="endDateFilter" class="bg-transparent text-white focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Filter: Line -->
             <div>
-                <label class="block text-xs text-gray-400 mb-1">เลือก Line</label>
-                <select id="lineFilter" class="bg-[#242b35] text-sm text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
+                <label class="block text-[10px] text-gray-400 mb-1">เลือก Line</label>
+                <select id="lineFilter" class="bg-[#242b35] text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
                     <option value="All">ทุก Line (All)</option>
                     <option value="A-Door">A-Door</option>
                     <option value="B-Door">B-Door</option>
@@ -31,20 +45,28 @@
                     <option value="DND">DND</option>
                 </select>
             </div>
+
+            <!-- Filter: Shift -->
             <div>
-                <label class="block text-xs text-gray-400 mb-1">กะการทำงาน (Shift)</label>
-                <select id="shiftFilter" class="bg-[#242b35] text-sm text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
+                <label class="block text-[10px] text-gray-400 mb-1">กะการทำงาน (Shift)</label>
+                <select id="shiftFilter" class="bg-[#242b35] text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
                     <option value="All">ทุกกะ (All)</option>
                     <option value="Day">กะกลางวัน (Day)</option>
                     <option value="Night">กะกลางคืน (Night)</option>
                 </select>
+            </div>
+
+            <!-- Clear Filter Button -->
+            <div class="flex items-end">
+                <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">
+                    ล้างตัวกรอง
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Section 1: KPI Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <!-- Card Line A -->
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line A-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
@@ -53,7 +75,6 @@
             </div>
         </div>
 
-        <!-- Card Line B -->
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line B-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
@@ -62,7 +83,6 @@
             </div>
         </div>
 
-        <!-- Card Line C -->
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line C-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
@@ -72,9 +92,8 @@
         </div>
     </div>
 
-    <!-- Section 2: Charts (Doughnut Left, Bar Right) -->
+    <!-- Section 2: Charts -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
-        <!-- Shift Doughnut Chart (Left) -->
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-4 flex flex-col justify-between">
             <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนตามกะการทำงาน</h3>
             <div class="h-60 relative flex justify-center items-center">
@@ -82,7 +101,6 @@
             </div>
         </div>
 
-        <!-- Downtime Bar Chart (Right) -->
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-8">
             <h3 class="text-sm font-bold text-orange-500 mb-2">เวลารวม Downtime แยกตาม Line (นาที)</h3>
             <div class="h-60">
@@ -100,7 +118,7 @@
             </button>
         </div>
 
-        <!-- Form เพิ่ม Log ใหม่ (ซ่อนไว้เป็น Default) -->
+        <!-- Form เพิ่ม Log ใหม่ -->
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
             <div>
                 <label class="block text-gray-400 mb-1">DATE</label>
@@ -129,7 +147,7 @@
             </div>
             <div>
                 <label class="block text-gray-400 mb-1">Station</label>
-                <input type="text" id="inputStation" placeholder="เช่น ST13, Main" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                <input type="text" id="inputStation" placeholder="เช่น ST13" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
             <div>
                 <label class="block text-gray-400 mb-1">ปัญหา</label>
@@ -166,24 +184,25 @@
                         <th class="p-2.5 border-r border-gray-700">ปัญหา</th>
                         <th class="p-2.5 border-r border-gray-700">สาเหตุ</th>
                         <th class="p-2.5 border-r border-gray-700">การแก้ไข</th>
-                        <th class="p-2.5 text-right">ระยะเวลา(นาที)</th>
+                        <th class="p-2.5 border-r border-gray-700 text-right">ระยะเวลา(นาที)</th>
+                        <th class="p-2.5 text-center">จัดการ</th>
                     </tr>
                 </thead>
                 <tbody id="logTableBody" class="divide-y divide-gray-800 text-gray-300">
-                    <!-- Data Rows will be loaded here -->
+                    <!-- Data Rows -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Script Logic -->
+    <!-- JavaScript Logic -->
     <script>
-        // Sample Initial Data
+        // Data Array พร้อม Unique ID สำหรับลบรายการ
         let logsData = [
-            { date: "2026-08-25", shift: "Day", line: "B-Door", machine: "Conveyor", station: "ST01", issue: "หยุดไลน์การผลิต", cause: "โซ่หลุดเฟือง", fix: "คลายโซ่แล้วตั้งใหม่", downtime: 120 },
-            { date: "2026-08-25", shift: "Day", line: "C-Door", machine: "Pallet", station: "ST19", issue: "หยุดไลน์การผลิต", cause: "พาเลท #19 ล้อหลุด", fix: "เปลี่ยนล้อพาเลทใหม่", downtime: 40 },
-            { date: "2026-08-25", shift: "Day", line: "A-Door", machine: "JIG", station: "ST05", issue: "พาเลทพัง JIG ไม่เปิด", cause: "วาล์วลมติดขัด", fix: "ทำความสะอาดวาล์ว", downtime: 10 },
-            { date: "2026-08-25", shift: "Night", line: "C-Door", machine: "Robot", station: "Main", issue: "จับฝาแล้วร่วงตก", cause: "Vacuum หลุด", fix: "ตั้งตำแหน่งขา Vacuum ใหม่", downtime: 16 }
+            { id: 1, date: "2026-08-01", shift: "Day", line: "B-Door", machine: "Conveyor", station: "ST01", issue: "หยุดไลน์การผลิต", cause: "โซ่หลุดเฟือง", fix: "ตั้งโซ่ใหม่", downtime: 120 },
+            { id: 2, date: "2026-08-15", shift: "Day", line: "C-Door", machine: "Pallet", station: "ST19", issue: "หยุดไลน์การผลิต", cause: "พาเลท #19 ล้อหลุด", fix: "เปลี่ยนล้อพาเลท", downtime: 40 },
+            { id: 3, date: "2026-08-20", shift: "Day", line: "A-Door", machine: "JIG", station: "ST05", issue: "พาเลทพัง JIG ไม่เปิด", cause: "วาล์วลมติดขัด", fix: "ทำความสะอาดวาล์ว", downtime: 10 },
+            { id: 4, date: "2026-08-25", shift: "Night", line: "C-Door", machine: "Robot", station: "Main", issue: "จับฝาแล้วร่วงตก", cause: "Vacuum หลุด", fix: "ตั้งขา Vacuum ใหม่", downtime: 16 }
         ];
 
         let lineChartInstance = null;
@@ -191,25 +210,26 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
-            renderTable();
             updateDashboard();
 
+            // Event Listeners สำหรับตัวกรองทั้งหมด
             document.getElementById('lineFilter').addEventListener('change', updateDashboard);
             document.getElementById('shiftFilter').addEventListener('change', updateDashboard);
-            
-            // Set default date input to today
+            document.getElementById('startDateFilter').addEventListener('change', updateDashboard);
+            document.getElementById('endDateFilter').addEventListener('change', updateDashboard);
+
             document.getElementById('inputDate').valueAsDate = new Date();
         });
 
         function toggleForm() {
-            const form = document.getElementById('addLogForm');
-            form.classList.toggle('hidden');
+            document.getElementById('addLogForm').classList.toggle('hidden');
         }
 
-        // Add New Data Row
+        // เพิ่มข้อมูลใหม่
         function addNewLog(event) {
             event.preventDefault();
             const newLog = {
+                id: Date.now(), // Generate Unique ID
                 date: document.getElementById('inputDate').value,
                 shift: document.getElementById('inputShift').value,
                 line: document.getElementById('inputLine').value,
@@ -221,37 +241,60 @@
                 downtime: Number(document.getElementById('inputDowntime').value)
             };
 
-            logsData.unshift(newLog); // เพิ่มขึ้นบรรทัดบนสุด
-            renderTable();
+            logsData.unshift(newLog);
             updateDashboard();
             toggleForm();
             document.getElementById('addLogForm').reset();
             document.getElementById('inputDate').valueAsDate = new Date();
         }
 
+        // ลบข้อมูลรายรายการ (Delete)
+        function deleteLog(id) {
+            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                logsData = logsData.filter(item => item.id !== id);
+                updateDashboard();
+            }
+        }
+
+        // ฟังก์ชันดึงข้อมูลที่ผ่าน Filter (วันที่, Line, Shift)
         function getFilteredData() {
             const lineVal = document.getElementById('lineFilter').value;
             const shiftVal = document.getElementById('shiftFilter').value;
+            const startDate = document.getElementById('startDateFilter').value;
+            const endDate = document.getElementById('endDateFilter').value;
 
             return logsData.filter(item => {
+                // กรอง Line
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
+                // กรอง Shift
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
+                // กรองช่วงวันที่ (Date Range)
+                if (startDate && item.date < startDate) return false;
+                if (endDate && item.date > endDate) return false;
+
                 return true;
             });
         }
 
-        function renderTable() {
+        function clearFilters() {
+            document.getElementById('lineFilter').value = 'All';
+            document.getElementById('shiftFilter').value = 'All';
+            document.getElementById('startDateFilter').value = '';
+            document.getElementById('endDateFilter').value = '';
+            updateDashboard();
+        }
+
+        // แสดงตาราง Log
+        function renderTable(data) {
             const tbody = document.getElementById('logTableBody');
             tbody.innerHTML = '';
 
-            const filteredData = getFilteredData();
-
-            if (filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">ไม่มีข้อมูลตาม Filter ที่เลือก</td></tr>';
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูลตาม Filter ที่เลือก</td></tr>';
                 return;
             }
 
-            filteredData.forEach(item => {
+            data.forEach(item => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
                         <td class="p-2.5 border-r border-gray-800 font-mono">${item.date || '-'}</td>
@@ -262,30 +305,30 @@
                         <td class="p-2.5 border-r border-gray-800 text-orange-400 font-medium">${item.issue || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.cause || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
-                        <td class="p-2.5 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${item.downtime.toLocaleString()}</td>
+                        <td class="p-2.5 border-r border-gray-800 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${item.downtime.toLocaleString()}</td>
+                        <td class="p-2.5 text-center">
+                            <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded transition">
+                                ลบ
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
         }
 
         function updateDashboard() {
-            renderTable();
-            updateKPIs();
-            updateLineChart();
-            updateShiftChart();
+            const filteredData = getFilteredData();
+            renderTable(filteredData);
+            updateKPIs(filteredData);
+            updateLineChart(filteredData);
+            updateShiftChart(filteredData);
         }
 
-        function updateKPIs() {
+        function updateKPIs(data) {
             const lines = ['A-Door', 'B-Door', 'C-Door'];
-            const shiftVal = document.getElementById('shiftFilter').value;
 
             lines.forEach(line => {
-                const lineData = logsData.filter(item => {
-                    if (item.line !== line) return false;
-                    if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
-                    return true;
-                });
-
+                const lineData = data.filter(item => item.line === line);
                 const totalMins = lineData.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
                 const count = lineData.length;
 
@@ -296,7 +339,6 @@
         }
 
         function initCharts() {
-            // Bar Chart
             const ctxLine = document.getElementById('lineChart').getContext('2d');
             lineChartInstance = new Chart(ctxLine, {
                 type: 'bar',
@@ -312,7 +354,6 @@
                 }
             });
 
-            // Doughnut Chart
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'doughnut',
@@ -325,8 +366,7 @@
             });
         }
 
-        function updateLineChart() {
-            const filtered = getFilteredData();
+        function updateLineChart(data) {
             const lines = ['B-Door', 'C-Door', 'A-Door', 'Bottom', 'DND'];
             const colorMap = {
                 'B-Door': '#10b981',
@@ -337,7 +377,7 @@
             };
 
             const totals = lines.map(l => {
-                return filtered.filter(item => item.line === l).reduce((s, item) => s + (Number(item.downtime) || 0), 0);
+                return data.filter(item => item.line === l).reduce((s, item) => s + (Number(item.downtime) || 0), 0);
             });
 
             lineChartInstance.data.labels = lines;
@@ -349,10 +389,9 @@
             lineChartInstance.update();
         }
 
-        function updateShiftChart() {
-            const filtered = getFilteredData();
-            const dayMins = filtered.filter(item => item.shift === 'Day').reduce((s, item) => s + (Number(item.downtime) || 0), 0);
-            const nightMins = filtered.filter(item => item.shift === 'Night').reduce((s, item) => s + (Number(item.downtime) || 0), 0);
+        function updateShiftChart(data) {
+            const dayMins = data.filter(item => item.shift === 'Day').reduce((s, item) => s + (Number(item.downtime) || 0), 0);
+            const nightMins = data.filter(item => item.shift === 'Night').reduce((s, item) => s + (Number(item.downtime) || 0), 0);
 
             shiftChartInstance.data.labels = ['กะกลางวัน (Day)', 'กะกลางคืน (Night)'];
             shiftChartInstance.data.datasets[0].data = [dayMins, nightMins];
