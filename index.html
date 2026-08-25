@@ -12,7 +12,10 @@
     <!-- Header & Filters -->
     <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
         <div>
-            <h1 class="text-2xl font-bold tracking-wide text-orange-500">HAIER MACHINE BREAKDOWN</h1>
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-bold tracking-wide text-orange-500">HAIER MACHINE BREAKDOWN</h1>
+                <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังโหลดข้อมูล...</span>
+            </div>
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
         </div>
         
@@ -50,8 +53,9 @@
                 </select>
             </div>
 
-            <div class="flex items-end">
+            <div class="flex items-end gap-2">
                 <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
+                <button onclick="fetchLogs(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 อัปเดตข้อมูล</button>
             </div>
         </div>
     </div>
@@ -84,11 +88,11 @@
     <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-4 flex flex-col justify-between">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนตามกะการทำงาน</h3>
+            <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งที่เกิดปัญหา (ตามกะ)</h3>
             <div class="h-60 relative flex justify-center items-center"><canvas id="shiftChart"></canvas></div>
         </div>
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-8">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">เวลารวม Downtime แยกตาม Line (นาที)</h3>
+            <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที)</h3>
             <div class="h-60"><canvas id="lineChart"></canvas></div>
         </div>
     </div>
@@ -112,7 +116,7 @@
             <div class="col-span-2 md:col-span-4"><label class="block text-gray-400 mb-1">การแก้ไข</label><input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
                 <button type="button" onclick="toggleForm()" class="bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded text-white">ยกเลิก</button>
-                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white">บันทึกข้อมูล</button>
+                <button type="submit" id="submitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white">บันทึกข้อมูล</button>
             </div>
         </form>
 
@@ -138,16 +142,35 @@
     </div>
 
     <script>
-        // *** นำ URL ที่ได้จาก Step 2 มาวางตรงนี้ ***
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9wcj3rbyaQSDeviY-aNP2VFh2tBNOJWS0QfBSFi3MuXrtOkLE8vhiewt8koFbE_TN/exec';
+        // *** นำ URL Google Apps Script มาวางที่นี่ ***
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-1dqyCf0c4ApYf5V_pR8W18ju2qCYcgjEKCoxdvvcKAK8uzbtRKSvPQgF8LqeiKDx/exec';
 
         let logsData = [];
         let lineChartInstance = null;
         let shiftChartInstance = null;
 
+        // แปลงวันที่ให้อยู่ในรูปแบบ YYYY-MM-DD เสมอ
+        function formatDateString(rawDate) {
+            if (!rawDate) return '';
+            const d = new Date(rawDate);
+            if (isNaN(d.getTime())) return String(rawDate).substring(0, 10);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
-            fetchLogs();
+            
+            // ดึงข้อมูลจาก Cache ก่อนเพื่อให้หน้าเว็บขึ้นทันทีไม่รอ API
+            const cachedData = localStorage.getItem('cachedLogsData');
+            if (cachedData) {
+                logsData = JSON.parse(cachedData);
+                updateDashboard();
+            }
+
+            fetchLogs(); // ดึงข้อมูลใหม่สดจาก Google Sheets
 
             document.getElementById('lineFilter').addEventListener('change', updateDashboard);
             document.getElementById('shiftFilter').addEventListener('change', updateDashboard);
@@ -156,13 +179,28 @@
             document.getElementById('inputDate').valueAsDate = new Date();
         });
 
-        async function fetchLogs() {
+        async function fetchLogs(isManual = false) {
+            const statusEl = document.getElementById('loadingStatus');
+            statusEl.classList.remove('hidden');
+
             try {
                 const res = await fetch(GOOGLE_SCRIPT_URL);
-                logsData = await res.json();
+                const data = await res.json();
+                
+                // จัดรูปแบบวันที่ให้ได้มาตรฐาน
+                logsData = data.map(item => ({
+                    ...item,
+                    date: formatDateString(item.date)
+                }));
+
+                // บันทิกลง Cache เครื่องผู้ใช้
+                localStorage.setItem('cachedLogsData', JSON.stringify(logsData));
                 updateDashboard();
+                if (isManual) alert('อัปเดตข้อมูลล่าสุดเรียบร้อยแล้ว!');
             } catch (err) {
                 console.error("Error fetching data:", err);
+            } finally {
+                statusEl.classList.add('hidden');
             }
         }
 
@@ -172,6 +210,10 @@
 
         async function addNewLog(event) {
             event.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = 'กำลังบันทึก...';
+            btn.disabled = true;
+
             const newLog = {
                 action: 'add',
                 id: Date.now(),
@@ -186,33 +228,47 @@
                 downtime: Number(document.getElementById('inputDowntime').value)
             };
 
+            // แสดงในหน้าเว็บก่อนทันที
             logsData.unshift(newLog);
+            localStorage.setItem('cachedLogsData', JSON.stringify(logsData));
             updateDashboard();
             toggleForm();
+            document.getElementById('addLogForm').reset();
+            document.getElementById('inputDate').valueAsDate = new Date();
 
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newLog)
-            });
-            
-            setTimeout(fetchLogs, 1000);
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newLog)
+                });
+                setTimeout(() => fetchLogs(), 1500);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                btn.innerText = 'บันทึกข้อมูล';
+                btn.disabled = false;
+            }
         }
 
         async function deleteLog(id) {
             if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
                 logsData = logsData.filter(item => item.id != id);
+                localStorage.setItem('cachedLogsData', JSON.stringify(logsData));
                 updateDashboard();
 
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'delete', id: id })
-                });
-
-                setTimeout(fetchLogs, 1000);
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', id: id })
+                    });
+                    setTimeout(() => fetchLogs(), 1500);
+                } catch (err) {
+                    console.error(err);
+                }
             }
         }
 
@@ -223,10 +279,11 @@
             const endDate = document.getElementById('endDateFilter').value;
 
             return logsData.filter(item => {
+                const itemDate = formatDateString(item.date);
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
-                if (startDate && item.date < startDate) return false;
-                if (endDate && item.date > endDate) return false;
+                if (startDate && itemDate < startDate) return false;
+                if (endDate && itemDate > endDate) return false;
                 return true;
             });
         }
@@ -244,19 +301,22 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาที่เลือก</td></tr>';
                 return;
             }
 
-            data.forEach(item => {
+            // จัดเรียงวันที่ล่าสุดขึ้นก่อน (Latest Date First)
+            const sortedData = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sortedData.forEach(item => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
-                        <td class="p-2.5 border-r border-gray-800 font-mono">${item.date || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800 font-mono text-orange-400 font-medium">${formatDateString(item.date)}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.shift || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 font-semibold">${item.line || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.machine || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.station || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800 text-orange-400 font-medium">${item.issue || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800 text-gray-200 font-medium">${item.issue || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.cause || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${Number(item.downtime).toLocaleString()}</td>
@@ -287,37 +347,83 @@
         }
 
         function initCharts() {
+            // กราฟเส้น (Line Chart)
             const ctxLine = document.getElementById('lineChart').getContext('2d');
             lineChartInstance = new Chart(ctxLine, {
-                type: 'bar',
+                type: 'line',
                 data: { labels: [], datasets: [] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#9ca3af' }, grid: { display: false } }, y: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    tension: 0.3, // ความโค้งของเส้น
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' } },
+                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' }, title: { display: true, text: 'Downtime (นาที)', color: '#6b7280' } }
+                    }
+                }
             });
 
+            // กราฟโดนัท (Doughnut Chart)
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'doughnut',
                 data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f59e0b', '#3b82f6'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: { size: 10 } } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#9ca3af', font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${context.raw} ครั้ง`;
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
 
         function updateLineChart(data) {
-            const lines = ['B-Door', 'C-Door', 'A-Door', 'Bottom', 'DND'];
-            const colorMap = { 'B-Door': '#10b981', 'C-Door': '#f59e0b', 'A-Door': '#ef4444', 'Bottom': '#8b5cf6', 'DND': '#64748b' };
-            const totals = lines.map(l => data.filter(item => item.line === l).reduce((s, item) => s + (Number(item.downtime) || 0), 0));
+            // ดึงวันที่ทั้งหมดและเรียงลำดับจากอดีตไปปัจจุบันสำหรับแกน X
+            const dates = [...new Set(data.map(item => formatDateString(item.date)))].sort();
+            const lines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
+            const colorMap = { 'A-Door': '#ef4444', 'B-Door': '#10b981', 'C-Door': '#f59e0b', 'Bottom': '#8b5cf6', 'DND': '#64748b' };
 
-            lineChartInstance.data.labels = lines;
-            lineChartInstance.data.datasets = [{ data: totals, backgroundColor: lines.map(l => colorMap[l]), borderRadius: 4 }];
+            const datasets = lines.map(lineName => {
+                const dataPerDate = dates.map(d => {
+                    return data
+                        .filter(item => formatDateString(item.date) === d && item.line === lineName)
+                        .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
+                });
+
+                return {
+                    label: lineName,
+                    data: dataPerDate,
+                    borderColor: colorMap[lineName],
+                    backgroundColor: colorMap[lineName],
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    fill: false
+                };
+            });
+
+            lineChartInstance.data.labels = dates;
+            lineChartInstance.data.datasets = datasets;
             lineChartInstance.update();
         }
 
         function updateShiftChart(data) {
-            const dayMins = data.filter(item => item.shift === 'Day').reduce((s, item) => s + (Number(item.downtime) || 0), 0);
-            const nightMins = data.filter(item => item.shift === 'Night').reduce((s, item) => s + (Number(item.downtime) || 0), 0);
+            // นับ "จำนวนครั้ง" ที่เกิดปัญหาแยกตามกะ
+            const dayCount = data.filter(item => item.shift === 'Day').length;
+            const nightCount = data.filter(item => item.shift === 'Night').length;
 
             shiftChartInstance.data.labels = ['กะกลางวัน (Day)', 'กะกลางคืน (Night)'];
-            shiftChartInstance.data.datasets[0].data = [dayMins, nightMins];
+            shiftChartInstance.data.datasets[0].data = [dayCount, nightCount];
             shiftChartInstance.update();
         }
     </script>
