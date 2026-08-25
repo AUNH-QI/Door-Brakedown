@@ -31,23 +31,23 @@
                 <button onclick="setQuickDate('month')" id="btn-date-month" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">เดือนนี้</button>
             </div>
 
-            <!-- Custom Date Range -->
-            <div class="flex gap-2 items-center bg-[#242b35] px-2.5 py-1 rounded border border-gray-700">
+            <!-- Custom Date Range (Brightened background for calendar icon visibility) -->
+            <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium">
                 <div>
-                    <label class="block text-[9px] text-gray-400">ตั้งแต่วันที่</label>
-                    <input type="date" id="startDateFilter" class="bg-transparent text-white focus:outline-none text-xs">
+                    <label class="block text-[9px] text-gray-600">ตั้งแต่วันที่</label>
+                    <input type="date" id="startDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
                 </div>
                 <span class="text-gray-500 mt-3">-</span>
                 <div>
-                    <label class="block text-[9px] text-gray-400">ถึงวันที่</label>
-                    <input type="date" id="endDateFilter" class="bg-transparent text-white focus:outline-none text-xs">
+                    <label class="block text-[9px] text-gray-600">ถึงวันที่</label>
+                    <input type="date" id="endDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
                 </div>
             </div>
 
             <!-- Month Picker -->
             <div>
-                <label class="block text-[10px] text-gray-400 mb-1">เลือกเดือนเฉพาะ</label>
-                <input type="month" id="monthFilter" class="bg-[#242b35] text-white px-2.5 py-1.5 rounded border border-gray-700 focus:outline-none text-xs">
+                <label class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
+                <input type="month" id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
             </div>
 
             <!-- Line Buttons Filter -->
@@ -78,7 +78,7 @@
             <!-- Station Filter -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">Station</label>
-                <select id="stationFilter" class="bg-[#242b35] text-white px-2.5 py-1.5 rounded border border-gray-700 focus:outline-none text-xs max-w-[130px]">
+                <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
                     <option value="All">ทุก Station (All)</option>
                 </select>
             </div>
@@ -86,7 +86,7 @@
             <!-- Issue Category Filter -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
-                <select id="issueFilter" class="bg-[#242b35] text-white px-2.5 py-1.5 rounded border border-gray-700 focus:outline-none text-xs max-w-[130px]">
+                <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
                     <option value="All">ทุกปัญหา (All)</option>
                 </select>
             </div>
@@ -99,27 +99,27 @@
         </div>
     </div>
 
-    <!-- KPI Cards -->
+    <!-- KPI Cards (Font sizes matched) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line A-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
                 <span class="text-3xl font-extrabold text-white"><span id="kpi-a-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-emerald-400 font-bold"><span id="kpi-a-count">0</span> ครั้ง</span>
+                <span class="text-3xl font-extrabold text-emerald-400"><span id="kpi-a-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
             </div>
         </div>
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line B-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
                 <span class="text-3xl font-extrabold text-white"><span id="kpi-b-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-amber-400 font-bold"><span id="kpi-b-count">0</span> ครั้ง</span>
+                <span class="text-3xl font-extrabold text-amber-400"><span id="kpi-b-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
             </div>
         </div>
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line C-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
                 <span class="text-3xl font-extrabold text-white"><span id="kpi-c-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-rose-500 font-bold"><span id="kpi-c-count">0</span> ครั้ง</span>
+                <span class="text-3xl font-extrabold text-rose-500"><span id="kpi-c-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
             </div>
         </div>
     </div>
@@ -127,11 +127,11 @@
     <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-4 flex flex-col justify-between">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งที่เกิดปัญหา (ตามกะ)</h3>
+            <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งตามประเภทปัญหา (Issue)</h3>
             <div class="h-60 relative flex justify-center items-center"><canvas id="shiftChart"></canvas></div>
         </div>
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-8">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที)</h3>
+            <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที) [ไม่แสดงค่า 0]</h3>
             <div class="h-60"><canvas id="lineChart"></canvas></div>
         </div>
     </div>
@@ -144,7 +144,7 @@
         </div>
 
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
-            <div><label class="block text-gray-400 mb-1">DATE</label><input type="date" id="inputDate" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div><label class="block text-gray-400 mb-1">DATE</label><input type="date" id="inputDate" required class="w-full bg-gray-200 text-gray-900 font-semibold p-2 rounded border border-gray-400"></div>
             <div><label class="block text-gray-400 mb-1">SHIFT</label><select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"><option value="Day">Day</option><option value="Night">Night</option></select></div>
             <div><label class="block text-gray-400 mb-1">LINE</label><select id="inputLine" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"><option value="A-Door">A-Door</option><option value="B-Door">B-Door</option><option value="C-Door">C-Door</option><option value="Bottom">Bottom</option><option value="DND">DND</option></select></div>
             <div><label class="block text-gray-400 mb-1">เครื่อง</label><input type="text" id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
@@ -194,7 +194,6 @@
             initCharts();
             fetchLogs();
 
-            // Event Listeners
             document.getElementById('stationFilter').addEventListener('change', updateDashboard);
             document.getElementById('issueFilter').addEventListener('change', updateDashboard);
             document.getElementById('startDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); updateDashboard(); });
@@ -226,9 +225,7 @@
             }
         }
 
-        // เติมข้อมูลลงใน Dropdowns (Station และ Issue)
         function populateDropdowns() {
-            // Station Dropdown
             const stationSelect = document.getElementById('stationFilter');
             const currentStation = stationSelect.value;
             const stations = [...new Set(logsData.map(item => item.station))].filter(Boolean).sort();
@@ -239,7 +236,6 @@
                 stationSelect.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
             });
 
-            // Issue Dropdown
             const issueSelect = document.getElementById('issueFilter');
             const currentIssue = issueSelect.value;
             const issues = [...new Set(logsData.map(item => item.issue))].filter(Boolean).sort();
@@ -303,11 +299,8 @@
             }
         }
 
-        // จัดการคลิกปุ่มกรอง Line
         function setLineFilter(lineName) {
             document.getElementById('lineFilter').value = lineName;
-            
-            // เปลี่ยน Style ปุ่ม Line ทั้งหมด
             const lines = ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
             lines.forEach(l => {
                 const btn = document.getElementById(`btn-line-${l}`);
@@ -317,15 +310,11 @@
                     btn.className = "px-2 py-1 rounded text-gray-300 hover:text-white transition";
                 }
             });
-
             updateDashboard();
         }
 
-        // จัดการคลิกปุ่มกรอง Shift (กะ)
         function setShiftFilter(shiftName) {
             document.getElementById('shiftFilter').value = shiftName;
-            
-            // เปลี่ยน Style ปุ่ม Shift ทั้งหมด
             const shifts = ['All', 'Day', 'Night'];
             shifts.forEach(s => {
                 const btn = document.getElementById(`btn-shift-${s}`);
@@ -335,11 +324,9 @@
                     btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
                 }
             });
-
             updateDashboard();
         }
 
-        // จัดการปุ่มกรองวันที่ด่วน
         function setQuickDate(type) {
             clearActiveQuickDateBtn();
             document.getElementById(`btn-date-${type}`).className = "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition";
@@ -469,6 +456,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     tension: 0.3,
+                    spanGaps: true, // ข้ามค่าที่เป็น null/0 เพื่อไม่ให้ลากเส้นดิ่งลงศูนย์
                     plugins: {
                         legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } }
                     },
@@ -482,7 +470,7 @@
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f59e0b', '#3b82f6'], borderWidth: 0 }] },
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#ec4899'], borderWidth: 0 }] },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -507,9 +495,12 @@
 
             const datasets = lines.map(lineName => {
                 const dataPerDate = dates.map(d => {
-                    return data
+                    const totalMins = data
                         .filter(item => item.date === d && item.line === lineName)
                         .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
+                    
+                    // ถ้าค่าเป็น 0 ให้คืนค่าเป็น null เพื่อให้กราฟเส้นหายไป ไม่ลากเส้นลงไปที่ 0
+                    return totalMins === 0 ? null : totalMins;
                 });
 
                 return {
@@ -529,11 +520,18 @@
         }
 
         function updateShiftChart(data) {
-            const dayCount = data.filter(item => item.shift === 'Day').length;
-            const nightCount = data.filter(item => item.shift === 'Night').length;
+            // นับจำนวนครั้งแยกตาม Issue (ประเภทปัญหา)
+            const issueCounts = {};
+            data.forEach(item => {
+                const issue = item.issue || 'ไม่ระบุ';
+                issueCounts[issue] = (issueCounts[issue] || 0) + 1;
+            });
 
-            shiftChartInstance.data.labels = ['กะกลางวัน (Day)', 'กะกลางคืน (Night)'];
-            shiftChartInstance.data.datasets[0].data = [dayCount, nightCount];
+            const labels = Object.keys(issueCounts);
+            const counts = Object.values(issueCounts);
+
+            shiftChartInstance.data.labels = labels.length > 0 ? labels : ['ไม่มีข้อมูล'];
+            shiftChartInstance.data.datasets[0].data = counts.length > 0 ? counts : [1];
             shiftChartInstance.update();
         }
     </script>
