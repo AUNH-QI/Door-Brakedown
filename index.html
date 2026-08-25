@@ -1,464 +1,328 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Merge Digital Marketing Dashboard</title>
-  <!-- Chart.js สำหรับวาดกราฟวงกลมและกราฟเส้น -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --bg-main: #181a1f;
-      --card-bg: #21252d;
-      --card-header-bg: #2a2f3a;
-      --text-main: #ffffff;
-      --text-muted: #9aa0a6;
-      --accent-orange: #f39c12;
-      --accent-blue: #3498db;
-      --accent-green: #2ecc71;
-      --accent-red: #e74c3c;
-      --border-color: #2d323e;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      padding: 1.5rem;
-    }
-
-    /* Navbar & Controls Header */
-    .dashboard-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 1.4rem;
-      font-weight: bold;
-    }
-
-    .brand span {
-      color: var(--accent-orange);
-    }
-
-    .filters {
-      display: flex;
-      gap: 1rem;
-    }
-
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .filter-group label {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    select, input[type="date"] {
-      background-color: #0d0e11;
-      color: var(--text-main);
-      border: 1px solid var(--border-color);
-      padding: 6px 12px;
-      border-radius: 4px;
-      outline: none;
-      min-width: 160px;
-    }
-
-    /* Grid Layout */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 1rem;
-    }
-
-    .col-4 { grid-column: span 4; }
-    .col-6 { grid-column: span 6; }
-
-    @media (max-width: 1024px) {
-      .col-4, .col-6 { grid-column: span 12; }
-    }
-
-    /* Card Component */
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card-header {
-      background-color: var(--card-header-bg);
-      padding: 10px 15px;
-      text-align: center;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--accent-orange);
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .card-body {
-      padding: 15px;
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-    }
-
-    /* Stat Box Inside Cards */
-    .stat-item {
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.4rem;
-      font-weight: bold;
-      margin-bottom: 2px;
-    }
-
-    .stat-label {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .stat-change {
-      font-size: 0.75rem;
-    }
-
-    .positive { color: var(--accent-green); }
-    .negative { color: var(--accent-red); }
-
-    /* Table Styles */
-    .table-responsive {
-      width: 100%;
-      max-height: 220px;
-      overflow-y: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      text-align: left;
-    }
-
-    th {
-      color: var(--accent-orange);
-      padding: 8px;
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      background-color: var(--card-bg);
-    }
-
-    td {
-      padding: 8px;
-      border-bottom: 1px solid #2d323e44;
-      color: var(--text-main);
-    }
-
-    /* Chart Container */
-    .chart-box {
-      position: relative;
-      width: 100%;
-      height: 180px;
-    }
-
-    .donuts-group {
-      display: flex;
-      justify-content: space-around;
-      width: 100%;
-    }
-
-    .donut-item {
-      width: 30%;
-      height: 160px;
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Breakdown Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="bg-[#121417] text-white p-6 font-sans">
 
-  <!-- Top Controls Header -->
-  <div class="dashboard-header">
-    <div class="brand">
-      <span>●</span> Merge Digital Marketing Dashboard
-    </div>
-    <div class="filters">
-      <div class="filter-group">
-        <label>Account Name</label>
-        <select id="account-filter">
-          <option value="All">All</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Date</label>
-        <input type="date" id="date-filter" value="2026-08-25">
-      </div>
-    </div>
-  </div>
-
-  <!-- Dashboard Main Grid -->
-  <div class="dashboard-grid">
-
-    <!-- 1. Google Ads Summary Card -->
-    <div class="card col-4">
-      <div class="card-header">Google Ads</div>
-      <div class="card-body">
-        <div class="stat-item">
-          <div class="stat-value" id="g-clicks">0</div>
-          <div class="stat-label">Clicks</div>
-          <div class="stat-change positive">13.44% ✓</div>
+    <!-- Header & Filters -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-wide text-orange-400">HAIER MACHINE BREAKDOWN</h1>
+            <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C)</p>
         </div>
-        <div class="stat-item">
-          <div class="stat-value" id="g-ctr">0%</div>
-          <div class="stat-label">CTR</div>
-          <div class="stat-change negative" id="g-ctr-change">0.39% !</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="g-impressions">0</div>
-          <div class="stat-label">Impressions</div>
-          <div class="stat-change positive">14.93% ✓</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. Facebook Ads Summary Card -->
-    <div class="card col-4">
-      <div class="card-header">Facebook Ads</div>
-      <div class="card-body">
-        <div class="stat-item">
-          <div class="stat-value" id="fb-clicks">0</div>
-          <div class="stat-label">Clicks</div>
-          <div class="stat-change positive">2.04% ✓</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="fb-ctr">0%</div>
-          <div class="stat-label">CTR</div>
-          <div class="stat-change negative">13.39% !</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="fb-impressions">0</div>
-          <div class="stat-label">Impressions</div>
-          <div class="stat-change negative">29.07% !</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. Cost & Spend Card (Donut Charts) -->
-    <div class="card col-4">
-      <div class="card-header">Cost & Spend</div>
-      <div class="card-body">
-        <div class="donuts-group">
-          <div class="donut-item"><canvas id="costChart1"></canvas></div>
-          <div class="donut-item"><canvas id="costChart2"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. Top Campaigns Table Card -->
-    <div class="card col-6">
-      <div class="card-header">Top Campaigns</div>
-      <div class="card-body" style="padding: 10px;">
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Campaign</th>
-                <th>CTR</th>
-                <th>CPC</th>
-                <th>Spend</th>
-                <th>CPM</th>
-              </tr>
-            </thead>
-            <tbody id="campaign-table-body">
-              <tr><td colspan="5" style="text-align:center;">กำลังดึงและประมวลผลข้อมูล 850 รายการ...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. Compare Date Line Chart Card -->
-    <div class="card col-6">
-      <div class="card-header">Compare Date</div>
-      <div class="card-body">
-        <div class="chart-box">
-          <canvas id="lineChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- 6. Region Breakdown Card -->
-    <div class="card col-12">
-      <div class="card-header">Region Breakdown</div>
-      <div class="card-body">
-        <div class="donuts-group" style="justify-content: space-around;">
-          <div class="donut-item"><canvas id="regionChart1"></canvas></div>
-          <div class="donut-item"><canvas id="regionChart2"></canvas></div>
-          <div class="donut-item"><canvas id="regionChart3"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      initDashboard();
-    });
-
-    async function initDashboard() {
-      try {
-        const response = await fetch('data.json');
-        if (!response.ok) throw new Error('ไม่สามารถอ่านไฟล์ data.json ได้');
         
-        const rawData = await response.json();
-        
-        // ประมวลผลชุดข้อมูล (850 รายการ)
-        processAndRender(rawData);
-      } catch (err) {
-        console.error(err);
-        // หากไม่พบไฟล์ data.json จะประมวลผล Mockup Data 850 รายการให้เพื่อทดสอบ UI
-        generateMockAndRender();
-      }
-    }
+        <!-- Filter Controls -->
+        <div class="flex gap-3 bg-[#1e232a] p-3 rounded-lg border border-gray-700">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">เลือก Line</label>
+                <select id="lineFilter" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
+                    <option value="All">ทุก Line (All)</option>
+                    <option value="A-Door">A-Door</option>
+                    <option value="B-Door">B-Door</option>
+                    <option value="C-Door">C-Door</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">เลือกช่วงเวลา</label>
+                <select id="dateFilter" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="today">วันนี้</option>
+                    <option value="this_week">สัปดาห์นี้</option>
+                    <option value="this_month" selected>เดือนนี้</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
-    function processAndRender(data) {
-      // ตัวอย่างคำนวณจากชุดข้อมูลจริง
-      let totalGClicks = 0, totalGImpressions = 0, totalFBClicks = 0, totalFBImpressions = 0;
-      let campaigns = {};
+    <!-- Error Alert Box -->
+    <div id="errorAlert" class="hidden mb-6 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-sm"></div>
 
-      data.forEach(item => {
-        if (item.platform === 'Google') {
-          totalGClicks += item.clicks || 0;
-          totalGImpressions += item.impressions || 0;
-        } else if (item.platform === 'Facebook') {
-          totalFBClicks += item.clicks || 0;
-          totalFBImpressions += item.impressions || 0;
+    <!-- Section 1: Top KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <!-- Card 1: Line A Status -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line A-Door (Breakdown รวม)</h3>
+            <div class="flex justify-between items-baseline">
+                <span class="text-3xl font-bold text-white"><span id="kpi-a-mins">0</span> <span class="text-sm font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-emerald-400 font-semibold"><span id="kpi-a-count">0</span> ครั้ง</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Line B Status -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line B-Door (Breakdown รวม)</h3>
+            <div class="flex justify-between items-baseline">
+                <span class="text-3xl font-bold text-white"><span id="kpi-b-mins">0</span> <span class="text-sm font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-amber-400 font-semibold"><span id="kpi-b-count">0</span> ครั้ง</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Line C Status -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line C-Door (Breakdown รวม)</h3>
+            <div class="flex justify-between items-baseline">
+                <span class="text-3xl font-bold text-white"><span id="kpi-c-mins">0</span> <span class="text-sm font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-rose-400 font-semibold"><span id="kpi-c-count">0</span> ครั้ง</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Graphs & Table Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Left Panel: Top 5 Breakdown Table -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg lg:col-span-1">
+            <h3 class="text-md font-bold text-orange-400 mb-4">Top Problems (เวลาเสียสะสม)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-xs text-gray-400 border-b border-gray-700">
+                        <tr>
+                            <th class="pb-2">Station</th>
+                            <th class="pb-2">ปัญหาหลัก</th>
+                            <th class="pb-2 text-right">นาทีรวม</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topProblemsTable" class="divide-y divide-gray-800 text-gray-300">
+                        <tr><td colspan="3" class="py-4 text-center text-gray-500">กำลังโหลดข้อมูล...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Panel: Line Chart -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg lg:col-span-2">
+            <h3 class="text-md font-bold text-orange-400 mb-4">แนวโน้มระยะเวลาเสีย (Duration Comparison)</h3>
+            <div class="h-64">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Bottom Doughnut Chart -->
+    <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+        <h3 class="text-md font-bold text-orange-400 mb-4">สัดส่วนระยะเวลาเสียแบ่งตาม Station (Duration Breakdown)</h3>
+        <div class="h-64 flex justify-center">
+            <canvas id="stationChart"></canvas>
+        </div>
+    </div>
+
+    <!-- JavaScript สำหรับโหลดและประมวลผล data.json -->
+    <script>
+        let rawData = [];
+        let trendChartInstance = null;
+        let stationChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            loadJsonData();
+
+            // Event Listeners เมื่อมีการเลือก Filter
+            document.getElementById('lineFilter').addEventListener('change', updateDashboard);
+            document.getElementById('dateFilter').addEventListener('change', updateDashboard);
+        });
+
+        // ดึงข้อมูลจากไฟล์ data.json
+        async function loadJsonData() {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error(`ไม่สามารถโหลดไฟล์ data.json ได้ (Status: ${response.status})`);
+                rawData = await response.json();
+                updateDashboard();
+            } catch (error) {
+                showError(`เกิดข้อผิดพลาด: ${error.message} (กรุณารันผ่าน Local Server เช่น Live Server)`);
+            }
         }
 
-        if (item.campaign) {
-          if (!campaigns[item.campaign]) {
-            campaigns[item.campaign] = { clicks: 0, spend: 0, impressions: 0 };
-          }
-          campaigns[item.campaign].clicks += item.clicks || 0;
-          campaigns[item.campaign].spend += item.spend || 0;
-          campaigns[item.campaign].impressions += item.impressions || 0;
+        function showError(msg) {
+            const errorBox = document.getElementById('errorAlert');
+            errorBox.innerText = msg;
+            errorBox.classList.remove('hidden');
         }
-      });
 
-      // อัปเดต Metric Cards
-      document.getElementById('g-clicks').innerText = totalGClicks.toLocaleString();
-      document.getElementById('g-impressions').innerText = (totalGImpressions / 1000).toFixed(1) + 'K';
-      document.getElementById('g-ctr').innerText = ((totalGClicks / (totalGImpressions || 1)) * 100).toFixed(2) + '%';
+        // กรองข้อมูลตาม Line และ Date Filter
+        function getFilteredData() {
+            const lineVal = document.getElementById('lineFilter').value;
+            const dateVal = document.getElementById('dateFilter').value;
+            const now = new Date();
 
-      document.getElementById('fb-clicks').innerText = totalFBClicks.toLocaleString();
-      document.getElementById('fb-impressions').innerText = (totalFBImpressions / 1000).toFixed(1) + 'K';
-      document.getElementById('fb-ctr').innerText = ((totalFBClicks / (totalFBImpressions || 1)) * 100).toFixed(2) + '%';
+            return rawData.filter(item => {
+                // กรองตาม Line
+                if (lineVal !== 'All' && item.line !== lineVal) return false;
 
-      // แปะตาราง Top Campaigns
-      const tbody = document.getElementById('campaign-table-body');
-      tbody.innerHTML = '';
-      Object.keys(campaigns).slice(0, 5).forEach(name => {
-        const c = campaigns[name];
-        const ctr = ((c.clicks / (c.impressions || 1)) * 100).toFixed(2);
-        const cpc = (c.spend / (c.clicks || 1)).toFixed(2);
-        const cpm = ((c.spend / (c.impressions || 1)) * 1000).toFixed(2);
-        
-        tbody.innerHTML += `
-          <tr>
-            <td>${name}</td>
-            <td>${ctr}%</td>
-            <td>฿${cpc}</td>
-            <td>฿${c.spend.toLocaleString()}</td>
-            <td>฿${cpm}</td>
-          </tr>
-        `;
-      });
-
-      // Render Charts
-      renderCharts();
-    }
-
-    function generateMockAndRender() {
-      // Mockup ประมวลผลแสดงตัวอย่าง UI ในกรณีไม่พบไฟล์
-      document.getElementById('g-clicks').innerText = "204";
-      document.getElementById('g-ctr').innerText = "13.39%";
-      document.getElementById('g-impressions').innerText = "1,493";
-
-      document.getElementById('fb-clicks').innerText = "121";
-      document.getElementById('fb-ctr').innerText = "0.39%";
-      document.getElementById('fb-impressions').innerText = "29K";
-
-      const tbody = document.getElementById('campaign-table-body');
-      tbody.innerHTML = `
-        <tr><td>Fang_New Product Target</td><td>21.29%</td><td>120.08</td><td>297.57</td><td>3,545.52</td></tr>
-        <tr><td>Fang_Event Promote</td><td>41.83%</td><td>74.64</td><td>202.64</td><td>2,390.85</td></tr>
-        <tr><td>Fang_Custom Audience</td><td>42.36%</td><td>127.19</td><td>298.30</td><td>2,522.27</td></tr>
-      `;
-
-      renderCharts();
-    }
-
-    function renderCharts() {
-      const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-
-      // Cost & Spend Donuts
-      new Chart(document.getElementById('costChart1'), {
-        type: 'doughnut',
-        data: { labels: ['Cost', 'Spend'], datasets: [{ data: [2063, 3714], backgroundColor: ['#3498db', '#9b59b6'] }] },
-        options: chartOptions
-      });
-
-      new Chart(document.getElementById('costChart2'), {
-        type: 'doughnut',
-        data: { labels: ['Cost', 'Spend'], datasets: [{ data: [321, 798], backgroundColor: ['#3498db', '#e74c3c'] }] },
-        options: chartOptions
-      });
-
-      // Compare Date Line Chart
-      new Chart(document.getElementById('lineChart'), {
-        type: 'line',
-        data: {
-          labels: ['14', '15', '16', '17', '18', '19', '20', '21'],
-          datasets: [
-            { label: 'CTR Facebook', data: [5, 2, 1, 1, 9, 6, 4, 2], borderColor: '#2ecc71', tension: 0.3 },
-            { label: 'CTR Google', data: [0, 8, 9, 8, 0, 0, 0, 0], borderColor: '#3498db', tension: 0.3 }
-          ]
-        },
-        options: {
-          ...chartOptions,
-          scales: {
-            x: { grid: { color: '#2d323e' } },
-            y: { grid: { color: '#2d323e' } }
-          }
+                // กรองตามช่วงเวลา
+                if (dateVal !== 'all' && item.date) {
+                    const itemDate = new Date(item.date);
+                    if (dateVal === 'today') {
+                        return itemDate.toDateString() === now.toDateString();
+                    } else if (dateVal === 'this_week') {
+                        const startOfWeek = new Date(now);
+                        startOfWeek.setDate(now.getDate() - now.getDay());
+                        return itemDate >= startOfWeek;
+                    } else if (dateVal === 'this_month') {
+                        return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear();
+                    }
+                }
+                return true;
+            });
         }
-      });
 
-      // Region Breakdown Donuts
-      const regionData = { labels: ['Bangkok', 'Nonthaburi', 'Samut Sakhon'], datasets: [{ data: [50, 30, 20], backgroundColor: ['#f39c12', '#3498db', '#2ecc71'] }] };
-      new Chart(document.getElementById('regionChart1'), { type: 'doughnut', data: regionData, options: chartOptions });
-      new Chart(document.getElementById('regionChart2'), { type: 'doughnut', data: regionData, options: chartOptions });
-      new Chart(document.getElementById('regionChart3'), { type: 'doughnut', data: regionData, options: chartOptions });
-    }
-  </script>
+        // อัปเดตข้อมูลบน Dashboard
+        function updateDashboard() {
+            const filteredData = getFilteredData();
+
+            updateKPIs();
+            updateTopProblemsTable(filteredData);
+            updateTrendChart(filteredData);
+            updateStationChart(filteredData);
+        }
+
+        // 1. คำนวณค่า KPI Cards (แยกตาม Line)
+        function updateKPIs() {
+            const lines = ['A-Door', 'B-Door', 'C-Door'];
+            const dateVal = document.getElementById('dateFilter').value;
+            const now = new Date();
+
+            lines.forEach(line => {
+                // สำหรับ KPI ด้านบน ให้คิดตาม Date Filter แต่ไม่สน Line Filter เพื่อให้เห็นภาพรวม
+                const lineData = rawData.filter(item => {
+                    if (item.line !== line) return false;
+                    if (dateVal !== 'all' && item.date) {
+                        const itemDate = new Date(item.date);
+                        if (dateVal === 'today') return itemDate.toDateString() === now.toDateString();
+                        if (dateVal === 'this_week') {
+                            const startOfWeek = new Date(now);
+                            startOfWeek.setDate(now.getDate() - now.getDay());
+                            return itemDate >= startOfWeek;
+                        }
+                        if (dateVal === 'this_month') return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear();
+                    }
+                    return true;
+                });
+
+                const totalMins = lineData.reduce((sum, item) => sum + (Number(item.duration_mins) || 0), 0);
+                const count = lineData.length;
+
+                const prefix = line.charAt(0).toLowerCase();
+                document.getElementById(`kpi-${prefix}-mins`).innerText = totalMins.toLocaleString();
+                document.getElementById(`kpi-${prefix}-count`).innerText = count.toLocaleString();
+            });
+        }
+
+        // 2. แสดง Top 5 ปัญหาหลัก
+        function updateTopProblemsTable(data) {
+            const problemMap = {};
+
+            data.forEach(item => {
+                const key = `${item.station}||${item.problem}`;
+                problemMap[key] = (problemMap[key] || 0) + (Number(item.duration_mins) || 0);
+            });
+
+            const sorted = Object.keys(problemMap)
+                .map(key => {
+                    const [station, problem] = key.split('||');
+                    return { station, problem, mins: problemMap[key] };
+                })
+                .sort((a, b) => b.mins - a.mins)
+                .slice(0, 5);
+
+            const tbody = document.getElementById('topProblemsTable');
+            tbody.innerHTML = '';
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลานี้</td></tr>';
+                return;
+            }
+
+            const textColors = ['text-rose-400 font-bold', 'text-orange-400 font-bold', 'text-amber-400 font-bold', 'text-gray-300', 'text-gray-400'];
+
+            sorted.forEach((item, index) => {
+                const colorClass = textColors[index] || 'text-gray-400';
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-3 font-medium text-white">${item.station || '-'}</td>
+                        <td>${item.problem || '-'}</td>
+                        <td class="py-3 text-right ${colorClass}">${item.mins.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 3. เริ่มต้นสร้าง กราฟ Chart.js
+        function initCharts() {
+            // Trend Chart
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChartInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#9ca3af' } } },
+                    scales: {
+                        x: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
+                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } }
+                    }
+                }
+            });
+
+            // Station Chart
+            const ctxStation = document.getElementById('stationChart').getContext('2d');
+            stationChartInstance = new Chart(ctxStation, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#10b981', '#6b7280'], borderWidth: 0 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: '#9ca3af' } } }
+                }
+            });
+        }
+
+        // 4. อัปเดต Trend Chart (รายวัน)
+        function updateTrendChart(data) {
+            const dates = [...new Set(data.map(i => i.date))].sort();
+            const lines = ['A-Door', 'B-Door', 'C-Door'];
+            const colors = { 'A-Door': '#10b981', 'B-Door': '#f59e0b', 'C-Door': '#3b82f6' };
+
+            const datasets = lines.map(line => {
+                const lineData = dates.map(d => {
+                    return data
+                        .filter(item => item.line === line && item.date === d)
+                        .reduce((sum, item) => sum + (Number(item.duration_mins) || 0), 0);
+                });
+
+                return {
+                    label: `Line ${line}`,
+                    data: lineData,
+                    borderColor: colors[line],
+                    tension: 0.3,
+                    borderWidth: 2
+                };
+            });
+
+            trendChartInstance.data.labels = dates;
+            trendChartInstance.data.datasets = datasets;
+            trendChartInstance.update();
+        }
+
+        // 5. อัปเดต Station Doughnut Chart
+        function updateStationChart(data) {
+            const stationMap = {};
+            data.forEach(item => {
+                const s = item.station || 'อื่นๆ';
+                stationMap[s] = (stationMap[s] || 0) + (Number(item.duration_mins) || 0);
+            });
+
+            stationChartInstance.data.labels = Object.keys(stationMap);
+            stationChartInstance.data.datasets[0].data = Object.values(stationMap);
+            stationChartInstance.update();
+        }
+    </script>
 </body>
 </html>
