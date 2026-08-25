@@ -1,4 +1,4 @@
-const rawData = [
+[
   { "id": 1, "line": "B-Door", "downtime": 120, "shift": "Day", "issue": "หยุดไลน์การผลิต (โซ่หลุดเฟือง  และ Diverter รอยเชื่อมแตก)" },
   { "id": 2, "line": "C-Door", "downtime": 40, "shift": "Day", "issue": "หยุดไลน์การผลิต (พาเลท #19 ล้อหลุด)" },
   { "id": 3, "line": "A-Door", "downtime": 10, "shift": "Day", "issue": "หยุดไลน์การผลิต (พาเลทพัง JIG ไม่สามารถเปิดได้)" },
