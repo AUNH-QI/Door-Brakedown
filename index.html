@@ -31,7 +31,7 @@
                 <button onclick="setQuickDate('month')" id="btn-date-month" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">เดือนนี้</button>
             </div>
 
-            <!-- Custom Date Range (Brightened background for calendar icon visibility) -->
+            <!-- Custom Date Range -->
             <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium">
                 <div>
                     <label class="block text-[9px] text-gray-600">ตั้งแต่วันที่</label>
@@ -99,7 +99,7 @@
         </div>
     </div>
 
-    <!-- KPI Cards (Font sizes matched) -->
+    <!-- KPI Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line A-Door (Downtime รวม)</h3>
@@ -144,15 +144,64 @@
         </div>
 
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
-            <div><label class="block text-gray-400 mb-1">DATE</label><input type="date" id="inputDate" required class="w-full bg-gray-200 text-gray-900 font-semibold p-2 rounded border border-gray-400"></div>
-            <div><label class="block text-gray-400 mb-1">SHIFT</label><select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"><option value="Day">Day</option><option value="Night">Night</option></select></div>
-            <div><label class="block text-gray-400 mb-1">LINE</label><select id="inputLine" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"><option value="A-Door">A-Door</option><option value="B-Door">B-Door</option><option value="C-Door">C-Door</option><option value="Bottom">Bottom</option><option value="DND">DND</option></select></div>
-            <div><label class="block text-gray-400 mb-1">เครื่อง</label><input type="text" id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
-            <div><label class="block text-gray-400 mb-1">Station</label><input type="text" id="inputStation" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
-            <div><label class="block text-gray-400 mb-1">ปัญหา (Issue)</label><input type="text" id="inputIssue" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
-            <div><label class="block text-gray-400 mb-1">สาเหตุ</label><input type="text" id="inputCause" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
-            <div><label class="block text-gray-400 mb-1">ระยะเวลา (นาที)</label><input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
-            <div class="col-span-2 md:col-span-4"><label class="block text-gray-400 mb-1">การแก้ไข</label><input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div>
+                <label class="block text-gray-400 mb-1">DATE</label>
+                <input type="date" id="inputDate" required class="w-full bg-gray-200 text-gray-900 font-semibold p-2 rounded border border-gray-400">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">SHIFT</label>
+                <select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                    <option value="Day">Day</option>
+                    <option value="Night">Night</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">LINE</label>
+                <select id="inputLine" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                    <option value="A-Door">A-Door</option>
+                    <option value="B-Door">B-Door</option>
+                    <option value="C-Door">C-Door</option>
+                    <option value="Bottom">Bottom</option>
+                    <option value="DND">DND</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">เครื่อง</label>
+                <select id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                    <option value="เครื่องฉีดโฟม">เครื่องฉีดโฟม</option>
+                    <option value="เครื่องฉีดกาว">เครื่องฉีดกาว</option>
+                    <option value="เครื่องฉีดยางขอบ">เครื่องฉีดยางขอบ</option>
+                    <option value="โต๊ะเชื่อมยางขอบ">โต๊ะเชื่อมยางขอบ</option>
+                    <option value="เครื่อง Spot">เครื่อง Spot</option>
+                    <option value="สายพาน">สายพาน</option>
+                    <option value="ระบบไฟฟ้า">ระบบไฟฟ้า</option>
+                    <option value="อื่นๆ">อื่นๆ</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">Station</label>
+                <select id="inputStation" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                    <option value="-">-- เลือก Station --</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">ปัญหา (Issue)</label>
+                <select id="inputIssue" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                    <option value="">-- เลือกปัญหา --</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">สาเหตุ</label>
+                <input type="text" id="inputCause" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">ระยะเวลา (นาที)</label>
+                <input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div class="col-span-2 md:col-span-4">
+                <label class="block text-gray-400 mb-1">การแก้ไข</label>
+                <input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
                 <button type="button" onclick="toggleForm()" class="bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded text-white">ยกเลิก</button>
                 <button type="submit" id="submitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white">บันทึกข้อมูล</button>
@@ -226,24 +275,42 @@
         }
 
         function populateDropdowns() {
-            const stationSelect = document.getElementById('stationFilter');
-            const currentStation = stationSelect.value;
+            // 1. Station Dropdown (Filters) และ Input Form
             const stations = [...new Set(logsData.map(item => item.station))].filter(Boolean).sort();
-
-            stationSelect.innerHTML = '<option value="All">ทุก Station (All)</option>';
+            
+            const stationFilter = document.getElementById('stationFilter');
+            const currentStation = stationFilter.value;
+            stationFilter.innerHTML = '<option value="All">ทุก Station (All)</option>';
             stations.forEach(st => {
                 const selected = st === currentStation ? 'selected' : '';
-                stationSelect.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
+                stationFilter.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
             });
 
-            const issueSelect = document.getElementById('issueFilter');
-            const currentIssue = issueSelect.value;
+            const inputStation = document.getElementById('inputStation');
+            const currentInputStation = inputStation.value;
+            inputStation.innerHTML = '<option value="-">-- เลือก Station --</option>';
+            stations.forEach(st => {
+                const selected = st === currentInputStation ? 'selected' : '';
+                inputStation.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
+            });
+
+            // 2. Issue Dropdown (Filters) และ Input Form
             const issues = [...new Set(logsData.map(item => item.issue))].filter(Boolean).sort();
 
-            issueSelect.innerHTML = '<option value="All">ทุกปัญหา (All)</option>';
+            const issueFilter = document.getElementById('issueFilter');
+            const currentIssue = issueFilter.value;
+            issueFilter.innerHTML = '<option value="All">ทุกปัญหา (All)</option>';
             issues.forEach(issue => {
                 const selected = issue === currentIssue ? 'selected' : '';
-                issueSelect.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
+                issueFilter.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
+            });
+
+            const inputIssue = document.getElementById('inputIssue');
+            const currentInputIssue = inputIssue.value;
+            inputIssue.innerHTML = '<option value="">-- เลือกปัญหา --</option>';
+            issues.forEach(issue => {
+                const selected = issue === currentInputIssue ? 'selected' : '';
+                inputIssue.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
             });
         }
 
@@ -456,7 +523,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     tension: 0.3,
-                    spanGaps: true, // ข้ามค่าที่เป็น null/0 เพื่อไม่ให้ลากเส้นดิ่งลงศูนย์
+                    spanGaps: true,
                     plugins: {
                         legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } }
                     },
@@ -499,7 +566,6 @@
                         .filter(item => item.date === d && item.line === lineName)
                         .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
                     
-                    // ถ้าค่าเป็น 0 ให้คืนค่าเป็น null เพื่อให้กราฟเส้นหายไป ไม่ลากเส้นลงไปที่ 0
                     return totalMins === 0 ? null : totalMins;
                 });
 
@@ -520,7 +586,6 @@
         }
 
         function updateShiftChart(data) {
-            // นับจำนวนครั้งแยกตาม Issue (ประเภทปัญหา)
             const issueCounts = {};
             data.forEach(item => {
                 const issue = item.issue || 'ไม่ระบุ';
