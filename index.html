@@ -6,6 +6,8 @@
     <title>Haier Machine Breakdown Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#0f1115] text-white p-6 font-sans">
 
@@ -14,7 +16,7 @@
         <div>
             <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold tracking-wide text-orange-500">HAIER MACHINE BREAKDOWN</h1>
-                <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังโหลดข้อมูล...</span>
+                <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังดึงข้อมูล...</span>
             </div>
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
         </div>
@@ -55,7 +57,7 @@
 
             <div class="flex items-end gap-2">
                 <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
-                <button onclick="fetchLogs(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 อัปเดตข้อมูล</button>
+                <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรชข้อมูล</button>
             </div>
         </div>
     </div>
@@ -142,35 +144,19 @@
     </div>
 
     <script>
-        // *** นำ URL Google Apps Script มาวางที่นี่ ***
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-1dqyCf0c4ApYf5V_pR8W18ju2qCYcgjEKCoxdvvcKAK8uzbtRKSvPQgF8LqeiKDx/exec';
+        // ตั้งค่าการเชื่อมต่อ Supabase
+        const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let logsData = [];
         let lineChartInstance = null;
         let shiftChartInstance = null;
 
-        // แปลงวันที่ให้อยู่ในรูปแบบ YYYY-MM-DD เสมอ
-        function formatDateString(rawDate) {
-            if (!rawDate) return '';
-            const d = new Date(rawDate);
-            if (isNaN(d.getTime())) return String(rawDate).substring(0, 10);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
-            
-            // ดึงข้อมูลจาก Cache ก่อนเพื่อให้หน้าเว็บขึ้นทันทีไม่รอ API
-            const cachedData = localStorage.getItem('cachedLogsData');
-            if (cachedData) {
-                logsData = JSON.parse(cachedData);
-                updateDashboard();
-            }
-
-            fetchLogs(); // ดึงข้อมูลใหม่สดจาก Google Sheets
+            fetchLogs();
 
             document.getElementById('lineFilter').addEventListener('change', updateDashboard);
             document.getElementById('shiftFilter').addEventListener('change', updateDashboard);
@@ -179,26 +165,24 @@
             document.getElementById('inputDate').valueAsDate = new Date();
         });
 
-        async function fetchLogs(isManual = false) {
+        // ดึงข้อมูลจาก Supabase
+        async function fetchLogs() {
             const statusEl = document.getElementById('loadingStatus');
             statusEl.classList.remove('hidden');
 
             try {
-                const res = await fetch(GOOGLE_SCRIPT_URL);
-                const data = await res.json();
-                
-                // จัดรูปแบบวันที่ให้ได้มาตรฐาน
-                logsData = data.map(item => ({
-                    ...item,
-                    date: formatDateString(item.date)
-                }));
+                const { data, error } = await supabaseClient
+                    .from('breakdown_logs')
+                    .select('*')
+                    .order('date', { ascending: false });
 
-                // บันทิกลง Cache เครื่องผู้ใช้
-                localStorage.setItem('cachedLogsData', JSON.stringify(logsData));
+                if (error) throw error;
+
+                logsData = data || [];
                 updateDashboard();
-                if (isManual) alert('อัปเดตข้อมูลล่าสุดเรียบร้อยแล้ว!');
             } catch (err) {
                 console.error("Error fetching data:", err);
+                alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
             } finally {
                 statusEl.classList.add('hidden');
             }
@@ -208,6 +192,7 @@
             document.getElementById('addLogForm').classList.toggle('hidden');
         }
 
+        // เพิ่มข้อมูลลง Supabase
         async function addNewLog(event) {
             event.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -215,8 +200,6 @@
             btn.disabled = true;
 
             const newLog = {
-                action: 'add',
-                id: Date.now(),
                 date: document.getElementById('inputDate').value,
                 shift: document.getElementById('inputShift').value,
                 line: document.getElementById('inputLine').value,
@@ -228,46 +211,40 @@
                 downtime: Number(document.getElementById('inputDowntime').value)
             };
 
-            // แสดงในหน้าเว็บก่อนทันที
-            logsData.unshift(newLog);
-            localStorage.setItem('cachedLogsData', JSON.stringify(logsData));
-            updateDashboard();
-            toggleForm();
-            document.getElementById('addLogForm').reset();
-            document.getElementById('inputDate').valueAsDate = new Date();
-
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newLog)
-                });
-                setTimeout(() => fetchLogs(), 1500);
+                const { error } = await supabaseClient
+                    .from('breakdown_logs')
+                    .insert([newLog]);
+
+                if (error) throw error;
+
+                toggleForm();
+                document.getElementById('addLogForm').reset();
+                document.getElementById('inputDate').valueAsDate = new Date();
+                await fetchLogs();
             } catch (err) {
-                console.error(err);
+                console.error("Error adding log:", err);
+                alert("บันทึกข้อมูลไม่สำเร็จ: " + err.message);
             } finally {
                 btn.innerText = 'บันทึกข้อมูล';
                 btn.disabled = false;
             }
         }
 
+        // ลบข้อมูลจาก Supabase
         async function deleteLog(id) {
             if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-                logsData = logsData.filter(item => item.id != id);
-                localStorage.setItem('cachedLogsData', JSON.stringify(logsData));
-                updateDashboard();
-
                 try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete', id: id })
-                    });
-                    setTimeout(() => fetchLogs(), 1500);
+                    const { error } = await supabaseClient
+                        .from('breakdown_logs')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                    await fetchLogs();
                 } catch (err) {
-                    console.error(err);
+                    console.error("Error deleting log:", err);
+                    alert("ลบข้อมูลไม่สำเร็จ: " + err.message);
                 }
             }
         }
@@ -279,7 +256,7 @@
             const endDate = document.getElementById('endDateFilter').value;
 
             return logsData.filter(item => {
-                const itemDate = formatDateString(item.date);
+                const itemDate = item.date;
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
                 if (startDate && itemDate < startDate) return false;
@@ -305,13 +282,10 @@
                 return;
             }
 
-            // จัดเรียงวันที่ล่าสุดขึ้นก่อน (Latest Date First)
-            const sortedData = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            sortedData.forEach(item => {
+            data.forEach(item => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
-                        <td class="p-2.5 border-r border-gray-800 font-mono text-orange-400 font-medium">${formatDateString(item.date)}</td>
+                        <td class="p-2.5 border-r border-gray-800 font-mono text-orange-400 font-medium">${item.date || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.shift || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 font-semibold">${item.line || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.machine || '-'}</td>
@@ -347,7 +321,6 @@
         }
 
         function initCharts() {
-            // กราฟเส้น (Line Chart)
             const ctxLine = document.getElementById('lineChart').getContext('2d');
             lineChartInstance = new Chart(ctxLine, {
                 type: 'line',
@@ -355,7 +328,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    tension: 0.3, // ความโค้งของเส้น
+                    tension: 0.3,
                     plugins: {
                         legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } }
                     },
@@ -366,7 +339,6 @@
                 }
             });
 
-            // กราฟโดนัท (Doughnut Chart)
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'doughnut',
@@ -389,15 +361,14 @@
         }
 
         function updateLineChart(data) {
-            // ดึงวันที่ทั้งหมดและเรียงลำดับจากอดีตไปปัจจุบันสำหรับแกน X
-            const dates = [...new Set(data.map(item => formatDateString(item.date)))].sort();
+            const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
             const lines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
             const colorMap = { 'A-Door': '#ef4444', 'B-Door': '#10b981', 'C-Door': '#f59e0b', 'Bottom': '#8b5cf6', 'DND': '#64748b' };
 
             const datasets = lines.map(lineName => {
                 const dataPerDate = dates.map(d => {
                     return data
-                        .filter(item => formatDateString(item.date) === d && item.line === lineName)
+                        .filter(item => item.date === d && item.line === lineName)
                         .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
                 });
 
@@ -418,7 +389,6 @@
         }
 
         function updateShiftChart(data) {
-            // นับ "จำนวนครั้ง" ที่เกิดปัญหาแยกตามกะ
             const dayCount = data.filter(item => item.shift === 'Day').length;
             const nightCount = data.filter(item => item.shift === 'Night').length;
 
