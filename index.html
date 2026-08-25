@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Machine Breakdown Dashboard</title>
+    <title>Haier Machine Breakdown Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-[#121417] text-white p-6 font-sans">
+<body class="bg-[#0f1115] text-white p-6 font-sans">
 
     <!-- Header & Filters -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div>
-            <h1 class="text-2xl font-bold tracking-wide text-orange-400">HAIER MACHINE BREAKDOWN</h1>
+            <h1 class="text-2xl font-bold tracking-wide text-orange-500">HAIER MACHINE BREAKDOWN</h1>
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
         </div>
         
         <!-- Filter Controls -->
-        <div class="flex gap-3 bg-[#1e232a] p-3 rounded-lg border border-gray-700">
+        <div class="flex gap-3 bg-[#181c24] p-3 rounded-lg border border-gray-800">
             <div>
                 <label class="block text-xs text-gray-400 mb-1">เลือก Line</label>
-                <select id="lineFilter" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
+                <select id="lineFilter" class="bg-[#242b35] text-sm text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
                     <option value="All">ทุก Line (All)</option>
                     <option value="A-Door">A-Door</option>
                     <option value="B-Door">B-Door</option>
@@ -33,7 +33,7 @@
             </div>
             <div>
                 <label class="block text-xs text-gray-400 mb-1">กะการทำงาน (Shift)</label>
-                <select id="shiftFilter" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
+                <select id="shiftFilter" class="bg-[#242b35] text-sm text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
                     <option value="All">ทุกกะ (All)</option>
                     <option value="Day">กะกลางวัน (Day)</option>
                     <option value="Night">กะกลางคืน (Night)</option>
@@ -42,139 +42,245 @@
         </div>
     </div>
 
-    <!-- Error Alert Box -->
-    <div id="errorAlert" class="hidden mb-6 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-sm"></div>
-
-    <!-- Section 1: Top KPI Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <!-- Card 1: Line A Status -->
-        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line A-Door (Downtime รวม)</h3>
+    <!-- Section 1: KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Card Line A -->
+        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
+            <h3 class="text-xs font-semibold text-gray-400 mb-2">Line A-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-3xl font-bold text-white"><span id="kpi-a-mins">0</span> <span class="text-sm font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-emerald-400 font-semibold"><span id="kpi-a-count">0</span> ครั้ง</span>
+                <span class="text-3xl font-extrabold text-white"><span id="kpi-a-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-emerald-400 font-bold"><span id="kpi-a-count">0</span> ครั้ง</span>
             </div>
         </div>
 
-        <!-- Card 2: Line B Status -->
-        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line B-Door (Downtime รวม)</h3>
+        <!-- Card Line B -->
+        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
+            <h3 class="text-xs font-semibold text-gray-400 mb-2">Line B-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-3xl font-bold text-white"><span id="kpi-b-mins">0</span> <span class="text-sm font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-amber-400 font-semibold"><span id="kpi-b-count">0</span> ครั้ง</span>
+                <span class="text-3xl font-extrabold text-white"><span id="kpi-b-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-amber-400 font-bold"><span id="kpi-b-count">0</span> ครั้ง</span>
             </div>
         </div>
 
-        <!-- Card 3: Line C Status -->
-        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line C-Door (Downtime รวม)</h3>
+        <!-- Card Line C -->
+        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
+            <h3 class="text-xs font-semibold text-gray-400 mb-2">Line C-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-3xl font-bold text-white"><span id="kpi-c-mins">0</span> <span class="text-sm font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-rose-400 font-semibold"><span id="kpi-c-count">0</span> ครั้ง</span>
+                <span class="text-3xl font-extrabold text-white"><span id="kpi-c-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-rose-500 font-bold"><span id="kpi-c-count">0</span> ครั้ง</span>
             </div>
         </div>
     </div>
 
-    <!-- Section 2: Graphs & Table Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Left Panel: Top 5 Breakdown Table -->
-        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg lg:col-span-1">
-            <h3 class="text-md font-bold text-orange-400 mb-4">Top 5 Problems (เวลาเสียสะสม)</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="text-xs text-gray-400 border-b border-gray-700">
-                        <tr>
-                            <th class="pb-2">Line</th>
-                            <th class="pb-2">ปัญหาหลัก (Issue)</th>
-                            <th class="pb-2 text-right">นาทีรวม</th>
-                        </tr>
-                    </thead>
-                    <tbody id="topProblemsTable" class="divide-y divide-gray-800 text-gray-300">
-                        <tr><td colspan="3" class="py-4 text-center text-gray-500">กำลังโหลดข้อมูล...</td></tr>
-                    </tbody>
-                </table>
+    <!-- Section 2: Charts (Doughnut Left, Bar Right) -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
+        <!-- Shift Doughnut Chart (Left) -->
+        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-4 flex flex-col justify-between">
+            <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนตามกะการทำงาน</h3>
+            <div class="h-60 relative flex justify-center items-center">
+                <canvas id="shiftChart"></canvas>
             </div>
         </div>
 
-        <!-- Right Panel: Bar Chart (Downtime vs Line) -->
-        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg lg:col-span-2">
-            <h3 class="text-md font-bold text-orange-400 mb-4">เวลารวม Downtime แยกตาม Line (นาที)</h3>
-            <div class="h-64">
+        <!-- Downtime Bar Chart (Right) -->
+        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-8">
+            <h3 class="text-sm font-bold text-orange-500 mb-2">เวลารวม Downtime แยกตาม Line (นาที)</h3>
+            <div class="h-60">
                 <canvas id="lineChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Section 3: Bottom Shift Distribution Chart -->
-    <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-        <h3 class="text-md font-bold text-orange-400 mb-4">สัดส่วน Downtime แบ่งตามกะการทำงาน (Shift Ratio)</h3>
-        <div class="h-64 flex justify-center">
-            <canvas id="shiftChart"></canvas>
+    <!-- Section 3: Add New Log Form & Table -->
+    <div class="bg-[#181c24] rounded-xl border border-gray-800 p-4 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-orange-500">บันทึกข้อมูลขัดข้อง (Breakdown Log)</h3>
+            <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded transition">
+                + เพิ่มรายการใหม่
+            </button>
+        </div>
+
+        <!-- Form เพิ่ม Log ใหม่ (ซ่อนไว้เป็น Default) -->
+        <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
+            <div>
+                <label class="block text-gray-400 mb-1">DATE</label>
+                <input type="date" id="inputDate" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">SHIFT</label>
+                <select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                    <option value="Day">Day</option>
+                    <option value="Night">Night</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">LINE</label>
+                <select id="inputLine" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                    <option value="A-Door">A-Door</option>
+                    <option value="B-Door">B-Door</option>
+                    <option value="C-Door">C-Door</option>
+                    <option value="Bottom">Bottom</option>
+                    <option value="DND">DND</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">เครื่อง</label>
+                <input type="text" id="inputMachine" placeholder="เช่น Robot, JIG" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">Station</label>
+                <input type="text" id="inputStation" placeholder="เช่น ST13, Main" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">ปัญหา</label>
+                <input type="text" id="inputIssue" placeholder="อาการขัดข้อง" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">สาเหตุ</label>
+                <input type="text" id="inputCause" placeholder="สาเหตุของปัญหา" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div>
+                <label class="block text-gray-400 mb-1">ระยะเวลา (นาที)</label>
+                <input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div class="col-span-2 md:col-span-4">
+                <label class="block text-gray-400 mb-1">การแก้ไข</label>
+                <input type="text" id="inputFix" placeholder="วิธีแก้ไขเบื้องต้น" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
+                <button type="button" onclick="toggleForm()" class="bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded text-white">ยกเลิก</button>
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white">บันทึกข้อมูล</button>
+            </div>
+        </form>
+
+        <!-- Log Table -->
+        <div class="overflow-x-auto max-h-96">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-[#242b35] text-gray-300 sticky top-0 uppercase border-b border-gray-700">
+                    <tr>
+                        <th class="p-2.5 border-r border-gray-700">DATE</th>
+                        <th class="p-2.5 border-r border-gray-700">SHIFT</th>
+                        <th class="p-2.5 border-r border-gray-700">LINE</th>
+                        <th class="p-2.5 border-r border-gray-700">เครื่อง</th>
+                        <th class="p-2.5 border-r border-gray-700">Station</th>
+                        <th class="p-2.5 border-r border-gray-700">ปัญหา</th>
+                        <th class="p-2.5 border-r border-gray-700">สาเหตุ</th>
+                        <th class="p-2.5 border-r border-gray-700">การแก้ไข</th>
+                        <th class="p-2.5 text-right">ระยะเวลา(นาที)</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody" class="divide-y divide-gray-800 text-gray-300">
+                    <!-- Data Rows will be loaded here -->
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- JavaScript สำหรับโหลดและประมวลผล data.json -->
+    <!-- Script Logic -->
     <script>
-        let rawData = [];
+        // Sample Initial Data
+        let logsData = [
+            { date: "2026-08-25", shift: "Day", line: "B-Door", machine: "Conveyor", station: "ST01", issue: "หยุดไลน์การผลิต", cause: "โซ่หลุดเฟือง", fix: "คลายโซ่แล้วตั้งใหม่", downtime: 120 },
+            { date: "2026-08-25", shift: "Day", line: "C-Door", machine: "Pallet", station: "ST19", issue: "หยุดไลน์การผลิต", cause: "พาเลท #19 ล้อหลุด", fix: "เปลี่ยนล้อพาเลทใหม่", downtime: 40 },
+            { date: "2026-08-25", shift: "Day", line: "A-Door", machine: "JIG", station: "ST05", issue: "พาเลทพัง JIG ไม่เปิด", cause: "วาล์วลมติดขัด", fix: "ทำความสะอาดวาล์ว", downtime: 10 },
+            { date: "2026-08-25", shift: "Night", line: "C-Door", machine: "Robot", station: "Main", issue: "จับฝาแล้วร่วงตก", cause: "Vacuum หลุด", fix: "ตั้งตำแหน่งขา Vacuum ใหม่", downtime: 16 }
+        ];
+
         let lineChartInstance = null;
         let shiftChartInstance = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
-            loadJsonData();
+            renderTable();
+            updateDashboard();
 
-            // Event Listeners เมื่อเปลี่ยน Filter
             document.getElementById('lineFilter').addEventListener('change', updateDashboard);
             document.getElementById('shiftFilter').addEventListener('change', updateDashboard);
+            
+            // Set default date input to today
+            document.getElementById('inputDate').valueAsDate = new Date();
         });
 
-        // ดึงข้อมูลจากไฟล์ data.json
-        async function loadJsonData() {
-            try {
-                const response = await fetch('data.json');
-                if (!response.ok) throw new Error(`ไม่สามารถโหลดไฟล์ data.json ได้ (Status: ${response.status})`);
-                rawData = await response.json();
-                updateDashboard();
-            } catch (error) {
-                showError(`เกิดข้อผิดพลาด: ${error.message}`);
-            }
+        function toggleForm() {
+            const form = document.getElementById('addLogForm');
+            form.classList.toggle('hidden');
         }
 
-        function showError(msg) {
-            const errorBox = document.getElementById('errorAlert');
-            errorBox.innerText = msg;
-            errorBox.classList.remove('hidden');
+        // Add New Data Row
+        function addNewLog(event) {
+            event.preventDefault();
+            const newLog = {
+                date: document.getElementById('inputDate').value,
+                shift: document.getElementById('inputShift').value,
+                line: document.getElementById('inputLine').value,
+                machine: document.getElementById('inputMachine').value,
+                station: document.getElementById('inputStation').value || '-',
+                issue: document.getElementById('inputIssue').value,
+                cause: document.getElementById('inputCause').value || '-',
+                fix: document.getElementById('inputFix').value || '-',
+                downtime: Number(document.getElementById('inputDowntime').value)
+            };
+
+            logsData.unshift(newLog); // เพิ่มขึ้นบรรทัดบนสุด
+            renderTable();
+            updateDashboard();
+            toggleForm();
+            document.getElementById('addLogForm').reset();
+            document.getElementById('inputDate').valueAsDate = new Date();
         }
 
-        // กรองข้อมูลตาม Line และ Shift Filter
         function getFilteredData() {
             const lineVal = document.getElementById('lineFilter').value;
             const shiftVal = document.getElementById('shiftFilter').value;
 
-            return rawData.filter(item => {
+            return logsData.filter(item => {
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
                 return true;
             });
         }
 
-        // อัปเดตข้อมูลบน Dashboard
-        function updateDashboard() {
+        function renderTable() {
+            const tbody = document.getElementById('logTableBody');
+            tbody.innerHTML = '';
+
             const filteredData = getFilteredData();
 
-            updateKPIs();
-            updateTopProblemsTable(filteredData);
-            updateLineChart(filteredData);
-            updateShiftChart(filteredData);
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">ไม่มีข้อมูลตาม Filter ที่เลือก</td></tr>';
+                return;
+            }
+
+            filteredData.forEach(item => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-[#1f242e] transition">
+                        <td class="p-2.5 border-r border-gray-800 font-mono">${item.date || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800">${item.shift || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800 font-semibold">${item.line || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800">${item.machine || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800">${item.station || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800 text-orange-400 font-medium">${item.issue || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800">${item.cause || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
+                        <td class="p-2.5 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${item.downtime.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
         }
 
-        // 1. คำนวณค่า KPI Cards (สำหรับ Line A, B, C)
+        function updateDashboard() {
+            renderTable();
+            updateKPIs();
+            updateLineChart();
+            updateShiftChart();
+        }
+
         function updateKPIs() {
             const lines = ['A-Door', 'B-Door', 'C-Door'];
             const shiftVal = document.getElementById('shiftFilter').value;
 
             lines.forEach(line => {
-                const lineData = rawData.filter(item => {
+                const lineData = logsData.filter(item => {
                     if (item.line !== line) return false;
                     if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
                     return true;
@@ -189,48 +295,8 @@
             });
         }
 
-        // 2. แสดง Top 5 ปัญหาหลัก (จัดกลุ่มตาม Issue)
-        function updateTopProblemsTable(data) {
-            const problemMap = {};
-
-            data.forEach(item => {
-                const key = `${item.line}||${item.issue}`;
-                problemMap[key] = (problemMap[key] || 0) + (Number(item.downtime) || 0);
-            });
-
-            const sorted = Object.keys(problemMap)
-                .map(key => {
-                    const [line, issue] = key.split('||');
-                    return { line, issue, mins: problemMap[key] };
-                })
-                .sort((a, b) => b.mins - a.mins)
-                .slice(0, 5);
-
-            const tbody = document.getElementById('topProblemsTable');
-            tbody.innerHTML = '';
-
-            if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-gray-500">ไม่มีข้อมูลตาม Filter ที่เลือก</td></tr>';
-                return;
-            }
-
-            const textColors = ['text-rose-400 font-bold', 'text-orange-400 font-bold', 'text-amber-400 font-bold', 'text-gray-300', 'text-gray-400'];
-
-            sorted.forEach((item, index) => {
-                const colorClass = textColors[index] || 'text-gray-400';
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="py-3 font-medium text-white">${item.line || '-'}</td>
-                        <td class="pr-2">${item.issue || '-'}</td>
-                        <td class="py-3 text-right ${colorClass}">${item.mins.toLocaleString()}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        // 3. เริ่มต้นสร้าง กราฟ Chart.js
         function initCharts() {
-            // Bar Chart (Downtime vs Line)
+            // Bar Chart
             const ctxLine = document.getElementById('lineChart').getContext('2d');
             lineChartInstance = new Chart(ctxLine, {
                 type: 'bar',
@@ -240,13 +306,13 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
-                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } }
+                        x: { ticks: { color: '#9ca3af' }, grid: { display: false } },
+                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' } }
                     }
                 }
             });
 
-            // Doughnut Chart (Shift Ratio)
+            // Doughnut Chart
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'doughnut',
@@ -254,42 +320,42 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { color: '#9ca3af' } } }
+                    plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: { size: 10 } } } }
                 }
             });
         }
 
-        // 4. อัปเดต Bar Chart แสดงเวลา Downtime รวมแต่ละ Line
-        function updateLineChart(data) {
-            const lineTotals = {};
-            data.forEach(item => {
-                const line = item.line || 'Unknown';
-                lineTotals[line] = (lineTotals[line] || 0) + (Number(item.downtime) || 0);
+        function updateLineChart() {
+            const filtered = getFilteredData();
+            const lines = ['B-Door', 'C-Door', 'A-Door', 'Bottom', 'DND'];
+            const colorMap = {
+                'B-Door': '#10b981',
+                'C-Door': '#f59e0b',
+                'A-Door': '#ef4444',
+                'Bottom': '#8b5cf6',
+                'DND': '#64748b'
+            };
+
+            const totals = lines.map(l => {
+                return filtered.filter(item => item.line === l).reduce((s, item) => s + (Number(item.downtime) || 0), 0);
             });
 
-            const labels = Object.keys(lineTotals);
-            const values = Object.values(lineTotals);
-
-            lineChartInstance.data.labels = labels;
+            lineChartInstance.data.labels = lines;
             lineChartInstance.data.datasets = [{
-                label: 'Downtime (นาที)',
-                data: values,
-                backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'],
-                borderRadius: 6
+                data: totals,
+                backgroundColor: lines.map(l => colorMap[l]),
+                borderRadius: 4
             }];
             lineChartInstance.update();
         }
 
-        // 5. อัปเดต Doughnut Chart (กะ Day vs Night)
-        function updateShiftChart(data) {
-            const shiftMap = {};
-            data.forEach(item => {
-                const s = item.shift === 'Day' ? 'กะกลางวัน (Day)' : (item.shift === 'Night' ? 'กะกลางคืน (Night)' : 'อื่นๆ');
-                shiftMap[s] = (shiftMap[s] || 0) + (Number(item.downtime) || 0);
-            });
+        function updateShiftChart() {
+            const filtered = getFilteredData();
+            const dayMins = filtered.filter(item => item.shift === 'Day').reduce((s, item) => s + (Number(item.downtime) || 0), 0);
+            const nightMins = filtered.filter(item => item.shift === 'Night').reduce((s, item) => s + (Number(item.downtime) || 0), 0);
 
-            shiftChartInstance.data.labels = Object.keys(shiftMap);
-            shiftChartInstance.data.datasets[0].data = Object.values(shiftMap);
+            shiftChartInstance.data.labels = ['กะกลางวัน (Day)', 'กะกลางคืน (Night)'];
+            shiftChartInstance.data.datasets[0].data = [dayMins, nightMins];
             shiftChartInstance.update();
         }
     </script>
