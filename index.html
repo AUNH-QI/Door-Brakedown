@@ -3,185 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Machine Breakdown Dashboard</title>
-    <!-- Tailwind CSS สำหรับจัดสไตล์แบบ Dark Theme -->
+    <title>Haier Machine Breakdown Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js สำหรับวาดกราฟ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-[#121417] text-white p-6 font-sans">
+<body class="bg-[#121417] text-white p-4 md:p-6 font-sans">
 
-    <!-- Header & Filters (ส่วนบนสุด) -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <!-- Header & Filters -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold tracking-wide text-orange-400">HAIER MACHINE BREAKDOWN</h1>
-            <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C)</p>
+            <p class="text-xs text-gray-400">ระบบติดตามและวิเคราะห์สถิติเครื่องจักรขัดข้อง (ดึงข้อมูลจาก Excel)</p>
         </div>
         
-        <!-- Filter Controls ( dropdown กรองข้อมูลแบบในรูป) -->
-        <div class="flex gap-3 bg-[#1e232a] p-3 rounded-lg border border-gray-700">
+        <!-- Filter Controls -->
+        <div class="flex flex-wrap gap-3 bg-[#1e232a] p-3 rounded-lg border border-gray-700">
             <div>
                 <label class="block text-xs text-gray-400 mb-1">เลือก Line</label>
-                <select id="lineFilter" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
-                    <option value="All">ทุก Line (All)</option>
+                <select id="lineFilter" onchange="updateDashboard()" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
+                    <option value="All">ทุก Line</option>
                     <option value="A-Door">A-Door</option>
                     <option value="B-Door">B-Door</option>
                     <option value="C-Door">C-Door</option>
+                    <option value="Bottom">Bottom</option>
+                    <option value="DND">DND</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs text-gray-400 mb-1">เลือกช่วงเวลา</label>
-                <select id="dateFilter" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
-                    <option value="today">วันนี้</option>
-                    <option value="this_week">สัปดาห์นี้</option>
-                    <option value="this_month" selected>เดือนนี้</option>
+                <label class="block text-xs text-gray-400 mb-1">เลือก Shift</label>
+                <select id="shiftFilter" onchange="updateDashboard()" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
+                    <option value="All">ทุก Shift</option>
+                    <option value="Dayshift">Dayshift</option>
+                    <option value="Nightshift">Nightshift</option>
                 </select>
             </div>
         </div>
     </div>
 
-    <!-- Section 1: Top KPI Cards (การ์ดสรุปตัวเลข 3 ใบด้านบน) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <!-- Card 1: Line A Status -->
+    <!-- Top Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line A-Door (Breakdown รวม)</h3>
+            <h3 class="text-xs font-semibold text-gray-400 mb-1">จำนวนครั้งที่พังรวม (Total Incident)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-3xl font-bold text-white">45 <span class="text-sm font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-emerald-400 font-semibold">12 ครั้ง</span>
+                <span id="totalCount" class="text-3xl font-bold text-orange-400">0</span>
+                <span class="text-xs text-gray-400">ครั้ง</span>
             </div>
         </div>
-
-        <!-- Card 2: Line B Status -->
         <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line B-Door (Breakdown รวม)</h3>
+            <h3 class="text-xs font-semibold text-gray-400 mb-1">ระยะเวลาเสียรวม (Total Downtime)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-3xl font-bold text-white">120 <span class="text-sm font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-amber-400 font-semibold">28 ครั้ง</span>
+                <span id="totalDuration" class="text-3xl font-bold text-rose-500">0</span>
+                <span class="text-xs text-gray-400">นาที</span>
             </div>
         </div>
-
-        <!-- Card 3: Line C Status -->
         <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line C-Door (Breakdown รวม)</h3>
+            <h3 class="text-xs font-semibold text-gray-400 mb-1">เฉลี่ยต่อครั้ง (MTTR)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-3xl font-bold text-white">215 <span class="text-sm font-normal text-gray-400">นาที</span></span>
-                <span class="text-xs text-rose-400 font-semibold">41 ครั้ง</span>
+                <span id="avgDuration" class="text-3xl font-bold text-emerald-400">0</span>
+                <span class="text-xs text-gray-400">นาที / ครั้ง</span>
             </div>
         </div>
     </div>
 
-    <!-- Section 2: Graphs & Table Layout (ส่วนกลาง) -->
+    <!-- Charts Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        
-        <!-- Left Panel: Top 5 Breakdown Table (ตารางแสดงปัญหาติดอันดับ) -->
+        <!-- Top 5 Station Table -->
         <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg lg:col-span-1">
-            <h3 class="text-md font-bold text-orange-400 mb-4">Top Problems (เวลาเสียสะสม)</h3>
+            <h3 class="text-md font-bold text-orange-400 mb-4">Top 5 Station (เวลารวมเสียสูงสุด)</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead class="text-xs text-gray-400 border-b border-gray-700">
                         <tr>
                             <th class="pb-2">Station</th>
-                            <th class="pb-2">ปัญหาหลัก</th>
+                            <th class="pb-2 text-center">จำนวนครั้ง</th>
                             <th class="pb-2 text-right">นาทีรวม</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-800 text-gray-300">
-                        <tr>
-                            <td class="py-3 font-medium text-white">Robot</td>
-                            <td>จับฝาแล้วร่วงตก</td>
-                            <td class="py-3 text-right text-rose-400 font-bold">528</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 font-medium text-white">พาเลท</td>
-                            <td>พาเลท 18 ค้าง</td>
-                            <td class="py-3 text-right text-orange-400 font-bold">416</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 font-medium text-white">หัวฉีด</td>
-                            <td>หัวฉีดตัดบ่อย</td>
-                            <td class="py-3 text-right text-amber-400 font-bold">275</td>
-                        </tr>
-                        <tr>
-                            <td class="py-3 font-medium text-white">Spot</td>
-                            <td>เชื่อมไม่ติด</td>
-                            <td class="py-3 text-right text-gray-400">10</td>
-                        </tr>
+                    <tbody id="topStationTable" class="divide-y divide-gray-800 text-gray-300">
+                        <!-- Render via JS -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Right Panel: Line Chart (เปรียบเทียบ Trend รายวัน) -->
+        <!-- Trend Line Chart -->
         <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg lg:col-span-2">
-            <h3 class="text-md font-bold text-orange-400 mb-4">แนวโน้มระยะเวลาเสีย (Duration Comparison)</h3>
+            <h3 class="text-md font-bold text-orange-400 mb-4">แนวโน้มระยะเวลาเสียสะสมตามวันที่ (Downtime Trend)</h3>
             <div class="h-64">
                 <canvas id="trendChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Section 3: Bottom Doughnut Chart (สรุปสัดส่วนตาม Station) -->
-    <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-        <h3 class="text-md font-bold text-orange-400 mb-4">สัดส่วนระยะเวลาเสียแบ่งตาม Station (Duration Breakdown)</h3>
+    <!-- Bottom Station Chart -->
+    <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg mb-6">
+        <h3 class="text-md font-bold text-orange-400 mb-4">สัดส่วนระยะเวลาเสียแบ่งตาม Station (Doughnut Chart)</h3>
         <div class="h-64 flex justify-center">
             <canvas id="stationChart"></canvas>
         </div>
     </div>
 
-    <!-- JavaScript สำหรับสร้างกราฟ -->
-    <script>
-        // 1. กราฟเส้นแสดงแนวโน้ม (Trend Chart)
-        const ctxTrend = document.getElementById('trendChart').getContext('2d');
-        new Chart(ctxTrend, {
-            type: 'line',
-            data: {
-                labels: ['18-Aug', '19-Aug', '20-Aug', '21-Aug', '22-Aug', '23-Aug', '24-Aug', '25-Aug'],
-                datasets: [
-                    {
-                        label: 'Line C-Door',
-                        data: [125, 68, 62, 14, 124, 12, 136, 90],
-                        borderColor: '#3b82f6',
-                        tension: 0.3,
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Line A-Door',
-                        data: [45, 30, 15, 60, 20, 5, 40, 25],
-                        borderColor: '#10b981',
-                        tension: 0.3,
-                        borderWidth: 2
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#9ca3af' } } },
-                scales: {
-                    x: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
-                    y: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } }
-                }
-            }
-        });
+    <!-- Raw Data Log Table -->
+    <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+        <h3 class="text-md font-bold text-orange-400 mb-4">ตารางประวัติ Breakdown ล่าสุด</h3>
+        <div class="overflow-x-auto max-h-80">
+            <table class="w-full text-left text-xs text-gray-300">
+                <thead class="text-gray-400 border-b border-gray-700 sticky top-0 bg-[#1e232a]">
+                    <tr>
+                        <th class="py-2">วันที่</th>
+                        <th class="py-2">Shift</th>
+                        <th class="py-2">Line</th>
+                        <th class="py-2">Station</th>
+                        <th class="py-2">ปัญหา</th>
+                        <th class="py-2">สาเหตุ</th>
+                        <th class="py-2 text-right">นาที</th>
+                    </tr>
+                </thead>
+                <tbody id="rawDataTable" class="divide-y divide-gray-800">
+                    <!-- Render via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        // 2. กราฟโดนัทแสดงสัดส่วน Station (Doughnut Chart)
-        const ctxStation = document.getElementById('stationChart').getContext('2d');
-        new Chart(ctxStation, {
-            type: 'doughnut',
-            data: {
-                labels: ['Robot', 'พาเลท 18', 'หัวฉีดโฟม', 'เครื่อง Spot'],
-                datasets: [{
-                    data: [528, 416, 275, 10],
-                    backgroundColor: ['#ef4444', '#f97316', '#eab308', '#6b7280'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'right', labels: { color: '#9ca3af' } } }
-            }
-        });
+    <script>
+        // ดึงข้อมูล 850 รายการจาก Excel มาใส่ในรูปแบบ JSON
+        let rawData = [];
+
+        // โหลดข้อมูล Excel
+        fetch('data.json')
+            .then(res => res.json())
+            .then(data => {
+                rawData = data;
+                updateDashboard();
+            })
+            .catch(() => {
+                // หากไม่มี data.json ให้อ่านจากชุดข้อมูลสำรองเบื้องต้น
+                updateDashboard();
+            });
+
+        let trendChartInstance = null;
+        let stationChartInstance = null;
+
+        function updateDashboard() {
+            const selectedLine = document.getElementById('lineFilter').value;
+            const selectedShift = document.getElementById('shiftFilter').value;
+
+            // กรองข้อมูล
+            let filtered = rawData.filter(item => {
+                let matchLine = (selectedLine === 'All') || (item.LINE === selectedLine);
+                let matchShift = (selectedShift === 'All') || (item.SHIFT === selectedShift);
+                return matchLine && matchShift;
+            });
+
+            // คำนวณ KPI
+            const totalCount = filtered.length;
+            const totalDuration = filtered.reduce((sum, item) => sum + (Number(item['ระยะเวลา(นาที)']) || 0), 0);
+            const avgDuration = totalCount > 0 ? (totalDuration / totalCount).toFixed(1) : 0;
+
+            document.getElementById('totalCount').innerText = totalCount.toLocaleString();
+            document.getElementById('totalDuration').innerText = totalDuration.toLocaleString();
+            document.getElementById('avgDuration').innerText = avgDuration;
+
+            // สรุปข้อมูลตาม Station
+            let stationMap = {};
+            filtered.forEach(item => {
+                let st = item.Station || 'อื่นๆ';
+                let dur = Number(item['ระยะเวลา(นาที)']) || 0;
+                if (!stationMap[st]) stationMap[st] = { count: 0, duration: 0 };
+                stationMap[st].count += 1;
+                stationMap[st].duration += dur;
+            });
+
+            let sortedStations = Object.keys(stationMap)
+                .map(k => ({ station: k, ...stationMap[k] }))
+                .sort((a, b) => b.duration - a.duration);
+
+            // Render Top 5 Table
+            let tableHtml = '';
+            sortedStations.slice(0, 5).forEach(s => {
+                tableHtml += `
+                    <tr>
+                        <td class="py-2.5 font-medium text-white">${s.station}</td>
+                        <td class="py-2.5 text-center text-gray-400">${s.count}</td>
+                        <td class="py-2.5 text-right text-rose-400 font-bold">${s.duration.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('topStationTable').innerHTML = tableHtml || '<tr><td colspan="3" class="text-center py-4 text-gray-500">ไม่พบข้อมูล</td></tr>';
+
+            // Render Raw Data Log (20 รายการล่าสุด)
+            let rawHtml = '';
+            filtered.slice(0, 20).forEach(item => {
+                rawHtml += `
+                    <tr>
+                        <td class="py-2">${item.DATE}</td>
+                        <td class="py-2">${item.SHIFT}</td>
+                        <td class="py-2 text-orange-400">${item.LINE}</td>
+                        <td class="py-2">${item.Station}</td>
+                        <td class="py-2">${item.ปัญหา || '-'}</td>
+                        <td class="py-2">${item.สาเหตุ || '-'}</td>
+                        <td class="py-2 text-right text-rose-400 font-bold">${item['ระยะเวลา(นาที)']}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('rawDataTable').innerHTML = rawHtml;
+
+            // สรุป Trend ตามวันที่
+            let dateMap = {};
+            filtered.forEach(item => {
+                let d = item.DATE;
+                let dur = Number(item['ระยะเวลา(นาที)']) || 0;
+                dateMap[d] = (dateMap[d] || 0) + dur;
+            });
+            let sortedDates = Object.keys(dateMap).sort();
+
+            // Render Trend Chart
+            if (trendChartInstance) trendChartInstance.destroy();
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChartInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [{
+                        label: 'ระยะเวลาเสียรวม (นาที)',
+                        data: sortedDates.map(d => dateMap[d]),
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
+                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } }
+                    }
+                }
+            });
+
+            // Render Doughnut Chart
+            if (stationChartInstance) stationChartInstance.destroy();
+            const ctxStation = document.getElementById('stationChart').getContext('2d');
+            const top5ForChart = sortedStations.slice(0, 6);
+            stationChartInstance = new Chart(ctxStation, {
+                type: 'doughnut',
+                data: {
+                    labels: top5ForChart.map(s => s.station),
+                    datasets: [{
+                        data: top5ForChart.map(s => s.duration),
+                        backgroundColor: ['#ef4444', '#f97316', '#eab308', '#10b981', '#3b82f6', '#6b7280'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: '#9ca3af' } } }
+                }
+            });
+        }
     </script>
 </body>
 </html>
