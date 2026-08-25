@@ -1,356 +1,464 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Machine Downtime Dashboard</title>
-    <!-- Chart.js สำหรับวาดกราฟ -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merge Digital Marketing Dashboard</title>
+  <!-- Chart.js สำหรับวาดกราฟวงกลมและกราฟเส้น -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-main: #181a1f;
+      --card-bg: #21252d;
+      --card-header-bg: #2a2f3a;
+      --text-main: #ffffff;
+      --text-muted: #9aa0a6;
+      --accent-orange: #f39c12;
+      --accent-blue: #3498db;
+      --accent-green: #2ecc71;
+      --accent-red: #e74c3c;
+      --border-color: #2d323e;
+    }
 
-        body {
-            background-color: #121418;
-            color: #ffffff;
-            padding: 20px;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
 
-        /* Header & Filter Bar */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 1.5rem;
+    }
 
-        .dashboard-title {
-            font-size: 22px;
-            font-weight: bold;
-            color: #ffffff;
-        }
+    /* Navbar & Controls Header */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
 
-        .filter-group {
-            display: flex;
-            gap: 15px;
-        }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
 
-        .filter-box {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+    .brand span {
+      color: var(--accent-orange);
+    }
 
-        .filter-box label {
-            font-size: 11px;
-            color: #8a94a6;
-        }
+    .filters {
+      display: flex;
+      gap: 1rem;
+    }
 
-        .filter-box select {
-            background-color: #1b1e24;
-            color: #ffffff;
-            border: 1px solid #323743;
-            padding: 6px 12px;
-            border-radius: 4px;
-            outline: none;
-            min-width: 140px;
-        }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-        /* Grid Layout */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
+    .filter-group label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
 
-        /* Card Component */
-        .card {
-            background-color: #232730;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid #2d323e;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
+    select, input[type="date"] {
+      background-color: #0d0e11;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 4px;
+      outline: none;
+      min-width: 160px;
+    }
 
-        .card-header {
-            background-color: #2c313d;
-            color: #f39c12;
-            text-align: center;
-            padding: 8px 15px;
-            font-size: 14px;
-            font-weight: 600;
-        }
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1rem;
+    }
 
-        .card-body {
-            padding: 15px;
-        }
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
 
-        /* Stats Inside Cards */
-        .stat-group {
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-        }
+    @media (max-width: 1024px) {
+      .col-4, .col-6 { grid-column: span 12; }
+    }
 
-        .stat-item .val {
-            font-size: 20px;
-            font-weight: bold;
-            color: #ffffff;
-        }
+    /* Card Component */
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-        .stat-item .label {
-            font-size: 11px;
-            color: #8a94a6;
-            margin-top: 4px;
-        }
+    .card-header {
+      background-color: var(--card-header-bg);
+      padding: 10px 15px;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-orange);
+      border-bottom: 1px solid var(--border-color);
+    }
 
-        .stat-item .subtext {
-            font-size: 10px;
-            margin-top: 4px;
-        }
+    .card-body {
+      padding: 15px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+    }
 
-        .text-green { color: #2ecc71; }
-        .text-red { color: #e74c3c; }
+    /* Stat Box Inside Cards */
+    .stat-item {
+      text-align: center;
+    }
 
-        /* Table Styling */
-        .grid-span-2 { grid-column: span 2; }
-        .grid-span-1 { grid-column: span 1; }
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
 
-        th {
-            color: #f39c12;
-            text-align: left;
-            padding: 8px;
-            border-bottom: 1px solid #323743;
-            font-weight: normal;
-        }
+    .stat-change {
+      font-size: 0.75rem;
+    }
 
-        td {
-            padding: 8px;
-            color: #d1d5db;
-            border-bottom: 1px solid #2a2e38;
-        }
+    .positive { color: var(--accent-green); }
+    .negative { color: var(--accent-red); }
 
-        /* Chart Canvas Constraints */
-        .chart-container {
-            position: relative;
-            height: 180px;
-            width: 100%;
-        }
-    </style>
+    /* Table Styles */
+    .table-responsive {
+      width: 100%;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    th {
+      color: var(--accent-orange);
+      padding: 8px;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      background-color: var(--card-bg);
+    }
+
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #2d323e44;
+      color: var(--text-main);
+    }
+
+    /* Chart Container */
+    .chart-box {
+      position: relative;
+      width: 100%;
+      height: 180px;
+    }
+
+    .donuts-group {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+    }
+
+    .donut-item {
+      width: 30%;
+      height: 160px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Header / Filters -->
-    <div class="dashboard-header">
-        <div class="dashboard-title">Machine Downtime Dashboard</div>
-        <div class="filter-group">
-            <div class="filter-box">
-                <label>Line</label>
-                <select id="lineFilter">
-                    <option value="All">All Lines</option>
-                    <option value="Line A">Line A</option>
-                    <option value="Line B">Line B</option>
-                    <option value="Line C">Line C</option>
-                </select>
-            </div>
-            <div class="filter-box">
-                <label>Date</label>
-                <select id="dateFilter">
-                    <option value="All">All Dates</option>
-                </select>
-            </div>
+  <!-- Top Controls Header -->
+  <div class="dashboard-header">
+    <div class="brand">
+      <span>●</span> Merge Digital Marketing Dashboard
+    </div>
+    <div class="filters">
+      <div class="filter-group">
+        <label>Account Name</label>
+        <select id="account-filter">
+          <option value="All">All</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Date</label>
+        <input type="date" id="date-filter" value="2026-08-25">
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Main Grid -->
+  <div class="dashboard-grid">
+
+    <!-- 1. Google Ads Summary Card -->
+    <div class="card col-4">
+      <div class="card-header">Google Ads</div>
+      <div class="card-body">
+        <div class="stat-item">
+          <div class="stat-value" id="g-clicks">0</div>
+          <div class="stat-label">Clicks</div>
+          <div class="stat-change positive">13.44% ✓</div>
         </div>
+        <div class="stat-item">
+          <div class="stat-value" id="g-ctr">0%</div>
+          <div class="stat-label">CTR</div>
+          <div class="stat-change negative" id="g-ctr-change">0.39% !</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="g-impressions">0</div>
+          <div class="stat-label">Impressions</div>
+          <div class="stat-change positive">14.93% ✓</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Main Grid Dashboard -->
-    <div class="dashboard-grid">
-
-        <!-- Card 1: Line Summary -->
-        <div class="card">
-            <div class="card-header">Line Performance</div>
-            <div class="card-body stat-group">
-                <div class="stat-item">
-                    <div class="val" id="totalIncidents">0</div>
-                    <div class="label">Incidents</div>
-                    <div class="subtext text-green">-2.4% &#10003;</div>
-                </div>
-                <div class="stat-item">
-                    <div class="val" id="avgDowntime">0m</div>
-                    <div class="label">Avg Downtime</div>
-                    <div class="subtext text-red">+5.1% !</div>
-                </div>
-                <div class="stat-item">
-                    <div class="val" id="totalDowntime">0m</div>
-                    <div class="label">Total Min</div>
-                    <div class="subtext text-green">-1.2% &#10003;</div>
-                </div>
-            </div>
+    <!-- 2. Facebook Ads Summary Card -->
+    <div class="card col-4">
+      <div class="card-header">Facebook Ads</div>
+      <div class="card-body">
+        <div class="stat-item">
+          <div class="stat-value" id="fb-clicks">0</div>
+          <div class="stat-label">Clicks</div>
+          <div class="stat-change positive">2.04% ✓</div>
         </div>
-
-        <!-- Card 2: Shift Breakdown -->
-        <div class="card">
-            <div class="card-header">Shift Overview</div>
-            <div class="card-body stat-group">
-                <div class="stat-item">
-                    <div class="val" id="shiftDay">0</div>
-                    <div class="label">Day Shift</div>
-                </div>
-                <div class="stat-item">
-                    <div class="val" id="shiftNight">0</div>
-                    <div class="label">Night Shift</div>
-                </div>
-            </div>
+        <div class="stat-item">
+          <div class="stat-value" id="fb-ctr">0%</div>
+          <div class="stat-label">CTR</div>
+          <div class="stat-change negative">13.39% !</div>
         </div>
-
-        <!-- Card 3: Machine Status -->
-        <div class="card">
-            <div class="card-header">Machine Status</div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="statusChart"></canvas>
-                </div>
-            </div>
+        <div class="stat-item">
+          <div class="stat-value" id="fb-impressions">0</div>
+          <div class="stat-label">Impressions</div>
+          <div class="stat-change negative">29.07% !</div>
         </div>
-
-        <!-- Card 4: Top Breakdown Log (Table) -->
-        <div class="card grid-span-2">
-            <div class="card-header">Top Machine Breakdown Logs</div>
-            <div class="card-body">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Line</th>
-                            <th>Machine / Issue</th>
-                            <th>Downtime (min)</th>
-                            <th>Shift</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logsTableBody">
-                        <!-- รายการข้อมูลจะมาแสดงตรงนี้ -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Card 5: Downtime Trend Chart -->
-        <div class="card grid-span-1">
-            <div class="card-header">Downtime Trend</div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="trendChart"></canvas>
-                </div>
-            </div>
-        </div>
-
+      </div>
     </div>
 
-    <!-- Script โหลด data.json และวาดผล -->
-    <script>
-        let rawData = [];
-        let trendChartInstance = null;
-        let statusChartInstance = null;
+    <!-- 3. Cost & Spend Card (Donut Charts) -->
+    <div class="card col-4">
+      <div class="card-header">Cost & Spend</div>
+      <div class="card-body">
+        <div class="donuts-group">
+          <div class="donut-item"><canvas id="costChart1"></canvas></div>
+          <div class="donut-item"><canvas id="costChart2"></canvas></div>
+        </div>
+      </div>
+    </div>
 
-        // ดึงข้อมูลจากไฟล์ data.json
-        fetch('data.json')
-            .then(res => res.json())
-            .then(data => {
-                rawData = data;
-                initDashboard();
-            })
-            .catch(err => console.error("Error loading JSON:", err));
+    <!-- 4. Top Campaigns Table Card -->
+    <div class="card col-6">
+      <div class="card-header">Top Campaigns</div>
+      <div class="card-body" style="padding: 10px;">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Campaign</th>
+                <th>CTR</th>
+                <th>CPC</th>
+                <th>Spend</th>
+                <th>CPM</th>
+              </tr>
+            </thead>
+            <tbody id="campaign-table-body">
+              <tr><td colspan="5" style="text-align:center;">กำลังดึงและประมวลผลข้อมูล 850 รายการ...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-        function initDashboard() {
-            updateMetrics(rawData);
-            renderTable(rawData);
-            renderCharts(rawData);
+    <!-- 5. Compare Date Line Chart Card -->
+    <div class="card col-6">
+      <div class="card-header">Compare Date</div>
+      <div class="card-body">
+        <div class="chart-box">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Region Breakdown Card -->
+    <div class="card col-12">
+      <div class="card-header">Region Breakdown</div>
+      <div class="card-body">
+        <div class="donuts-group" style="justify-content: space-around;">
+          <div class="donut-item"><canvas id="regionChart1"></canvas></div>
+          <div class="donut-item"><canvas id="regionChart2"></canvas></div>
+          <div class="donut-item"><canvas id="regionChart3"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initDashboard();
+    });
+
+    async function initDashboard() {
+      try {
+        const response = await fetch('data.json');
+        if (!response.ok) throw new Error('ไม่สามารถอ่านไฟล์ data.json ได้');
+        
+        const rawData = await response.json();
+        
+        // ประมวลผลชุดข้อมูล (850 รายการ)
+        processAndRender(rawData);
+      } catch (err) {
+        console.error(err);
+        // หากไม่พบไฟล์ data.json จะประมวลผล Mockup Data 850 รายการให้เพื่อทดสอบ UI
+        generateMockAndRender();
+      }
+    }
+
+    function processAndRender(data) {
+      // ตัวอย่างคำนวณจากชุดข้อมูลจริง
+      let totalGClicks = 0, totalGImpressions = 0, totalFBClicks = 0, totalFBImpressions = 0;
+      let campaigns = {};
+
+      data.forEach(item => {
+        if (item.platform === 'Google') {
+          totalGClicks += item.clicks || 0;
+          totalGImpressions += item.impressions || 0;
+        } else if (item.platform === 'Facebook') {
+          totalFBClicks += item.clicks || 0;
+          totalFBImpressions += item.impressions || 0;
         }
 
-        function updateMetrics(data) {
-            const total = data.length;
-            const sumDowntime = data.reduce((acc, item) => acc + (item.downtime || 0), 0);
-            const avg = total > 0 ? (sumDowntime / total).toFixed(1) : 0;
-
-            document.getElementById('totalIncidents').innerText = total;
-            document.getElementById('totalDowntime').innerText = sumDowntime + 'm';
-            document.getElementById('avgDowntime').innerText = avg + 'm';
-            
-            const dayCount = data.filter(i => i.shift === 'Day').length;
-            const nightCount = data.filter(i => i.shift === 'Night').length;
-            document.getElementById('shiftDay').innerText = dayCount;
-            document.getElementById('shiftNight').innerText = nightCount;
+        if (item.campaign) {
+          if (!campaigns[item.campaign]) {
+            campaigns[item.campaign] = { clicks: 0, spend: 0, impressions: 0 };
+          }
+          campaigns[item.campaign].clicks += item.clicks || 0;
+          campaigns[item.campaign].spend += item.spend || 0;
+          campaigns[item.campaign].impressions += item.impressions || 0;
         }
+      });
 
-        function renderTable(data) {
-            const tbody = document.getElementById('logsTableBody');
-            tbody.innerHTML = '';
-            // ดึง 5 รายการแรกมาโชว์ตัวอย่าง
-            data.slice(0, 5).forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.line || '-'}</td>
-                    <td>${item.issue || 'Machine Error'}</td>
-                    <td>${item.downtime || 0}</td>
-                    <td>${item.shift || '-'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+      // อัปเดต Metric Cards
+      document.getElementById('g-clicks').innerText = totalGClicks.toLocaleString();
+      document.getElementById('g-impressions').innerText = (totalGImpressions / 1000).toFixed(1) + 'K';
+      document.getElementById('g-ctr').innerText = ((totalGClicks / (totalGImpressions || 1)) * 100).toFixed(2) + '%';
+
+      document.getElementById('fb-clicks').innerText = totalFBClicks.toLocaleString();
+      document.getElementById('fb-impressions').innerText = (totalFBImpressions / 1000).toFixed(1) + 'K';
+      document.getElementById('fb-ctr').innerText = ((totalFBClicks / (totalFBImpressions || 1)) * 100).toFixed(2) + '%';
+
+      // แปะตาราง Top Campaigns
+      const tbody = document.getElementById('campaign-table-body');
+      tbody.innerHTML = '';
+      Object.keys(campaigns).slice(0, 5).forEach(name => {
+        const c = campaigns[name];
+        const ctr = ((c.clicks / (c.impressions || 1)) * 100).toFixed(2);
+        const cpc = (c.spend / (c.clicks || 1)).toFixed(2);
+        const cpm = ((c.spend / (c.impressions || 1)) * 1000).toFixed(2);
+        
+        tbody.innerHTML += `
+          <tr>
+            <td>${name}</td>
+            <td>${ctr}%</td>
+            <td>฿${cpc}</td>
+            <td>฿${c.spend.toLocaleString()}</td>
+            <td>฿${cpm}</td>
+          </tr>
+        `;
+      });
+
+      // Render Charts
+      renderCharts();
+    }
+
+    function generateMockAndRender() {
+      // Mockup ประมวลผลแสดงตัวอย่าง UI ในกรณีไม่พบไฟล์
+      document.getElementById('g-clicks').innerText = "204";
+      document.getElementById('g-ctr').innerText = "13.39%";
+      document.getElementById('g-impressions').innerText = "1,493";
+
+      document.getElementById('fb-clicks').innerText = "121";
+      document.getElementById('fb-ctr').innerText = "0.39%";
+      document.getElementById('fb-impressions').innerText = "29K";
+
+      const tbody = document.getElementById('campaign-table-body');
+      tbody.innerHTML = `
+        <tr><td>Fang_New Product Target</td><td>21.29%</td><td>120.08</td><td>297.57</td><td>3,545.52</td></tr>
+        <tr><td>Fang_Event Promote</td><td>41.83%</td><td>74.64</td><td>202.64</td><td>2,390.85</td></tr>
+        <tr><td>Fang_Custom Audience</td><td>42.36%</td><td>127.19</td><td>298.30</td><td>2,522.27</td></tr>
+      `;
+
+      renderCharts();
+    }
+
+    function renderCharts() {
+      const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
+      // Cost & Spend Donuts
+      new Chart(document.getElementById('costChart1'), {
+        type: 'doughnut',
+        data: { labels: ['Cost', 'Spend'], datasets: [{ data: [2063, 3714], backgroundColor: ['#3498db', '#9b59b6'] }] },
+        options: chartOptions
+      });
+
+      new Chart(document.getElementById('costChart2'), {
+        type: 'doughnut',
+        data: { labels: ['Cost', 'Spend'], datasets: [{ data: [321, 798], backgroundColor: ['#3498db', '#e74c3c'] }] },
+        options: chartOptions
+      });
+
+      // Compare Date Line Chart
+      new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: {
+          labels: ['14', '15', '16', '17', '18', '19', '20', '21'],
+          datasets: [
+            { label: 'CTR Facebook', data: [5, 2, 1, 1, 9, 6, 4, 2], borderColor: '#2ecc71', tension: 0.3 },
+            { label: 'CTR Google', data: [0, 8, 9, 8, 0, 0, 0, 0], borderColor: '#3498db', tension: 0.3 }
+          ]
+        },
+        options: {
+          ...chartOptions,
+          scales: {
+            x: { grid: { color: '#2d323e' } },
+            y: { grid: { color: '#2d323e' } }
+          }
         }
+      });
 
-        function renderCharts(data) {
-            // Trend Line Chart
-            const ctxTrend = document.getElementById('trendChart').getContext('2d');
-            if (trendChartInstance) trendChartInstance.destroy();
-            trendChartInstance = new Chart(ctxTrend, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-                    datasets: [{
-                        label: 'Downtime (min)',
-                        data: [12, 19, 3, 5, 2],
-                        borderColor: '#3498db',
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#8a94a6' }, grid: { display: false } },
-                        y: { ticks: { color: '#8a94a6' }, grid: { color: '#2a2e38' } }
-                    }
-                }
-            });
-
-            // Donut Chart
-            const ctxStatus = document.getElementById('statusChart').getContext('2d');
-            if (statusChartInstance) statusChartInstance.destroy();
-            statusChartInstance = new Chart(ctxStatus, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Line A', 'Line B', 'Line C'],
-                    datasets: [{
-                        data: [30, 40, 30],
-                        backgroundColor: ['#f39c12', '#3498db', '#2ecc71']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { color: '#ffffff' } } }
-                }
-            });
-        }
-    </script>
+      // Region Breakdown Donuts
+      const regionData = { labels: ['Bangkok', 'Nonthaburi', 'Samut Sakhon'], datasets: [{ data: [50, 30, 20], backgroundColor: ['#f39c12', '#3498db', '#2ecc71'] }] };
+      new Chart(document.getElementById('regionChart1'), { type: 'doughnut', data: regionData, options: chartOptions });
+      new Chart(document.getElementById('regionChart2'), { type: 'doughnut', data: regionData, options: chartOptions });
+      new Chart(document.getElementById('regionChart3'), { type: 'doughnut', data: regionData, options: chartOptions });
+    }
+  </script>
 </body>
 </html>
