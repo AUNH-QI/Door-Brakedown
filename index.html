@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Haier Machine Breakdown Dashboard</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-[#0f1115] text-white p-6 font-sans">
@@ -18,9 +16,7 @@
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
         </div>
         
-        <!-- Filter Controls -->
         <div class="flex flex-wrap gap-3 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs">
-            <!-- Filter: Date Range -->
             <div class="flex gap-2 items-center bg-[#242b35] px-3 py-1.5 rounded border border-gray-700">
                 <div>
                     <label class="block text-[10px] text-gray-400">ตั้งแต่วันที่</label>
@@ -33,7 +29,6 @@
                 </div>
             </div>
 
-            <!-- Filter: Line -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">เลือก Line</label>
                 <select id="lineFilter" class="bg-[#242b35] text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
@@ -46,7 +41,6 @@
                 </select>
             </div>
 
-            <!-- Filter: Shift -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">กะการทำงาน (Shift)</label>
                 <select id="shiftFilter" class="bg-[#242b35] text-white px-3 py-1.5 rounded border border-gray-700 focus:outline-none">
@@ -56,16 +50,13 @@
                 </select>
             </div>
 
-            <!-- Clear Filter Button -->
             <div class="flex items-end">
-                <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">
-                    ล้างตัวกรอง
-                </button>
+                <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
             </div>
         </div>
     </div>
 
-    <!-- Section 1: KPI Cards -->
+    <!-- KPI Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line A-Door (Downtime รวม)</h3>
@@ -74,7 +65,6 @@
                 <span class="text-xs text-emerald-400 font-bold"><span id="kpi-a-count">0</span> ครั้ง</span>
             </div>
         </div>
-
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line B-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
@@ -82,7 +72,6 @@
                 <span class="text-xs text-amber-400 font-bold"><span id="kpi-b-count">0</span> ครั้ง</span>
             </div>
         </div>
-
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line C-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
@@ -92,86 +81,41 @@
         </div>
     </div>
 
-    <!-- Section 2: Charts -->
+    <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-4 flex flex-col justify-between">
             <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนตามกะการทำงาน</h3>
-            <div class="h-60 relative flex justify-center items-center">
-                <canvas id="shiftChart"></canvas>
-            </div>
+            <div class="h-60 relative flex justify-center items-center"><canvas id="shiftChart"></canvas></div>
         </div>
-
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-8">
             <h3 class="text-sm font-bold text-orange-500 mb-2">เวลารวม Downtime แยกตาม Line (นาที)</h3>
-            <div class="h-60">
-                <canvas id="lineChart"></canvas>
-            </div>
+            <div class="h-60"><canvas id="lineChart"></canvas></div>
         </div>
     </div>
 
-    <!-- Section 3: Add New Log Form & Table -->
+    <!-- Add Log Form & Table -->
     <div class="bg-[#181c24] rounded-xl border border-gray-800 p-4 mb-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-sm font-bold text-orange-500">บันทึกข้อมูลขัดข้อง (Breakdown Log)</h3>
-            <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded transition">
-                + เพิ่มรายการใหม่
-            </button>
+            <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded transition">+ เพิ่มรายการใหม่</button>
         </div>
 
-        <!-- Form เพิ่ม Log ใหม่ -->
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
-            <div>
-                <label class="block text-gray-400 mb-1">DATE</label>
-                <input type="date" id="inputDate" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-            </div>
-            <div>
-                <label class="block text-gray-400 mb-1">SHIFT</label>
-                <select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-                    <option value="Day">Day</option>
-                    <option value="Night">Night</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-gray-400 mb-1">LINE</label>
-                <select id="inputLine" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-                    <option value="A-Door">A-Door</option>
-                    <option value="B-Door">B-Door</option>
-                    <option value="C-Door">C-Door</option>
-                    <option value="Bottom">Bottom</option>
-                    <option value="DND">DND</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-gray-400 mb-1">เครื่อง</label>
-                <input type="text" id="inputMachine" placeholder="เช่น Robot, JIG" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-            </div>
-            <div>
-                <label class="block text-gray-400 mb-1">Station</label>
-                <input type="text" id="inputStation" placeholder="เช่น ST13" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-            </div>
-            <div>
-                <label class="block text-gray-400 mb-1">ปัญหา</label>
-                <input type="text" id="inputIssue" placeholder="อาการขัดข้อง" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-            </div>
-            <div>
-                <label class="block text-gray-400 mb-1">สาเหตุ</label>
-                <input type="text" id="inputCause" placeholder="สาเหตุของปัญหา" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-            </div>
-            <div>
-                <label class="block text-gray-400 mb-1">ระยะเวลา (นาที)</label>
-                <input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-            </div>
-            <div class="col-span-2 md:col-span-4">
-                <label class="block text-gray-400 mb-1">การแก้ไข</label>
-                <input type="text" id="inputFix" placeholder="วิธีแก้ไขเบื้องต้น" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-            </div>
+            <div><label class="block text-gray-400 mb-1">DATE</label><input type="date" id="inputDate" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div><label class="block text-gray-400 mb-1">SHIFT</label><select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"><option value="Day">Day</option><option value="Night">Night</option></select></div>
+            <div><label class="block text-gray-400 mb-1">LINE</label><select id="inputLine" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"><option value="A-Door">A-Door</option><option value="B-Door">B-Door</option><option value="C-Door">C-Door</option><option value="Bottom">Bottom</option><option value="DND">DND</option></select></div>
+            <div><label class="block text-gray-400 mb-1">เครื่อง</label><input type="text" id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div><label class="block text-gray-400 mb-1">Station</label><input type="text" id="inputStation" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div><label class="block text-gray-400 mb-1">ปัญหา</label><input type="text" id="inputIssue" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div><label class="block text-gray-400 mb-1">สาเหตุ</label><input type="text" id="inputCause" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div><label class="block text-gray-400 mb-1">ระยะเวลา (นาที)</label><input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
+            <div class="col-span-2 md:col-span-4"><label class="block text-gray-400 mb-1">การแก้ไข</label><input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white"></div>
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
                 <button type="button" onclick="toggleForm()" class="bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded text-white">ยกเลิก</button>
                 <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white">บันทึกข้อมูล</button>
             </div>
         </form>
 
-        <!-- Log Table -->
         <div class="overflow-x-auto max-h-96">
             <table class="w-full text-left text-xs border-collapse">
                 <thead class="bg-[#242b35] text-gray-300 sticky top-0 uppercase border-b border-gray-700">
@@ -188,48 +132,49 @@
                         <th class="p-2.5 text-center">จัดการ</th>
                     </tr>
                 </thead>
-                <tbody id="logTableBody" class="divide-y divide-gray-800 text-gray-300">
-                    <!-- Data Rows -->
-                </tbody>
+                <tbody id="logTableBody" class="divide-y divide-gray-800 text-gray-300"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
     <script>
-        // Data Array พร้อม Unique ID สำหรับลบรายการ
-        let logsData = [
-            { id: 1, date: "2026-08-01", shift: "Day", line: "B-Door", machine: "Conveyor", station: "ST01", issue: "หยุดไลน์การผลิต", cause: "โซ่หลุดเฟือง", fix: "ตั้งโซ่ใหม่", downtime: 120 },
-            { id: 2, date: "2026-08-15", shift: "Day", line: "C-Door", machine: "Pallet", station: "ST19", issue: "หยุดไลน์การผลิต", cause: "พาเลท #19 ล้อหลุด", fix: "เปลี่ยนล้อพาเลท", downtime: 40 },
-            { id: 3, date: "2026-08-20", shift: "Day", line: "A-Door", machine: "JIG", station: "ST05", issue: "พาเลทพัง JIG ไม่เปิด", cause: "วาล์วลมติดขัด", fix: "ทำความสะอาดวาล์ว", downtime: 10 },
-            { id: 4, date: "2026-08-25", shift: "Night", line: "C-Door", machine: "Robot", station: "Main", issue: "จับฝาแล้วร่วงตก", cause: "Vacuum หลุด", fix: "ตั้งขา Vacuum ใหม่", downtime: 16 }
-        ];
+        // *** นำ URL ที่ได้จาก Step 2 มาวางตรงนี้ ***
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9wcj3rbyaQSDeviY-aNP2VFh2tBNOJWS0QfBSFi3MuXrtOkLE8vhiewt8koFbE_TN/exec';
 
+        let logsData = [];
         let lineChartInstance = null;
         let shiftChartInstance = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
-            updateDashboard();
+            fetchLogs();
 
-            // Event Listeners สำหรับตัวกรองทั้งหมด
             document.getElementById('lineFilter').addEventListener('change', updateDashboard);
             document.getElementById('shiftFilter').addEventListener('change', updateDashboard);
             document.getElementById('startDateFilter').addEventListener('change', updateDashboard);
             document.getElementById('endDateFilter').addEventListener('change', updateDashboard);
-
             document.getElementById('inputDate').valueAsDate = new Date();
         });
+
+        async function fetchLogs() {
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_URL);
+                logsData = await res.json();
+                updateDashboard();
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        }
 
         function toggleForm() {
             document.getElementById('addLogForm').classList.toggle('hidden');
         }
 
-        // เพิ่มข้อมูลใหม่
-        function addNewLog(event) {
+        async function addNewLog(event) {
             event.preventDefault();
             const newLog = {
-                id: Date.now(), // Generate Unique ID
+                action: 'add',
+                id: Date.now(),
                 date: document.getElementById('inputDate').value,
                 shift: document.getElementById('inputShift').value,
                 line: document.getElementById('inputLine').value,
@@ -244,19 +189,33 @@
             logsData.unshift(newLog);
             updateDashboard();
             toggleForm();
-            document.getElementById('addLogForm').reset();
-            document.getElementById('inputDate').valueAsDate = new Date();
+
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newLog)
+            });
+            
+            setTimeout(fetchLogs, 1000);
         }
 
-        // ลบข้อมูลรายรายการ (Delete)
-        function deleteLog(id) {
+        async function deleteLog(id) {
             if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-                logsData = logsData.filter(item => item.id !== id);
+                logsData = logsData.filter(item => item.id != id);
                 updateDashboard();
+
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', id: id })
+                });
+
+                setTimeout(fetchLogs, 1000);
             }
         }
 
-        // ฟังก์ชันดึงข้อมูลที่ผ่าน Filter (วันที่, Line, Shift)
         function getFilteredData() {
             const lineVal = document.getElementById('lineFilter').value;
             const shiftVal = document.getElementById('shiftFilter').value;
@@ -264,14 +223,10 @@
             const endDate = document.getElementById('endDateFilter').value;
 
             return logsData.filter(item => {
-                // กรอง Line
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
-                // กรอง Shift
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
-                // กรองช่วงวันที่ (Date Range)
                 if (startDate && item.date < startDate) return false;
                 if (endDate && item.date > endDate) return false;
-
                 return true;
             });
         }
@@ -284,13 +239,12 @@
             updateDashboard();
         }
 
-        // แสดงตาราง Log
         function renderTable(data) {
             const tbody = document.getElementById('logTableBody');
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูลตาม Filter ที่เลือก</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
                 return;
             }
 
@@ -305,11 +259,9 @@
                         <td class="p-2.5 border-r border-gray-800 text-orange-400 font-medium">${item.issue || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.cause || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${item.downtime.toLocaleString()}</td>
+                        <td class="p-2.5 border-r border-gray-800 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${Number(item.downtime).toLocaleString()}</td>
                         <td class="p-2.5 text-center">
-                            <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded transition">
-                                ลบ
-                            </button>
+                            <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded transition">ลบ</button>
                         </td>
                     </tr>
                 `;
@@ -325,16 +277,12 @@
         }
 
         function updateKPIs(data) {
-            const lines = ['A-Door', 'B-Door', 'C-Door'];
-
-            lines.forEach(line => {
+            ['A-Door', 'B-Door', 'C-Door'].forEach(line => {
                 const lineData = data.filter(item => item.line === line);
                 const totalMins = lineData.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
-                const count = lineData.length;
-
                 const prefix = line.charAt(0).toLowerCase();
                 document.getElementById(`kpi-${prefix}-mins`).innerText = totalMins.toLocaleString();
-                document.getElementById(`kpi-${prefix}-count`).innerText = count.toLocaleString();
+                document.getElementById(`kpi-${prefix}-count`).innerText = lineData.length.toLocaleString();
             });
         }
 
@@ -343,49 +291,24 @@
             lineChartInstance = new Chart(ctxLine, {
                 type: 'bar',
                 data: { labels: [], datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#9ca3af' }, grid: { display: false } },
-                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#9ca3af' }, grid: { display: false } }, y: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' } } } }
             });
 
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'doughnut',
                 data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f59e0b', '#3b82f6'], borderWidth: 0 }] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: { size: 10 } } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#9ca3af', font: { size: 10 } } } } }
             });
         }
 
         function updateLineChart(data) {
             const lines = ['B-Door', 'C-Door', 'A-Door', 'Bottom', 'DND'];
-            const colorMap = {
-                'B-Door': '#10b981',
-                'C-Door': '#f59e0b',
-                'A-Door': '#ef4444',
-                'Bottom': '#8b5cf6',
-                'DND': '#64748b'
-            };
-
-            const totals = lines.map(l => {
-                return data.filter(item => item.line === l).reduce((s, item) => s + (Number(item.downtime) || 0), 0);
-            });
+            const colorMap = { 'B-Door': '#10b981', 'C-Door': '#f59e0b', 'A-Door': '#ef4444', 'Bottom': '#8b5cf6', 'DND': '#64748b' };
+            const totals = lines.map(l => data.filter(item => item.line === l).reduce((s, item) => s + (Number(item.downtime) || 0), 0));
 
             lineChartInstance.data.labels = lines;
-            lineChartInstance.data.datasets = [{
-                data: totals,
-                backgroundColor: lines.map(l => colorMap[l]),
-                borderRadius: 4
-            }];
+            lineChartInstance.data.datasets = [{ data: totals, backgroundColor: lines.map(l => colorMap[l]), borderRadius: 4 }];
             lineChartInstance.update();
         }
 
