@@ -2,14 +2,355 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Downtime Dashboard</title>
+    <!-- Chart.js สำหรับวาดกราฟ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121418;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        /* Header & Filter Bar */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .filter-box {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-box label {
+            font-size: 11px;
+            color: #8a94a6;
+        }
+
+        .filter-box select {
+            background-color: #1b1e24;
+            color: #ffffff;
+            border: 1px solid #323743;
+            padding: 6px 12px;
+            border-radius: 4px;
+            outline: none;
+            min-width: 140px;
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        /* Card Component */
+        .card {
+            background-color: #232730;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #2d323e;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            background-color: #2c313d;
+            color: #f39c12;
+            text-align: center;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        /* Stats Inside Cards */
+        .stat-group {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .stat-item .val {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .stat-item .label {
+            font-size: 11px;
+            color: #8a94a6;
+            margin-top: 4px;
+        }
+
+        .stat-item .subtext {
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        .text-green { color: #2ecc71; }
+        .text-red { color: #e74c3c; }
+
+        /* Table Styling */
+        .grid-span-2 { grid-column: span 2; }
+        .grid-span-1 { grid-column: span 1; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            color: #f39c12;
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #323743;
+            font-weight: normal;
+        }
+
+        td {
+            padding: 8px;
+            color: #d1d5db;
+            border-bottom: 1px solid #2a2e38;
+        }
+
+        /* Chart Canvas Constraints */
+        .chart-container {
+            position: relative;
+            height: 180px;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- ส่วนแสดงผล Dashboard ของคุณ -->
-    <div id="app"></div>
+    <!-- Header / Filters -->
+    <div class="dashboard-header">
+        <div class="dashboard-title">Machine Downtime Dashboard</div>
+        <div class="filter-group">
+            <div class="filter-box">
+                <label>Line</label>
+                <select id="lineFilter">
+                    <option value="All">All Lines</option>
+                    <option value="Line A">Line A</option>
+                    <option value="Line B">Line B</option>
+                    <option value="Line C">Line C</option>
+                </select>
+            </div>
+            <div class="filter-box">
+                <label>Date</label>
+                <select id="dateFilter">
+                    <option value="All">All Dates</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
-    <!-- เรียกใช้ไฟล์สคริปต์หลักแค่ไฟล์เดียว -->
-    <script src="app.js"></script>
+    <!-- Main Grid Dashboard -->
+    <div class="dashboard-grid">
+
+        <!-- Card 1: Line Summary -->
+        <div class="card">
+            <div class="card-header">Line Performance</div>
+            <div class="card-body stat-group">
+                <div class="stat-item">
+                    <div class="val" id="totalIncidents">0</div>
+                    <div class="label">Incidents</div>
+                    <div class="subtext text-green">-2.4% &#10003;</div>
+                </div>
+                <div class="stat-item">
+                    <div class="val" id="avgDowntime">0m</div>
+                    <div class="label">Avg Downtime</div>
+                    <div class="subtext text-red">+5.1% !</div>
+                </div>
+                <div class="stat-item">
+                    <div class="val" id="totalDowntime">0m</div>
+                    <div class="label">Total Min</div>
+                    <div class="subtext text-green">-1.2% &#10003;</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Shift Breakdown -->
+        <div class="card">
+            <div class="card-header">Shift Overview</div>
+            <div class="card-body stat-group">
+                <div class="stat-item">
+                    <div class="val" id="shiftDay">0</div>
+                    <div class="label">Day Shift</div>
+                </div>
+                <div class="stat-item">
+                    <div class="val" id="shiftNight">0</div>
+                    <div class="label">Night Shift</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Machine Status -->
+        <div class="card">
+            <div class="card-header">Machine Status</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Top Breakdown Log (Table) -->
+        <div class="card grid-span-2">
+            <div class="card-header">Top Machine Breakdown Logs</div>
+            <div class="card-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Line</th>
+                            <th>Machine / Issue</th>
+                            <th>Downtime (min)</th>
+                            <th>Shift</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <!-- รายการข้อมูลจะมาแสดงตรงนี้ -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Card 5: Downtime Trend Chart -->
+        <div class="card grid-span-1">
+            <div class="card-header">Downtime Trend</div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script โหลด data.json และวาดผล -->
+    <script>
+        let rawData = [];
+        let trendChartInstance = null;
+        let statusChartInstance = null;
+
+        // ดึงข้อมูลจากไฟล์ data.json
+        fetch('data.json')
+            .then(res => res.json())
+            .then(data => {
+                rawData = data;
+                initDashboard();
+            })
+            .catch(err => console.error("Error loading JSON:", err));
+
+        function initDashboard() {
+            updateMetrics(rawData);
+            renderTable(rawData);
+            renderCharts(rawData);
+        }
+
+        function updateMetrics(data) {
+            const total = data.length;
+            const sumDowntime = data.reduce((acc, item) => acc + (item.downtime || 0), 0);
+            const avg = total > 0 ? (sumDowntime / total).toFixed(1) : 0;
+
+            document.getElementById('totalIncidents').innerText = total;
+            document.getElementById('totalDowntime').innerText = sumDowntime + 'm';
+            document.getElementById('avgDowntime').innerText = avg + 'm';
+            
+            const dayCount = data.filter(i => i.shift === 'Day').length;
+            const nightCount = data.filter(i => i.shift === 'Night').length;
+            document.getElementById('shiftDay').innerText = dayCount;
+            document.getElementById('shiftNight').innerText = nightCount;
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('logsTableBody');
+            tbody.innerHTML = '';
+            // ดึง 5 รายการแรกมาโชว์ตัวอย่าง
+            data.slice(0, 5).forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.line || '-'}</td>
+                    <td>${item.issue || 'Machine Error'}</td>
+                    <td>${item.downtime || 0}</td>
+                    <td>${item.shift || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderCharts(data) {
+            // Trend Line Chart
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            if (trendChartInstance) trendChartInstance.destroy();
+            trendChartInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                    datasets: [{
+                        label: 'Downtime (min)',
+                        data: [12, 19, 3, 5, 2],
+                        borderColor: '#3498db',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#8a94a6' }, grid: { display: false } },
+                        y: { ticks: { color: '#8a94a6' }, grid: { color: '#2a2e38' } }
+                    }
+                }
+            });
+
+            // Donut Chart
+            const ctxStatus = document.getElementById('statusChart').getContext('2d');
+            if (statusChartInstance) statusChartInstance.destroy();
+            statusChartInstance = new Chart(ctxStatus, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Line A', 'Line B', 'Line C'],
+                    datasets: [{
+                        data: [30, 40, 30],
+                        backgroundColor: ['#f39c12', '#3498db', '#2ecc71']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: '#ffffff' } } }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
