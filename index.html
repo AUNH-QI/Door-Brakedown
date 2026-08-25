@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Breakdown Dashboard</title>
+    <!-- Tailwind CSS สำหรับจัดสไตล์แบบ Dark Theme -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js สำหรับวาดกราฟ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-[#121417] text-white p-6 font-sans">
+
+    <!-- Header & Filters (ส่วนบนสุด) -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-wide text-orange-400">HAIER MACHINE BREAKDOWN</h1>
+            <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C)</p>
+        </div>
+        
+        <!-- Filter Controls ( dropdown กรองข้อมูลแบบในรูป) -->
+        <div class="flex gap-3 bg-[#1e232a] p-3 rounded-lg border border-gray-700">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">เลือก Line</label>
+                <select id="lineFilter" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
+                    <option value="All">ทุก Line (All)</option>
+                    <option value="A-Door">A-Door</option>
+                    <option value="B-Door">B-Door</option>
+                    <option value="C-Door">C-Door</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">เลือกช่วงเวลา</label>
+                <select id="dateFilter" class="bg-[#2a303c] text-sm text-white px-3 py-1.5 rounded border border-gray-600 focus:outline-none">
+                    <option value="today">วันนี้</option>
+                    <option value="this_week">สัปดาห์นี้</option>
+                    <option value="this_month" selected>เดือนนี้</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 1: Top KPI Cards (การ์ดสรุปตัวเลข 3 ใบด้านบน) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <!-- Card 1: Line A Status -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line A-Door (Breakdown รวม)</h3>
+            <div class="flex justify-between items-baseline">
+                <span class="text-3xl font-bold text-white">45 <span class="text-sm font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-emerald-400 font-semibold">12 ครั้ง</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Line B Status -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line B-Door (Breakdown รวม)</h3>
+            <div class="flex justify-between items-baseline">
+                <span class="text-3xl font-bold text-white">120 <span class="text-sm font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-amber-400 font-semibold">28 ครั้ง</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Line C Status -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+            <h3 class="text-sm font-semibold text-gray-400 mb-3">Line C-Door (Breakdown รวม)</h3>
+            <div class="flex justify-between items-baseline">
+                <span class="text-3xl font-bold text-white">215 <span class="text-sm font-normal text-gray-400">นาที</span></span>
+                <span class="text-xs text-rose-400 font-semibold">41 ครั้ง</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Graphs & Table Layout (ส่วนกลาง) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        
+        <!-- Left Panel: Top 5 Breakdown Table (ตารางแสดงปัญหาติดอันดับ) -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg lg:col-span-1">
+            <h3 class="text-md font-bold text-orange-400 mb-4">Top Problems (เวลาเสียสะสม)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-xs text-gray-400 border-b border-gray-700">
+                        <tr>
+                            <th class="pb-2">Station</th>
+                            <th class="pb-2">ปัญหาหลัก</th>
+                            <th class="pb-2 text-right">นาทีรวม</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800 text-gray-300">
+                        <tr>
+                            <td class="py-3 font-medium text-white">Robot</td>
+                            <td>จับฝาแล้วร่วงตก</td>
+                            <td class="py-3 text-right text-rose-400 font-bold">528</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 font-medium text-white">พาเลท</td>
+                            <td>พาเลท 18 ค้าง</td>
+                            <td class="py-3 text-right text-orange-400 font-bold">416</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 font-medium text-white">หัวฉีด</td>
+                            <td>หัวฉีดตัดบ่อย</td>
+                            <td class="py-3 text-right text-amber-400 font-bold">275</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 font-medium text-white">Spot</td>
+                            <td>เชื่อมไม่ติด</td>
+                            <td class="py-3 text-right text-gray-400">10</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Panel: Line Chart (เปรียบเทียบ Trend รายวัน) -->
+        <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg lg:col-span-2">
+            <h3 class="text-md font-bold text-orange-400 mb-4">แนวโน้มระยะเวลาเสีย (Duration Comparison)</h3>
+            <div class="h-64">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Bottom Doughnut Chart (สรุปสัดส่วนตาม Station) -->
+    <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
+        <h3 class="text-md font-bold text-orange-400 mb-4">สัดส่วนระยะเวลาเสียแบ่งตาม Station (Duration Breakdown)</h3>
+        <div class="h-64 flex justify-center">
+            <canvas id="stationChart"></canvas>
+        </div>
+    </div>
+
+    <!-- JavaScript สำหรับสร้างกราฟ -->
+    <script>
+        // 1. กราฟเส้นแสดงแนวโน้ม (Trend Chart)
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: ['18-Aug', '19-Aug', '20-Aug', '21-Aug', '22-Aug', '23-Aug', '24-Aug', '25-Aug'],
+                datasets: [
+                    {
+                        label: 'Line C-Door',
+                        data: [125, 68, 62, 14, 124, 12, 136, 90],
+                        borderColor: '#3b82f6',
+                        tension: 0.3,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Line A-Door',
+                        data: [45, 30, 15, 60, 20, 5, 40, 25],
+                        borderColor: '#10b981',
+                        tension: 0.3,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#9ca3af' } } },
+                scales: {
+                    x: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
+                    y: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } }
+                }
+            }
+        });
+
+        // 2. กราฟโดนัทแสดงสัดส่วน Station (Doughnut Chart)
+        const ctxStation = document.getElementById('stationChart').getContext('2d');
+        new Chart(ctxStation, {
+            type: 'doughnut',
+            data: {
+                labels: ['Robot', 'พาเลท 18', 'หัวฉีดโฟม', 'เครื่อง Spot'],
+                datasets: [{
+                    data: [528, 416, 275, 10],
+                    backgroundColor: ['#ef4444', '#f97316', '#eab308', '#6b7280'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { color: '#9ca3af' } } }
+            }
+        });
+    </script>
+</body>
+</html>
