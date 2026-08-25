@@ -13,7 +13,7 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold tracking-wide text-orange-400">HAIER MACHINE BREAKDOWN</h1>
-            <p class="text-xs text-gray-400">ระบบติดตามและวิเคราะห์สถิติเครื่องจักรขัดข้อง (ดึงข้อมูลจาก Excel)</p>
+            <p class="text-xs text-gray-400">ระบบติดตามและวิเคราะห์สถิติเครื่องจักรขัดข้อง (ข้อมูลครบ 850 รายการ)</p>
         </div>
         
         <!-- Filter Controls -->
@@ -80,7 +80,6 @@
                         </tr>
                     </thead>
                     <tbody id="topStationTable" class="divide-y divide-gray-800 text-gray-300">
-                        <!-- Render via JS -->
                     </tbody>
                 </table>
             </div>
@@ -105,7 +104,7 @@
 
     <!-- Raw Data Log Table -->
     <div class="bg-[#1e232a] p-5 rounded-xl border border-gray-800 shadow-lg">
-        <h3 class="text-md font-bold text-orange-400 mb-4">ตารางประวัติ Breakdown ล่าสุด</h3>
+        <h3 class="text-md font-bold text-orange-400 mb-4">ตารางประวัติ Breakdown ล่าสุด (20 รายการล่าสุด)</h3>
         <div class="overflow-x-auto max-h-80">
             <table class="w-full text-left text-xs text-gray-300">
                 <thead class="text-gray-400 border-b border-gray-700 sticky top-0 bg-[#1e232a]">
@@ -120,43 +119,29 @@
                     </tr>
                 </thead>
                 <tbody id="rawDataTable" class="divide-y divide-gray-800">
-                    <!-- Render via JS -->
                 </tbody>
             </table>
         </div>
     </div>
 
+    <!-- โหลดข้อมูลจากไฟล์ data.json -->
+    <script src="data.js"></script>
     <script>
-        // ดึงข้อมูล 850 รายการจาก Excel มาใส่ในรูปแบบ JSON
-        let rawData = [];
-
-        // โหลดข้อมูล Excel
-        fetch('data.json')
-            .then(res => res.json())
-            .then(data => {
-                rawData = data;
-                updateDashboard();
-            })
-            .catch(() => {
-                // หากไม่มี data.json ให้อ่านจากชุดข้อมูลสำรองเบื้องต้น
-                updateDashboard();
-            });
-
         let trendChartInstance = null;
         let stationChartInstance = null;
 
         function updateDashboard() {
+            if (typeof rawData === 'undefined') return;
+
             const selectedLine = document.getElementById('lineFilter').value;
             const selectedShift = document.getElementById('shiftFilter').value;
 
-            // กรองข้อมูล
             let filtered = rawData.filter(item => {
                 let matchLine = (selectedLine === 'All') || (item.LINE === selectedLine);
                 let matchShift = (selectedShift === 'All') || (item.SHIFT === selectedShift);
                 return matchLine && matchShift;
             });
 
-            // คำนวณ KPI
             const totalCount = filtered.length;
             const totalDuration = filtered.reduce((sum, item) => sum + (Number(item['ระยะเวลา(นาที)']) || 0), 0);
             const avgDuration = totalCount > 0 ? (totalDuration / totalCount).toFixed(1) : 0;
@@ -165,7 +150,6 @@
             document.getElementById('totalDuration').innerText = totalDuration.toLocaleString();
             document.getElementById('avgDuration').innerText = avgDuration;
 
-            // สรุปข้อมูลตาม Station
             let stationMap = {};
             filtered.forEach(item => {
                 let st = item.Station || 'อื่นๆ';
@@ -179,7 +163,6 @@
                 .map(k => ({ station: k, ...stationMap[k] }))
                 .sort((a, b) => b.duration - a.duration);
 
-            // Render Top 5 Table
             let tableHtml = '';
             sortedStations.slice(0, 5).forEach(s => {
                 tableHtml += `
@@ -192,7 +175,6 @@
             });
             document.getElementById('topStationTable').innerHTML = tableHtml || '<tr><td colspan="3" class="text-center py-4 text-gray-500">ไม่พบข้อมูล</td></tr>';
 
-            // Render Raw Data Log (20 รายการล่าสุด)
             let rawHtml = '';
             filtered.slice(0, 20).forEach(item => {
                 rawHtml += `
@@ -209,7 +191,6 @@
             });
             document.getElementById('rawDataTable').innerHTML = rawHtml;
 
-            // สรุป Trend ตามวันที่
             let dateMap = {};
             filtered.forEach(item => {
                 let d = item.DATE;
@@ -218,7 +199,6 @@
             });
             let sortedDates = Object.keys(dateMap).sort();
 
-            // Render Trend Chart
             if (trendChartInstance) trendChartInstance.destroy();
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
             trendChartInstance = new Chart(ctxTrend, {
@@ -245,7 +225,6 @@
                 }
             });
 
-            // Render Doughnut Chart
             if (stationChartInstance) stationChartInstance.destroy();
             const ctxStation = document.getElementById('stationChart').getContext('2d');
             const top5ForChart = sortedStations.slice(0, 6);
@@ -266,6 +245,8 @@
                 }
             });
         }
+
+        window.onload = updateDashboard;
     </script>
 </body>
 </html>
