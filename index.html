@@ -44,10 +44,12 @@
                 </div>
             </div>
 
-            <!-- Month Picker -->
+            <!-- Month Dropdown Filter -->
             <div>
                 <label class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
-                <input type="month" id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
+                <select id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
+                    <option value="All">ทุกเดือน (All)</option>
+                </select>
             </div>
 
             <!-- Line Buttons Filter -->
@@ -245,9 +247,9 @@
 
             document.getElementById('stationFilter').addEventListener('change', updateDashboard);
             document.getElementById('issueFilter').addEventListener('change', updateDashboard);
+            document.getElementById('monthFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); updateDashboard(); });
             document.getElementById('startDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); updateDashboard(); });
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); updateDashboard(); });
-            document.getElementById('monthFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); updateDashboard(); });
             document.getElementById('inputDate').valueAsDate = new Date();
         });
 
@@ -311,6 +313,33 @@
             issues.forEach(issue => {
                 const selected = issue === currentInputIssue ? 'selected' : '';
                 inputIssue.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
+            });
+
+            // 3. Month Dropdown Filter
+            const monthFilter = document.getElementById('monthFilter');
+            const currentMonth = monthFilter.value;
+            // ดึงเฉพาะปี-เดือน (YYYY-MM) จากข้อมูลทั้งหมดแล้วเรียงลำดับใหม่ล่าสุด
+            const monthsSet = new Set();
+            logsData.forEach(item => {
+                if (item.date && item.date.length >= 7) {
+                    monthsSet.add(item.date.substring(0, 7));
+                }
+            });
+            const sortedMonths = [...monthsSet].sort().reverse();
+
+            const thaiMonths = {
+                '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
+                '05': 'พฤษภาคม', '06': 'มิถุนายน', '07': 'กรกฎาคม', '08': 'สิงหาคม',
+                '09': 'กันยายน', '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม'
+            };
+
+            monthFilter.innerHTML = '<option value="All">ทุกเดือน (All)</option>';
+            sortedMonths.forEach(ym => {
+                const [year, monthNum] = ym.split('-');
+                const thaiYear = parseInt(year); // หรือแสดง ค.ศ. ตามฐานข้อมูล
+                const label = `${thaiMonths[monthNum] || monthNum} ${thaiYear}`;
+                const selected = ym === currentMonth ? 'selected' : '';
+                monthFilter.innerHTML += `<option value="${ym}" ${selected}>${label}</option>`;
             });
         }
 
@@ -400,7 +429,7 @@
 
             document.getElementById('startDateFilter').value = '';
             document.getElementById('endDateFilter').value = '';
-            document.getElementById('monthFilter').value = '';
+            document.getElementById('monthFilter').value = 'All';
 
             const today = new Date();
             const formatDate = (d) => d.toISOString().split('T')[0];
@@ -415,7 +444,18 @@
                 document.getElementById('startDateFilter').value = formatDate(firstDay);
                 document.getElementById('endDateFilter').value = formatDate(today);
             } else if (type === 'month') {
-                document.getElementById('monthFilter').value = today.toISOString().slice(0, 7);
+                const currentYm = today.toISOString().slice(0, 7);
+                const monthSelect = document.getElementById('monthFilter');
+                // เช็คว่ามีเดือนปัจจุบันใน dropdown หรือไม่ ถ้ามีให้เลือกเลย
+                let found = false;
+                for (let opt of monthSelect.options) {
+                    if (opt.value === currentYm) {
+                        monthSelect.value = currentYm;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) monthSelect.value = 'All';
             }
 
             updateDashboard();
@@ -444,7 +484,7 @@
                 if (stationVal !== 'All' && item.station !== stationVal) return false;
                 if (issueVal !== 'All' && item.issue !== issueVal) return false;
 
-                if (monthVal) {
+                if (monthVal && monthVal !== 'All') {
                     if (!itemDate || !itemDate.startsWith(monthVal)) return false;
                 }
 
@@ -461,9 +501,9 @@
             setShiftFilter('All');
             document.getElementById('stationFilter').value = 'All';
             document.getElementById('issueFilter').value = 'All';
+            document.getElementById('monthFilter').value = 'All';
             document.getElementById('startDateFilter').value = '';
             document.getElementById('endDateFilter').value = '';
-            document.getElementById('monthFilter').value = '';
             updateDashboard();
         }
 
