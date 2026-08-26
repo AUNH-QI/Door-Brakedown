@@ -254,28 +254,29 @@
         });
 
         async function fetchLogs() {
-            const statusEl = document.getElementById('loadingStatus');
-            statusEl.classList.remove('hidden');
+    const statusEl = document.getElementById('loadingStatus');
+    statusEl.classList.remove('hidden');
 
-            try {
-                const { data, error } = await supabaseClient
-                    .from('breakdown_logs')
-                    .select('*')
-                    .order('date', { ascending: false });
+    try {
+        const { data, error } = await supabaseClient
+            .from('breakdown_logs')
+            .select('*')
+            // เรียงลำดับจากวันที่ล่าสุดไปเก่าสุด และตามด้วย id ล่าสุด เพื่อให้รายการที่เพิ่งบันทึกอยู่บรรทัดบนสุดเสมอ
+            .order('date', { ascending: false })
+            .order('id', { ascending: false });
 
-                if (error) throw error;
+        if (error) throw error;
 
-                logsData = data || [];
-                populateDropdowns();
-                updateDashboard();
-            } catch (err) {
-                console.error("Error fetching data:", err);
-                alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
-            } finally {
-                statusEl.classList.add('hidden');
-            }
-        }
-
+        logsData = data || [];
+        populateDropdowns();
+        updateDashboard();
+    } catch (err) {
+        console.error("Error fetching data:", err);
+        alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
+    } finally {
+        statusEl.classList.add('hidden');
+    }
+}
         function populateDropdowns() {
             const stations = [...new Set(logsData.map(item => item.station))].filter(Boolean).sort();
             
