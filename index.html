@@ -132,7 +132,7 @@
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
             <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งตามประเภทปัญหา (Issue)</h3>
-            <div class="h-80 relative flex justify-center items-center">
+            <div class="h-96 relative flex justify-center items-center">
                 <canvas id="shiftChart"></canvas>
                 <!-- Center Total Value Overlay -->
                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -143,7 +143,7 @@
         </div>
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7">
             <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที) [ไม่แสดงค่า 0]</h3>
-            <div class="h-80"><canvas id="lineChart"></canvas></div>
+            <div class="h-96"><canvas id="lineChart"></canvas></div>
         </div>
     </div>
 
@@ -269,7 +269,6 @@
         let logsData = [];
         let lineChartInstance = null;
         let shiftChartInstance = null;
-        let hiddenIssuesDetail = []; 
         let currentPage = 1;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -474,8 +473,8 @@
                     const btn = document.getElementById(`btn-line-${l}`);
                     if (btn) {
                         btn.className = l === 'All'
-                            ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition"
-                            : "px-2 py-1 rounded text-gray-300 hover:text-white transition";
+                            ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"
+                            : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
                     }
                 });
 
@@ -584,261 +583,232 @@
             renderTableWithPagination(getFilteredData());
         }
 
-        function changePage(page) {
-            currentPage = page;
-            renderTableWithPagination(getFilteredData());
-        }
-
-        function renderTableWithPagination(data) {
-            const tbody = document.getElementById('logTableBody');
-            tbody.innerHTML = '';
-
-            const totalRows = data.length;
-            const rowsPerPageVal = document.getElementById('rowsPerPageSelect').value;
-            
-            if (totalRows === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาหรือเงื่อนไขที่เลือก</td></tr>';
-                document.getElementById('paginationInfo').innerText = 'แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ';
-                document.getElementById('paginationControls').innerHTML = '';
-                return;
-            }
-
-            let paginatedData = data;
-            let totalPages = 1;
-            let startIndex = 0;
-            let endIndex = totalRows;
-
-            if (rowsPerPageVal !== 'All') {
-                const rpp = parseInt(rowsPerPageVal);
-                totalPages = Math.ceil(totalRows / rpp);
-                if (currentPage > totalPages) currentPage = totalPages;
-                if (currentPage < 1) currentPage = 1;
-
-                startIndex = (currentPage - 1) * rpp;
-                endIndex = Math.min(startIndex + rpp, totalRows);
-                paginatedData = data.slice(startIndex, endIndex);
-            }
-
-            paginatedData.forEach(item => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-[#1f242e] transition">
-                        <td class="p-2.5 border-r border-gray-800 font-mono text-orange-400 font-medium">${item.date || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800">${item.shift || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800 font-semibold">${item.line || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800">${item.machine || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800">${item.station || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800 text-gray-200 font-medium">${item.issue || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800">${item.cause || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${Number(item.downtime).toLocaleString()}</td>
-                        <td class="p-2.5 text-center">
-                            <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded transition">ลบ</button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            // Update Info text
-            document.getElementById('paginationInfo').innerText = `แสดง ${startIndex + 1} ถึง ${endIndex} จากทั้งหมด ${totalRows} รายการ`;
-
-            // Render Pagination Buttons
-            const controlsEl = document.getElementById('paginationControls');
-            controlsEl.innerHTML = '';
-
-            if (rowsPerPageVal !== 'All' && totalPages > 1) {
-                // Prev Button
-                controlsEl.innerHTML += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled class="px-2 py-1 rounded bg-gray-800 text-gray-600 cursor-not-allowed"' : 'class="px-2 py-1 rounded bg-[#242b35] hover:bg-gray-700 text-gray-300"'}>&lt;</button>`;
-
-                // Page Number Buttons
-                for (let i = 1; i <= totalPages; i++) {
-                    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-                        const activeClass = i === currentPage ? 'bg-orange-600 text-white font-bold' : 'bg-[#242b35] hover:bg-gray-700 text-gray-300';
-                        controlsEl.innerHTML += `<button onclick="changePage(${i})" class="px-2.5 py-1 rounded ${activeClass}">${i}</button>`;
-                    } else if (i === currentPage - 2 || i === currentPage + 2) {
-                        controlsEl.innerHTML += `<span class="px-1 text-gray-500">...</span>`;
-                    }
-                }
-
-                // Next Button
-                controlsEl.innerHTML += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled class="px-2 py-1 rounded bg-gray-800 text-gray-600 cursor-not-allowed"' : 'class="px-2 py-1 rounded bg-[#242b35] hover:bg-gray-700 text-gray-300"'}>&gt;</button>`;
-            }
-        }
-
-        function updateDashboard() {
-            const filteredData = getFilteredData();
-            renderTableWithPagination(filteredData);
-            updateKPIs(filteredData);
-            updateLineChart(filteredData);
-            updateShiftChart(filteredData);
-        }
-
-        function updateKPIs(data) {
-            ['A-Door', 'B-Door', 'C-Door'].forEach(line => {
-                const lineData = data.filter(item => item.line === line);
-                const totalMins = lineData.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
-                const prefix = line.charAt(0).toLowerCase();
-                document.getElementById(`kpi-${prefix}-mins`).innerText = totalMins.toLocaleString();
-                document.getElementById(`kpi-${prefix}-count`).innerText = lineData.length.toLocaleString();
-            });
-        }
-
         function initCharts() {
-            const ctxLine = document.getElementById('lineChart').getContext('2d');
-            lineChartInstance = new Chart(ctxLine, {
-                type: 'line',
-                data: { labels: [], datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    tension: 0.3,
-                    spanGaps: true,
-                    plugins: {
-                        legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' } },
-                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' }, title: { display: true, text: 'Downtime (นาที)', color: '#6b7280' } }
-                    }
-                }
-            });
-
+            // Doughnut Chart (สัดส่วนปัญหา - Top 4 + ปัญหาอื่นๆ, ไม่มีเส้นโยง)
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'doughnut',
-                data: { 
-                    labels: [], 
-                    datasets: [{ 
-                        data: [], 
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#a855f7'], 
-                        borderWidth: 2, 
-                        borderColor: '#181c24' 
-                    }] 
-                },
+                data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: 45 // เพิ่มช่องว่างรอบกราฟให้กว้างขึ้น เพื่อให้เส้นชี้บ่งและตัวหนังสือไม่ชนขอบ
-                    },
-                    cutout: '60%',
-                    radius: '73%',
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#ffffff', boxWidth: 12, font: { size: 11 } }
+                        },
                         datalabels: {
                             color: '#ffffff',
-                            font: { size: 10, weight: 'bold' },
+                            font: { size: 11, weight: 'bold' },
                             formatter: (value, ctx) => {
                                 let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                                 let percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
-                                let label = ctx.chart.data.labels[ctx.dataIndex] || '';
-                                return `${label}\n${value.toLocaleString()} ครั้ง (${percentage})`;
-                            },
-                            anchor: 'end',
-                            align: 'end',
-                            offset: 8,
-                            textAlign: 'center',
-                            display: true,
-                            // เปิดใช้งานเส้นชี้บ่ง (arc lines) จากชิ้นโดนัทไปยังป้ายชื่อ
-                            connectorColor: '#6b7280',
-                            lineWidth: 1,
-                            clamp: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let sum = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
-                                    
-                                    if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
-                                        let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
-                                        hiddenIssuesDetail.forEach(item => {
-                                            details.push(` - ${item.issue}: ${item.count} ครั้ง`);
-                                        });
-                                        return details;
-                                    }
-
-                                    return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
-                                }
+                                return `${value.toLocaleString()} ครั้ง (${percentage})`;
                             }
                         }
                     }
                 },
                 plugins: [ChartDataLabels]
             });
+
+            // Line Chart (แนวโน้ม Downtime แยกตาม Line เป็นกราฟเส้นตรง)
+            const ctxLine = document.getElementById('lineChart').getContext('2d');
+            lineChartInstance = new Chart(ctxLine, {
+                type: 'line', // ตั้งค่าเป็นกราฟเส้น (Line Chart)
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#2d3748' }, ticks: { color: '#a0aec0' } },
+                        x: { grid: { display: false }, ticks: { color: '#a0aec0' } }
+                    },
+                    plugins: { 
+                        legend: { labels: { color: '#ffffff' } }, 
+                        datalabels: { display: false } 
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
         }
 
-        function updateLineChart(data) {
-            const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
-            const lines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
-            const colorMap = { 'A-Door': '#ef4444', 'B-Door': '#10b981', 'C-Door': '#f59e0b', 'Bottom': '#8b5cf6', 'DND': '#64748b' };
+        function updateDashboard() {
+            const filtered = getFilteredData();
+            
+            // อัปเดต KPI Cards
+            let aMins = 0, aCount = 0;
+            let bMins = 0, bCount = 0;
+            let cMins = 0, cCount = 0;
 
-            const datasets = lines.map(lineName => {
-                const dataPerDate = dates.map(d => {
-                    const totalMins = data
-                        .filter(item => item.date === d && item.line === lineName)
-                        .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
-                    
-                    return totalMins === 0 ? null : totalMins;
+            filtered.forEach(item => {
+                const dt = Number(item.downtime) || 0;
+                if (item.line === 'A-Door') { aMins += dt; aCount++; }
+                else if (item.line === 'B-Door') { bMins += dt; bCount++; }
+                else if (item.line === 'C-Door') { cMins += dt; cCount++; }
+            });
+
+            document.getElementById('kpi-a-mins').innerText = aMins.toLocaleString();
+            document.getElementById('kpi-a-count').innerText = aCount.toLocaleString();
+            document.getElementById('kpi-b-mins').innerText = bMins.toLocaleString();
+            document.getElementById('kpi-b-count').innerText = bCount.toLocaleString();
+            document.getElementById('kpi-c-mins').innerText = cMins.toLocaleString();
+            document.getElementById('kpi-c-count').innerText = cCount.toLocaleString();
+
+            // จัดการข้อมูล Doughnut Chart (Top 5: แสดง 4 อันดับแรก และอันดับที่ 5 รวมเป็น "ปัญหาอื่นๆ (รวม)")
+            const issueCounts = {};
+            filtered.forEach(item => {
+                if (item.issue) {
+                    issueCounts[item.issue] = (issueCounts[item.issue] || 0) + 1;
+                }
+            });
+
+            const sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
+            let finalIssueLabels = [];
+            let finalIssueValues = [];
+
+            if (sortedIssues.length <= 5) {
+                finalIssueLabels = sortedIssues.map(i => i[0]);
+                finalIssueValues = sortedIssues.map(i => i[1]);
+            } else {
+                const top4 = sortedIssues.slice(0, 4);
+                finalIssueLabels = top4.map(i => i[0]);
+                finalIssueValues = top4.map(i => i[1]);
+
+                const othersSum = sortedIssues.slice(4).reduce((sum, curr) => sum + curr[1], 0);
+                finalIssueLabels.push('ปัญหาอื่นๆ (รวม)');
+                finalIssueValues.push(othersSum);
+            }
+
+            const totalIssues = finalIssueValues.reduce((a, b) => a + b, 0);
+            document.getElementById('centerTotalValue').innerText = totalIssues.toLocaleString();
+
+            const colors = ['#f97316', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'];
+            const bgColors = finalIssueLabels.map((_, idx) => colors[idx % colors.length]);
+
+            shiftChartInstance.data.labels = finalIssueLabels;
+            shiftChartInstance.data.datasets[0].data = finalIssueValues;
+            shiftChartInstance.data.datasets[0].backgroundColor = bgColors;
+            shiftChartInstance.update();
+
+            // อัปเดต Line Chart (แนวโน้ม Downtime แยกตาม Line - ไม่แสดงค่า 0)
+            const lineDataMap = {};
+            const datesSet = new Set();
+            filtered.forEach(item => {
+                if (item.date && item.line) {
+                    datesSet.add(item.date);
+                    if (!lineDataMap[item.line]) lineDataMap[item.line] = {};
+                    lineDataMap[item.line][item.date] = (lineDataMap[item.line][item.date] || 0) + (Number(item.downtime) || 0);
+                }
+            });
+
+            const sortedDates = [...datesSet].sort();
+            const linesList = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
+            const lineDatasets = linesList.map((lineName, idx) => {
+                const dataArr = sortedDates.map(d => {
+                    const val = lineDataMap[lineName]?.[d] || 0;
+                    return val === 0 ? null : val; // ไม่แสดงค่า 0 บนกราฟเส้น
                 });
-
+                const lineColors = ['#ef4444', '#10b981', '#f59e0b', '#a855f7', '#6b7280'];
                 return {
                     label: lineName,
-                    data: dataPerDate,
-                    borderColor: colorMap[lineName],
-                    backgroundColor: colorMap[lineName],
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    fill: false
+                    data: dataArr,
+                    borderColor: lineColors[idx % lineColors.length],
+                    backgroundColor: lineColors[idx % lineColors.length],
+                    tension: 0.1,
+                    fill: false,
+                    spanGaps: false
                 };
             });
 
-            lineChartInstance.data.labels = dates;
-            lineChartInstance.data.datasets = datasets;
+            lineChartInstance.data.labels = sortedDates;
+            lineChartInstance.data.datasets = lineDatasets;
             lineChartInstance.update();
+
+            // เรนเดอร์ข้อมูลลงในตาราง
+            renderTableWithPagination(filtered);
         }
 
-        function updateShiftChart(data) {
-            const issueCounts = {};
-            data.forEach(item => {
-                const issue = item.issue || 'ไม่ระบุ';
-                issueCounts[issue] = (issueCounts[issue] || 0) + 1;
-            });
+        function renderTableWithPagination(dataList) {
+            const tbody = document.getElementById('logTableBody');
+            tbody.innerHTML = '';
 
-            let sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
+            const rowsPerPageSelect = document.getElementById('rowsPerPageSelect').value;
+            const totalRows = dataList.length;
 
-            let finalLabels = [];
-            let finalCounts = [];
-            hiddenIssuesDetail = [];
+            let paginatedData = dataList;
+            let totalPages = 1;
 
-            if (sortedIssues.length > 5) {
-                for (let i = 0; i < 4; i++) {
-                    finalLabels.push(sortedIssues[i][0]);
-                    finalCounts.push(sortedIssues[i][1]);
-                }
-                
-                let othersSum = 0;
-                for (let i = 4; i < sortedIssues.length; i++) {
-                    othersSum += sortedIssues[i][1];
-                    hiddenIssuesDetail.push({ issue: sortedIssues[i][0], count: sortedIssues[i][1] });
-                }
-                finalLabels.push('ปัญหาอื่นๆ (รวม)');
-                finalCounts.push(othersSum);
-            } else {
-                sortedIssues.forEach(item => {
-                    finalLabels.push(item[0]);
-                    finalCounts.push(item[1]);
-                });
+            if (rowsPerPageSelect !== 'All') {
+                const rpp = parseInt(rowsPerPageSelect);
+                totalPages = Math.ceil(totalRows / rpp) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                const start = (currentPage - 1) * rpp;
+                paginatedData = dataList.slice(start, start + rpp);
             }
 
-            const totalDefects = finalCounts.reduce((a, b) => a + b, 0);
-            document.getElementById('centerTotalValue').innerText = totalDefects.toLocaleString();
+            if (paginatedData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center p-6 text-gray-500">ไม่พบข้อมูลการขัดข้องตามเงื่อนไขที่เลือก</td></tr>`;
+                document.getElementById('paginationInfo').innerText = `แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ`;
+                document.getElementById('paginationControls').innerHTML = '';
+                return;
+            }
 
-            const centerLabel = document.querySelector('#shiftChart').parentElement.querySelector('.absolute span:nth-child(2)');
-            if (centerLabel) centerLabel.innerText = 'ปัญหา';
+            paginatedData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-[#242b35]/50 transition";
+                tr.innerHTML = `
+                    <td class="p-2.5 border-r border-gray-800">${item.date || '-'}</td>
+                    <td class="p-2.5 border-r border-gray-800">${item.shift || '-'}</td>
+                    <td class="p-2.5 border-r border-gray-800 font-medium text-orange-400">${item.line || '-'}</td>
+                    <td class="p-2.5 border-r border-gray-800">${item.machine || '-'}</td>
+                    <td class="p-2.5 border-r border-gray-800">${item.station || '-'}</td>
+                    <td class="p-2.5 border-r border-gray-800">${item.issue || '-'}</td>
+                    <td class="p-2.5 border-r border-gray-800">${item.cause || '-'}</td>
+                    <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
+                    <td class="p-2.5 border-r border-gray-800 text-right font-semibold text-rose-400">${(Number(item.downtime) || 0).toLocaleString()}</td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="deleteLog(${item.id})" class="bg-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white px-2 py-1 rounded transition text-[10px]">ลบ</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
 
-            shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
-            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [1];
-            shiftChartInstance.update();
+            // คำนวณช่วงข้อมูลที่แสดงผลมุมซ้ายล่าง
+            let startNum = 0, endNum = 0;
+            if (rowsPerPageSelect === 'All') {
+                startNum = totalRows > 0 ? 1 : 0;
+                endNum = totalRows;
+            } else {
+                const rpp = parseInt(rowsPerPageSelect);
+                startNum = totalRows > 0 ? (currentPage - 1) * rpp + 1 : 0;
+                endNum = Math.min(currentPage * rpp, totalRows);
+            }
+            document.getElementById('paginationInfo').innerText = `แสดง ${startNum} ถึง ${endNum} จากทั้งหมด ${totalRows} รายการ`;
+
+            // สร้างปุ่มกดแบ่งหน้า (Pagination Buttons)
+            const controlsEl = document.getElementById('paginationControls');
+            controlsEl.innerHTML = '';
+
+            if (rowsPerPageSelect !== 'All' && totalPages > 1) {
+                const prevBtn = document.createElement('button');
+                prevBtn.innerText = '‹ ก่อนหน้า';
+                prevBtn.className = `px-2.5 py-1 rounded border border-gray-700 transition ${currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-[#181c24]' : 'bg-[#242b35] hover:bg-gray-700 text-white'}`;
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableWithPagination(dataList); } };
+                controlsEl.appendChild(prevBtn);
+
+                const pageIndicator = document.createElement('span');
+                pageIndicator.className = 'px-3 py-1 text-gray-300';
+                pageIndicator.innerText = `หน้า ${currentPage} / ${totalPages}`;
+                controlsEl.appendChild(pageIndicator);
+
+                const nextBtn = document.createElement('button');
+                nextBtn.innerText = 'ถัดไป ›';
+                nextBtn.className = `px-2.5 py-1 rounded border border-gray-700 transition ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-[#181c24]' : 'bg-[#242b35] hover:bg-gray-700 text-white'}`;
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableWithPagination(dataList); } };
+                controlsEl.appendChild(nextBtn);
+            }
         }
     </script>
 </body>
