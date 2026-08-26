@@ -132,7 +132,7 @@
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
             <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งตามประเภทปัญหา (Issue)</h3>
-            <div class="h-80 relative flex justify-center items-center">
+            <div class="h-96 relative flex justify-center items-center">
                 <canvas id="shiftChart"></canvas>
                 <!-- Center Total Value Overlay -->
                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -143,7 +143,7 @@
         </div>
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7">
             <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที) [ไม่แสดงค่า 0]</h3>
-            <div class="h-80"><canvas id="lineChart"></canvas></div>
+            <div class="h-96"><canvas id="lineChart"></canvas></div>
         </div>
     </div>
 
@@ -718,15 +718,15 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: 45 // เพิ่มช่องว่างรอบกราฟให้กว้างขึ้น เพื่อให้เส้นชี้บ่งและตัวหนังสือไม่ชนขอบ
+                        padding: 60 // ขยาย padding ให้กว้างขึ้นเพื่อรองรับเส้นชี้บ่งยาวๆ
                     },
-                    cutout: '60%',
-                    radius: '55%',
+                    cutout: '58%',
+                    radius: '75%', // ขยายขนาดโดนัทให้ใหญ่ขึ้นตามตัวอย่าง
                     plugins: {
                         legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
-                            font: { size: 10, weight: 'bold' },
+                            font: { size: 11, weight: 'bold' },
                             formatter: (value, ctx) => {
                                 let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                                 let percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
@@ -735,12 +735,12 @@
                             },
                             anchor: 'end',
                             align: 'end',
-                            offset: 8,
+                            offset: 12,
                             textAlign: 'center',
                             display: true,
-                            // เปิดใช้งานเส้นชี้บ่ง (arc lines) จากชิ้นโดนัทไปยังป้ายชื่อ
+                            // เปิดใช้งานเส้นชี้บ่ง (connector lines) ยื่นออกไปจากตัวชิ้นส่วน
                             connectorColor: '#6b7280',
-                            lineWidth: 1,
+                            lineWidth: 1.5,
                             clamp: false
                         },
                         tooltip: {
