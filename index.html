@@ -131,14 +131,9 @@
     <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งตามประเภทปัญหา (Issue)</h3>
+            <h3 class="text-sm font-bold text-orange-500 mb-2">Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)</h3>
             <div class="h-80 relative flex justify-center items-center">
                 <canvas id="shiftChart"></canvas>
-                <!-- Center Total Value Overlay -->
-                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span id="centerTotalValue" class="text-2xl font-extrabold text-white">0</span>
-                    <span class="text-[11px] text-gray-400 font-medium">ปัญหา</span>
-                </div>
             </div>
         </div>
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7">
@@ -474,8 +469,8 @@
                     const btn = document.getElementById(`btn-line-${l}`);
                     if (btn) {
                         btn.className = l === 'All'
-                            ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition"
-                            : "px-2 py-1 rounded text-gray-300 hover:text-white transition";
+                            ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"
+                            : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
                     }
                 });
 
@@ -702,46 +697,30 @@
                 }
             });
 
+            // เปลี่ยนจาก Doughnut เป็น Bar Chart (กราฟแท่งแนวตั้ง) สำหรับแสดง Top 5 ปัญหา
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
-                type: 'doughnut',
+                type: 'bar',
                 data: { 
                     labels: [], 
                     datasets: [{ 
+                        label: 'จำนวนครั้ง',
                         data: [], 
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#a855f7'], 
-                        borderWidth: 2, 
-                        borderColor: '#181c24' 
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], 
+                        borderRadius: 4
                     }] 
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: 45 // เพิ่มช่องว่างรอบกราฟให้กว้างขึ้น เพื่อให้เส้นชี้บ่งและตัวหนังสือไม่ชนขอบ
-                    },
-                    cutout: '50%',
-                    radius: '73%',
                     plugins: {
                         legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
                             font: { size: 10, weight: 'bold' },
-                            formatter: (value, ctx) => {
-                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                let percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
-                                let label = ctx.chart.data.labels[ctx.dataIndex] || '';
-                                return `${label}\n${value.toLocaleString()} ครั้ง (${percentage})`;
-                            },
                             anchor: 'end',
-                            align: 'end',
-                            offset: 8,
-                            textAlign: 'center',
-                            display: true,
-                            // เปิดใช้งานเส้นชี้บ่ง (arc lines) จากชิ้นโดนัทไปยังป้ายชื่อ
-                            connectorColor: '#6b7280',
-                            lineWidth: 1,
-                            clamp: false
+                            align: 'top',
+                            formatter: (value) => value > 0 ? value.toLocaleString() : ''
                         },
                         tooltip: {
                             callbacks: {
@@ -760,6 +739,17 @@
                                     return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
                                 }
                             }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { color: '#9ca3af', font: { size: 9 }, maxRotation: 25, minRotation: 0 }, 
+                            grid: { display: false } 
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { color: '#9ca3af', precision: 0 }, 
+                            grid: { color: '#242b35' } 
                         }
                     }
                 },
@@ -830,14 +820,8 @@
                 });
             }
 
-            const totalDefects = finalCounts.reduce((a, b) => a + b, 0);
-            document.getElementById('centerTotalValue').innerText = totalDefects.toLocaleString();
-
-            const centerLabel = document.querySelector('#shiftChart').parentElement.querySelector('.absolute span:nth-child(2)');
-            if (centerLabel) centerLabel.innerText = 'ปัญหา';
-
             shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
-            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [1];
+            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
             shiftChartInstance.update();
         }
     </script>
