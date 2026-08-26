@@ -183,6 +183,10 @@
                 <input type="date" id="inputDate" required class="w-full bg-gray-200 text-gray-900 font-semibold p-2 rounded border border-gray-400">
             </div>
             <div>
+                <label class="block text-gray-400 mb-1">TIME (เวลา)</label>
+                <input type="time" id="inputTime" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div>
                 <label class="block text-gray-400 mb-1">SHIFT</label>
                 <select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
                     <option value="Day">Day</option>
@@ -247,6 +251,7 @@
                 <thead class="bg-[#242b35] text-gray-300 sticky top-0 uppercase border-b border-gray-700">
                     <tr>
                         <th class="p-2.5 border-r border-gray-700">DATE</th>
+                        <th class="p-2.5 border-r border-gray-700">TIME</th>
                         <th class="p-2.5 border-r border-gray-700">SHIFT</th>
                         <th class="p-2.5 border-r border-gray-700">LINE</th>
                         <th class="p-2.5 border-r border-gray-700">เครื่อง</th>
@@ -302,6 +307,7 @@
                     .from('breakdown_logs')
                     .select('*')
                     .order('date', { ascending: false })
+                    .order('time', { ascending: false, nullsFirst: false })
                     .order('id', { ascending: false });
 
                 if (error) throw error;
@@ -392,6 +398,7 @@
 
             const newLog = {
                 date: document.getElementById('inputDate').value,
+                time: document.getElementById('inputTime').value,
                 shift: document.getElementById('inputShift').value,
                 line: document.getElementById('inputLine').value,
                 machine: document.getElementById('inputMachine').value,
@@ -423,10 +430,8 @@
         async function deleteLog(id) {
             const passwordInput = prompt('กรุณากรอกรหัสผ่านเพื่อยืนยันการลบข้อมูล:');
             
-            // ตรวจสอบว่ากด Cancel หรือไม่
             if (passwordInput === null) return;
 
-            // ตรวจสอบรหัสผ่านเป็น "Doorline"
             if (passwordInput !== 'Doorline') {
                 alert('รหัสผ่านไม่ถูกต้อง! ไม่อนุญาตให้ลบข้อมูล');
                 return;
@@ -617,7 +622,7 @@
             const rowsPerPageVal = document.getElementById('rowsPerPageSelect').value;
             
             if (totalRows === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาหรือเงื่อนไขที่เลือก</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาหรือเงื่อนไขที่เลือก</td></tr>';
                 document.getElementById('paginationInfo').innerText = 'แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ';
                 document.getElementById('paginationControls').innerHTML = '';
                 return;
@@ -643,6 +648,7 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
                         <td class="p-2.5 border-r border-gray-800 font-mono text-orange-400 font-medium">${item.date || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800 font-mono text-gray-300">${item.time || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.shift || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 font-semibold">${item.line || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.machine || '-'}</td>
@@ -658,18 +664,14 @@
                 `;
             });
 
-            // Update Info text
             document.getElementById('paginationInfo').innerText = `แสดง ${startIndex + 1} ถึง ${endIndex} จากทั้งหมด ${totalRows} รายการ`;
 
-            // Render Pagination Buttons
             const controlsEl = document.getElementById('paginationControls');
             controlsEl.innerHTML = '';
 
             if (rowsPerPageVal !== 'All' && totalPages > 1) {
-                // Prev Button
                 controlsEl.innerHTML += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled class="px-2 py-1 rounded bg-gray-800 text-gray-600 cursor-not-allowed"' : 'class="px-2 py-1 rounded bg-[#242b35] hover:bg-gray-700 text-gray-300"'}>&lt;</button>`;
 
-                // Page Number Buttons
                 for (let i = 1; i <= totalPages; i++) {
                     if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
                         const activeClass = i === currentPage ? 'bg-orange-600 text-white font-bold' : 'bg-[#242b35] hover:bg-gray-700 text-gray-300';
@@ -679,7 +681,6 @@
                     }
                 }
 
-                // Next Button
                 controlsEl.innerHTML += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled class="px-2 py-1 rounded bg-gray-800 text-gray-600 cursor-not-allowed"' : 'class="px-2 py-1 rounded bg-[#242b35] hover:bg-gray-700 text-gray-300"'}>&gt;</button>`;
             }
         }
@@ -693,27 +694,22 @@
         }
 
         function updateKPIs(data) {
-            // A-Door
             const lineA = data.filter(item => item.line === 'A-Door');
             document.getElementById('kpi-a-mins').innerText = lineA.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
             document.getElementById('kpi-a-count').innerText = lineA.length.toLocaleString();
 
-            // B-Door
             const lineB = data.filter(item => item.line === 'B-Door');
             document.getElementById('kpi-b-mins').innerText = lineB.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
             document.getElementById('kpi-b-count').innerText = lineB.length.toLocaleString();
 
-            // C-Door
             const lineC = data.filter(item => item.line === 'C-Door');
             document.getElementById('kpi-c-mins').innerText = lineC.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
             document.getElementById('kpi-c-count').innerText = lineC.length.toLocaleString();
 
-            // Bottom
             const lineBottom = data.filter(item => item.line === 'Bottom');
             document.getElementById('kpi-bottom-mins').innerText = lineBottom.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
             document.getElementById('kpi-bottom-count').innerText = lineBottom.length.toLocaleString();
 
-            // DND
             const lineDND = data.filter(item => item.line === 'DND');
             document.getElementById('kpi-dnd-mins').innerText = lineDND.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
             document.getElementById('kpi-dnd-count').innerText = lineDND.length.toLocaleString();
