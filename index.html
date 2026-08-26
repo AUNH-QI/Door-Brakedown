@@ -160,7 +160,7 @@
     <div class="bg-[#181c24] rounded-xl border border-gray-800 p-4 mb-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
             <div class="flex items-center gap-4">
-                <h3 class="text-sm font-bold text-orange-500">บันทึกข้อมูลขัดข้อง (Breakdown Log)</h3>
+                <h3 class="text-sm font-bold text-orange-500">Breakdown Log Data</h3>
                 <!-- Rows per page selector (Default 10) -->
                 <div class="flex items-center gap-1.5 text-xs text-gray-300">
                     <span>แสดง:</span>
@@ -174,7 +174,7 @@
                     <span>แถว</span>
                 </div>
             </div>
-            <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded transition">+ เพิ่มรายการใหม่</button>
+            <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded transition">+ADD</button>
         </div>
 
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
@@ -183,7 +183,7 @@
                 <input type="date" id="inputDate" required class="w-full bg-gray-200 text-gray-900 font-semibold p-2 rounded border border-gray-400">
             </div>
             <div>
-                <label class="block text-gray-400 mb-1">TIME (เวลา)</label>
+                <label class="block text-gray-400 mb-1">TIME</label>
                 <input type="time" id="inputTime" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
             <div>
@@ -204,7 +204,7 @@
                 </select>
             </div>
             <div>
-                <label class="block text-gray-400 mb-1">เครื่อง</label>
+                <label class="block text-gray-400 mb-1">machine</label>
                 <select id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
                     <option value="เครื่องฉีดโฟม">เครื่องฉีดโฟม</option>
                     <option value="เครื่องฉีดกาว">เครื่องฉีดกาว</option>
@@ -223,21 +223,21 @@
                 </select>
             </div>
             <div>
-                <label class="block text-gray-400 mb-1">ปัญหา (Issue)</label>
+                <label class="block text-gray-400 mb-1">issue</label>
                 <select id="inputIssue" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
                     <option value="">-- เลือกปัญหา --</option>
                 </select>
             </div>
             <div>
-                <label class="block text-gray-400 mb-1">สาเหตุ</label>
+                <label class="block text-gray-400 mb-1">cause</label>
                 <input type="text" id="inputCause" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
             <div>
-                <label class="block text-gray-400 mb-1">ระยะเวลา (นาที)</label>
+                <label class="block text-gray-400 mb-1">downtime (min)</label>
                 <input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
             <div class="col-span-2 md:col-span-4">
-                <label class="block text-gray-400 mb-1">การแก้ไข</label>
+                <label class="block text-gray-400 mb-1">fix</label>
                 <input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
@@ -251,16 +251,16 @@
                 <thead class="bg-[#242b35] text-gray-300 sticky top-0 uppercase border-b border-gray-700">
                     <tr>
                         <th class="p-2.5 border-r border-gray-700">DATE</th>
-                        <th class="p-2.5 border-r border-gray-700">TIME</th>
                         <th class="p-2.5 border-r border-gray-700">SHIFT</th>
                         <th class="p-2.5 border-r border-gray-700">LINE</th>
-                        <th class="p-2.5 border-r border-gray-700">เครื่อง</th>
-                        <th class="p-2.5 border-r border-gray-700">Station</th>
-                        <th class="p-2.5 border-r border-gray-700">ปัญหา</th>
-                        <th class="p-2.5 border-r border-gray-700">สาเหตุ</th>
-                        <th class="p-2.5 border-r border-gray-700">การแก้ไข</th>
-                        <th class="p-2.5 border-r border-gray-700 text-right">ระยะเวลา(นาที)</th>
-                        <th class="p-2.5 text-center">จัดการ</th>
+                        <th class="p-2.5 border-r border-gray-700">MACHINE</th>
+                        <th class="p-2.5 border-r border-gray-700">STATION</th>
+                        <th class="p-2.5 border-r border-gray-700">ISSUE</th>
+                        <th class="p-2.5 border-r border-gray-700">CAUSE</th>
+                        <th class="p-2.5 border-r border-gray-700">FIX</th>
+                        <th class="p-2.5 border-r border-gray-700">TIME</th>
+                        <th class="p-2.5 border-r border-gray-700 text-right">DOWNTIME (MIN)</th>
+                        <th class="p-2.5 text-center">⚙️</th>
                     </tr>
                 </thead>
                 <tbody id="logTableBody" class="divide-y divide-gray-800 text-gray-300"></tbody>
@@ -648,7 +648,6 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
                         <td class="p-2.5 border-r border-gray-800 font-mono text-orange-400 font-medium">${item.date || '-'}</td>
-                        <td class="p-2.5 border-r border-gray-800 font-mono text-gray-300">${item.time || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.shift || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 font-semibold">${item.line || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.machine || '-'}</td>
@@ -656,9 +655,10 @@
                         <td class="p-2.5 border-r border-gray-800 text-gray-200 font-medium">${item.issue || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.cause || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
+                        <td class="p-2.5 border-r border-gray-800 font-mono text-gray-300">${item.time || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${Number(item.downtime).toLocaleString()}</td>
                         <td class="p-2.5 text-center">
-                            <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded transition">ลบ</button>
+                            <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded transition" title="Delete">🗑️</button>
                         </td>
                     </tr>
                 `;
