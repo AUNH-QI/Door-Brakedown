@@ -765,7 +765,10 @@
                                     let sum = context.dataset.data.reduce((a, b) => a + b, 0);
                                     let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
                                     
-                                    if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
+                                    // จัดการแปลง Array แถวกลับเป็น String เวลาโชว์ Tooltip ให้สวยงาม
+                                    let labelText = Array.isArray(context.label) ? context.label.join(' ') : context.label;
+
+                                    if (labelText === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
                                         let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
                                         hiddenIssuesDetail.forEach(item => {
                                             details.push(` - ${item.issue}: ${item.count} ครั้ง`);
@@ -773,7 +776,7 @@
                                         return details;
                                     }
 
-                                    return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
+                                    return ` ${labelText}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
                                 }
                             }
                         }
@@ -782,8 +785,8 @@
                         x: { 
                             ticks: { 
                                 color: '#9ca3af', 
-                                font: { size: 12 }, 
-                                maxRotation: 25, 
+                                font: { size: 11 }, 
+                                maxRotation: 0,   // ล็อกไม่ให้ตัวหนังสือเอียง
                                 minRotation: 0 
                             }, 
                             grid: { display: false } 
@@ -844,7 +847,7 @@
 
             if (sortedIssues.length > 5) {
                 for (let i = 0; i < 4; i++) {
-                    finalLabels.push(sortedIssues[i][0]);
+                    finalLabels.push(formatChartLabel(sortedIssues[i][0])); // จัดการตัด 2 บรรทัด
                     finalCounts.push(sortedIssues[i][1]);
                 }
                 
@@ -853,11 +856,11 @@
                     othersSum += sortedIssues[i][1];
                     hiddenIssuesDetail.push({ issue: sortedIssues[i][0], count: sortedIssues[i][1] });
                 }
-                finalLabels.push('ปัญหาอื่นๆ (รวม)');
+                finalLabels.push(['ปัญหาอื่นๆ', '(รวม)']);
                 finalCounts.push(othersSum);
             } else {
                 sortedIssues.forEach(item => {
-                    finalLabels.push(item[0]);
+                    finalLabels.push(formatChartLabel(item[0])); // จัดการตัด 2 บรรทัด
                     finalCounts.push(item[1]);
                 });
             }
@@ -865,6 +868,22 @@
             shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
             shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
             shiftChartInstance.update();
+        }
+
+        // ฟังก์ชันช่วยตัดข้อความบนแกน X ให้เป็น 2 บรรทัดอัตโนมัติ ถ้ายาวเกินไป
+        function formatChartLabel(text) {
+            if (!text) return '';
+            if (text.length > 12) {
+                // หาช่องว่างตรงกลางเพื่อตัดบรรทัด หรือตัดแบ่งครึ่ง
+                let mid = Math.floor(text.length / 2);
+                let spaceIdx = text.indexOf(' ', mid);
+                if (spaceIdx === -1) spaceIdx = text.lastIndexOf(' ', mid);
+                
+                if (spaceIdx !== -1) {
+                    return [text.substring(0, spaceIdx), text.substring(spaceIdx + 1)];
+                }
+            }
+            return text;
         }
     </script>
 </body>
