@@ -6,6 +6,8 @@
     <title>Haier Machine Breakdown Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -128,13 +130,20 @@
 
     <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
-        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-4 flex flex-col justify-between">
+        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
             <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งตามประเภทปัญหา (Issue)</h3>
-            <div class="h-60 relative flex justify-center items-center"><canvas id="shiftChart"></canvas></div>
+            <div class="h-72 relative flex justify-center items-center">
+                <canvas id="shiftChart"></canvas>
+                <!-- Center Total Value Overlay -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span id="centerTotalValue" class="text-2xl font-extrabold text-white">0</span>
+                    <span class="text-[11px] text-gray-400 font-medium">Defects</span>
+                </div>
+            </div>
         </div>
-        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-8">
+        <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7">
             <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที) [ไม่แสดงค่า 0]</h3>
-            <div class="h-60"><canvas id="lineChart"></canvas></div>
+            <div class="h-72"><canvas id="lineChart"></canvas></div>
         </div>
     </div>
 
@@ -254,29 +263,29 @@
         });
 
         async function fetchLogs() {
-    const statusEl = document.getElementById('loadingStatus');
-    statusEl.classList.remove('hidden');
+            const statusEl = document.getElementById('loadingStatus');
+            statusEl.classList.remove('hidden');
 
-    try {
-        const { data, error } = await supabaseClient
-            .from('breakdown_logs')
-            .select('*')
-            // เรียงลำดับจากวันที่ล่าสุดไปเก่าสุด และตามด้วย id ล่าสุด เพื่อให้รายการที่เพิ่งบันทึกอยู่บรรทัดบนสุดเสมอ
-            .order('date', { ascending: false })
-            .order('id', { ascending: false });
+            try {
+                const { data, error } = await supabaseClient
+                    .from('breakdown_logs')
+                    .select('*')
+                    .order('date', { ascending: false })
+                    .order('id', { ascending: false });
 
-        if (error) throw error;
+                if (error) throw error;
 
-        logsData = data || [];
-        populateDropdowns();
-        updateDashboard();
-    } catch (err) {
-        console.error("Error fetching data:", err);
-        alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
-    } finally {
-        statusEl.classList.add('hidden');
-    }
-}
+                logsData = data || [];
+                populateDropdowns();
+                updateDashboard();
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
+            } finally {
+                statusEl.classList.add('hidden');
+            }
+        }
+
         function populateDropdowns() {
             const stations = [...new Set(logsData.map(item => item.station))].filter(Boolean).sort();
             
@@ -420,7 +429,6 @@
             updateDashboard();
         }
 
-        // ฟังก์ชันล้างตัวกรองแบบปรับปรุงใหม่ ไม่ให้หน้าค้าง
         function clearFilters() {
             const statusEl = document.getElementById('loadingStatus');
             statusEl.classList.remove('hidden');
@@ -467,7 +475,6 @@
             }, 10);
         }
 
-        // ฟังก์ชันกำหนดช่วงเวลาแบบด่วน (ปรับปรุงใหม่)
         function setQuickDate(type) {
             clearActiveQuickDateBtn();
             const targetBtn = document.getElementById(`btn-date-${type}`);
@@ -615,21 +622,42 @@
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#ec4899'], borderWidth: 0 }] },
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#a855f7'], borderWidth: 2, borderColor: '#181c24' }] },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'right', labels: { color: '#9ca3af', font: { size: 11 } } },
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { color: '#9ca3af', font: { size: 10 }, boxWidth: 12 } 
+                        },
+                        // เปิดใช้งาน Datalabels เพื่อแสดงชื่อ, จำนวน และเปอร์เซ็นต์กำกับรอบกราฟ
+                        datalabels: {
+                            color: '#ffffff',
+                            font: { size: 11, weight: 'bold' },
+                            formatter: (value, ctx) => {
+                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                let percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
+                                let label = ctx.chart.data.labels[ctx.dataIndex] || '';
+                                return `${label}\n${value.toLocaleString()} (${percentage})`;
+                            },
+                            anchor: 'end',
+                            align: 'end',
+                            offset: 6,
+                            textAlign: 'center'
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return ` ${context.label}: ${context.raw} ครั้ง`;
+                                    let sum = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
+                                    return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
                                 }
                             }
                         }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
         }
 
@@ -672,6 +700,10 @@
 
             const labels = Object.keys(issueCounts);
             const counts = Object.values(issueCounts);
+
+            // คำนวณผลรวมทั้งหมดเพื่อแสดงตรงกลางโดนัท
+            const totalDefects = counts.reduce((a, b) => a + b, 0);
+            document.getElementById('centerTotalValue').innerText = totalDefects.toLocaleString();
 
             shiftChartInstance.data.labels = labels.length > 0 ? labels : ['ไม่มีข้อมูล'];
             shiftChartInstance.data.datasets[0].data = counts.length > 0 ? counts : [1];
