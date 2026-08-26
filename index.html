@@ -1,841 +1,1170 @@
 <!DOCTYPE html>
+
 <html lang="th">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Haier Machine Breakdown Dashboard</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- Chart.js DataLabels Plugin -->
+
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
     <!-- Supabase JS Client -->
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
+
 <body class="bg-[#0f1115] text-white p-6 font-sans">
 
+
+
     <!-- Header & Filters -->
+
     <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
+
         <div>
+
             <div class="flex items-center gap-3">
+
                 <h1 class="text-2xl font-bold tracking-wide text-orange-500">HAIER MACHINE BREAKDOWN</h1>
+
                 <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังดึงข้อมูล...</span>
+
             </div>
+
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
+
         </div>
+
         
+
         <div class="flex flex-wrap gap-2.5 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs items-center">
+
             
+
             <!-- Quick Date Buttons -->
+
             <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+
                 <button onclick="setQuickDate('all')" id="btn-date-all" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">ทั้งหมด</button>
+
                 <button onclick="setQuickDate('today')" id="btn-date-today" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">วันนี้</button>
+
                 <button onclick="setQuickDate('week')" id="btn-date-week" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">สัปดาห์นี้</button>
+
                 <button onclick="setQuickDate('month')" id="btn-date-month" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">เดือนนี้</button>
+
             </div>
+
+
 
             <!-- Custom Date Range -->
+
             <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium">
+
                 <div>
+
                     <label class="block text-[9px] text-gray-600">ตั้งแต่วันที่</label>
+
                     <input type="date" id="startDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+
                 </div>
+
                 <span class="text-gray-500 mt-3">-</span>
+
                 <div>
+
                     <label class="block text-[9px] text-gray-600">ถึงวันที่</label>
+
                     <input type="date" id="endDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+
                 </div>
+
             </div>
+
+
 
             <!-- Month Dropdown Filter -->
+
             <div>
+
                 <label class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
+
                 <select id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
+
                     <option value="All">ทุกเดือน (All)</option>
+
                 </select>
+
             </div>
+
+
 
             <!-- Line Buttons Filter -->
+
             <div>
+
                 <label class="block text-[10px] text-gray-400 mb-1">เลือก Line</label>
+
                 <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+
                     <button onclick="setLineFilter('All')" id="btn-line-All" class="px-2 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
+
                     <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line A</button>
+
                     <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line B</button>
+
                     <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line C</button>
+
                     <button onclick="setLineFilter('Bottom')" id="btn-line-Bottom" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Bottom</button>
+
                     <button onclick="setLineFilter('DND')" id="btn-line-DND" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">DND</button>
+
                 </div>
+
                 <input type="hidden" id="lineFilter" value="All">
+
             </div>
+
+
 
             <!-- Shift Buttons Filter -->
+
             <div>
+
                 <label class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
+
                 <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+
                     <button onclick="setShiftFilter('All')" id="btn-shift-All" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
+
                     <button onclick="setShiftFilter('Day')" id="btn-shift-Day" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Day</button>
+
                     <button onclick="setShiftFilter('Night')" id="btn-shift-Night" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Night</button>
+
                 </div>
+
                 <input type="hidden" id="shiftFilter" value="All">
+
             </div>
+
+
 
             <!-- Station Filter -->
+
             <div>
+
                 <label class="block text-[10px] text-gray-400 mb-1">Station</label>
+
                 <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+
                     <option value="All">ทุก Station (All)</option>
+
                 </select>
+
             </div>
+
+
 
             <!-- Issue Category Filter -->
+
             <div>
+
                 <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
+
                 <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+
                     <option value="All">ทุกปัญหา (All)</option>
+
                 </select>
+
             </div>
+
+
 
             <!-- Action Buttons -->
+
             <div class="flex items-end gap-1.5 mt-auto">
+
                 <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
+
                 <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
+
             </div>
+
         </div>
+
     </div>
+
+
 
     <!-- KPI Cards -->
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
+
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line A-Door (Downtime รวม)</h3>
+
             <div class="flex justify-between items-baseline">
+
                 <span class="text-3xl font-extrabold text-white"><span id="kpi-a-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
+
                 <span class="text-3xl font-extrabold text-emerald-400"><span id="kpi-a-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
+
             </div>
+
         </div>
+
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
+
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line B-Door (Downtime รวม)</h3>
+
             <div class="flex justify-between items-baseline">
+
                 <span class="text-3xl font-extrabold text-white"><span id="kpi-b-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
+
                 <span class="text-3xl font-extrabold text-amber-400"><span id="kpi-b-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
+
             </div>
+
         </div>
+
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md">
+
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line C-Door (Downtime รวม)</h3>
+
             <div class="flex justify-between items-baseline">
+
                 <span class="text-3xl font-extrabold text-white"><span id="kpi-c-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
+
                 <span class="text-3xl font-extrabold text-rose-500"><span id="kpi-c-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
+
             </div>
+
         </div>
+
     </div>
+
+
 
     <!-- Charts -->
+
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
+
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
+
             <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งตามประเภทปัญหา (Issue)</h3>
+
             <div class="h-96 relative flex justify-center items-center">
+
                 <canvas id="shiftChart"></canvas>
+
                 <!-- Center Total Value Overlay -->
+
                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+
                     <span id="centerTotalValue" class="text-2xl font-extrabold text-white">0</span>
+
                     <span class="text-[11px] text-gray-400 font-medium">ปัญหา</span>
+
                 </div>
+
             </div>
+
         </div>
+
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7">
+
             <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที) [ไม่แสดงค่า 0]</h3>
+
             <div class="h-96"><canvas id="lineChart"></canvas></div>
+
         </div>
+
     </div>
+
+
 
     <!-- Add Log Form & Table -->
+
     <div class="bg-[#181c24] rounded-xl border border-gray-800 p-4 mb-6">
+
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+
             <div class="flex items-center gap-4">
+
                 <h3 class="text-sm font-bold text-orange-500">บันทึกข้อมูลขัดข้อง (Breakdown Log)</h3>
+
                 <!-- Rows per page selector (Default 10) -->
+
                 <div class="flex items-center gap-1.5 text-xs text-gray-300">
+
                     <span>แสดง:</span>
+
                     <select id="rowsPerPageSelect" onchange="changeRowsPerPage()" class="bg-[#242b35] text-white px-2 py-1 rounded border border-gray-700 focus:outline-none cursor-pointer">
+
                         <option value="10" selected>10</option>
+
                         <option value="20">20</option>
+
                         <option value="50">50</option>
+
                         <option value="100">100</option>
+
                         <option value="All">ทั้งหมด</option>
+
                     </select>
+
                     <span>แถว</span>
+
                 </div>
+
             </div>
+
             <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded transition">+ เพิ่มรายการใหม่</button>
+
         </div>
+
+
 
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
+
             <div>
+
                 <label class="block text-gray-400 mb-1">DATE</label>
+
                 <input type="date" id="inputDate" required class="w-full bg-gray-200 text-gray-900 font-semibold p-2 rounded border border-gray-400">
+
             </div>
+
             <div>
+
                 <label class="block text-gray-400 mb-1">SHIFT</label>
+
                 <select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+
                     <option value="Day">Day</option>
+
                     <option value="Night">Night</option>
+
                 </select>
+
             </div>
+
             <div>
+
                 <label class="block text-gray-400 mb-1">LINE</label>
+
                 <select id="inputLine" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+
                     <option value="A-Door">A-Door</option>
+
                     <option value="B-Door">B-Door</option>
+
                     <option value="C-Door">C-Door</option>
+
                     <option value="Bottom">Bottom</option>
+
                     <option value="DND">DND</option>
+
                 </select>
+
             </div>
+
             <div>
+
                 <label class="block text-gray-400 mb-1">เครื่อง</label>
+
                 <select id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+
                     <option value="เครื่องฉีดโฟม">เครื่องฉีดโฟม</option>
+
                     <option value="เครื่องฉีดกาว">เครื่องฉีดกาว</option>
+
                     <option value="เครื่องฉีดยางขอบ">เครื่องฉีดยางขอบ</option>
+
                     <option value="โต๊ะเชื่อมยางขอบ">โต๊ะเชื่อมยางขอบ</option>
+
                     <option value="เครื่อง Spot">เครื่อง Spot</option>
+
                     <option value="สายพาน">สายพาน</option>
+
                     <option value="ระบบไฟฟ้า">ระบบไฟฟ้า</option>
+
                     <option value="อื่นๆ">อื่นๆ</option>
+
                 </select>
+
             </div>
+
             <div>
+
                 <label class="block text-gray-400 mb-1">Station</label>
+
                 <select id="inputStation" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+
                     <option value="-">-- เลือก Station --</option>
+
                 </select>
+
             </div>
+
             <div>
+
                 <label class="block text-gray-400 mb-1">ปัญหา (Issue)</label>
+
                 <select id="inputIssue" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+
                     <option value="">-- เลือกปัญหา --</option>
+
                 </select>
+
             </div>
+
             <div>
+
                 <label class="block text-gray-400 mb-1">สาเหตุ</label>
+
                 <input type="text" id="inputCause" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+
             </div>
+
             <div>
+
                 <label class="block text-gray-400 mb-1">ระยะเวลา (นาที)</label>
+
                 <input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+
             </div>
+
             <div class="col-span-2 md:col-span-4">
+
                 <label class="block text-gray-400 mb-1">การแก้ไข</label>
+
                 <input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+
             </div>
+
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
+
                 <button type="button" onclick="toggleForm()" class="bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded text-white">ยกเลิก</button>
+
                 <button type="submit" id="submitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white">บันทึกข้อมูล</button>
+
             </div>
+
         </form>
 
+
+
         <div class="overflow-x-auto min-h-[300px]">
+
             <table class="w-full text-left text-xs border-collapse">
+
                 <thead class="bg-[#242b35] text-gray-300 sticky top-0 uppercase border-b border-gray-700">
+
                     <tr>
+
                         <th class="p-2.5 border-r border-gray-700">DATE</th>
+
                         <th class="p-2.5 border-r border-gray-700">SHIFT</th>
+
                         <th class="p-2.5 border-r border-gray-700">LINE</th>
+
                         <th class="p-2.5 border-r border-gray-700">เครื่อง</th>
+
                         <th class="p-2.5 border-r border-gray-700">Station</th>
+
                         <th class="p-2.5 border-r border-gray-700">ปัญหา</th>
+
                         <th class="p-2.5 border-r border-gray-700">สาเหตุ</th>
+
                         <th class="p-2.5 border-r border-gray-700">การแก้ไข</th>
+
                         <th class="p-2.5 border-r border-gray-700 text-right">ระยะเวลา(นาที)</th>
+
                         <th class="p-2.5 text-center">จัดการ</th>
+
                     </tr>
+
                 </thead>
+
                 <tbody id="logTableBody" class="divide-y divide-gray-800 text-gray-300"></tbody>
+
             </table>
+
         </div>
+
+
 
         <!-- Pagination Controls Bar -->
+
         <div class="flex flex-col sm:flex-row justify-between items-center mt-4 pt-3 border-t border-gray-800 text-xs gap-3">
+
             <div id="paginationInfo" class="text-gray-400">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
+
             <div id="paginationControls" class="flex items-center gap-1"></div>
+
         </div>
+
     </div>
 
+
+
     <script>
+
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
+
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
+
         
+
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+
+
         let logsData = [];
+
         let lineChartInstance = null;
+
         let shiftChartInstance = null;
+
         let hiddenIssuesDetail = []; 
+
         let currentPage = 1;
 
-        // Custom Plugin สำหรับวาดเส้นโยง (Connector Lines) สำหรับ Doughnut Chart
-        const doughnutConnectorPlugin = {
-            id: 'doughnutConnector',
-            afterDraw(chart) {
-                const { ctx } = chart;
-                const meta = chart.getDatasetMeta(0);
-                
-                ctx.save();
-                ctx.lineWidth = 1.5;
 
-                meta.data.forEach((element, index) => {
-                    const dataVal = chart.data.datasets[0].data[index];
-                    if (dataVal === 0) return;
-
-                    ctx.strokeStyle = chart.data.datasets[0].backgroundColor[index];
-
-                    const { x: startX, y: startY } = element.tooltipPosition();
-                    const angle = element.startAngle + (element.endAngle - element.startAngle) / 2;
-                    
-                    const extraRadius = 25;
-                    const endX = element.x + (element.outerRadius + extraRadius) * Math.cos(angle);
-                    const endY = element.y + (element.outerRadius + extraRadius) * Math.sin(angle);
-
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
-
-                    const finalX = endX + (Math.cos(angle) > 0 ? 15 : -15);
-                    ctx.lineTo(finalX, endY);
-                    ctx.stroke();
-                });
-                ctx.restore();
-            }
-        };
 
         document.addEventListener('DOMContentLoaded', () => {
+
             initCharts();
+
             fetchLogs();
 
+
+
             document.getElementById('stationFilter').addEventListener('change', () => { currentPage = 1; updateDashboard(); });
+
             document.getElementById('issueFilter').addEventListener('change', () => { currentPage = 1; updateDashboard(); });
+
             document.getElementById('monthFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
+
             document.getElementById('startDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
+
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
+
             document.getElementById('inputDate').valueAsDate = new Date();
+
         });
 
+
+
         async function fetchLogs() {
+
             const statusEl = document.getElementById('loadingStatus');
+
             statusEl.classList.remove('hidden');
 
+
+
             try {
+
                 const { data, error } = await supabaseClient
+
                     .from('breakdown_logs')
+
                     .select('*')
+
                     .order('date', { ascending: false })
+
                     .order('id', { ascending: false });
+
+
 
                 if (error) throw error;
 
+
+
                 logsData = data || [];
+
                 populateDropdowns();
+
                 updateDashboard();
+
             } catch (err) {
+
                 console.error("Error fetching data:", err);
+
                 alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
+
             } finally {
+
                 statusEl.classList.add('hidden');
+
             }
+
         }
 
+
+
         function populateDropdowns() {
+
             const stations = [...new Set(logsData.map(item => item.station))].filter(Boolean).sort();
+
             
+
             const stationFilter = document.getElementById('stationFilter');
+
             const currentStation = stationFilter.value;
+
             stationFilter.innerHTML = '<option value="All">ทุก Station (All)</option>';
+
             stations.forEach(st => {
+
                 const selected = st === currentStation ? 'selected' : '';
+
                 stationFilter.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
+
             });
 
+
+
             const inputStation = document.getElementById('inputStation');
+
             const currentInputStation = inputStation.value;
+
             inputStation.innerHTML = '<option value="-">-- เลือก Station --</option>';
+
             stations.forEach(st => {
+
                 const selected = st === currentInputStation ? 'selected' : '';
+
                 inputStation.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
+
             });
+
+
 
             const issues = [...new Set(logsData.map(item => item.issue))].filter(Boolean).sort();
 
+
+
             const issueFilter = document.getElementById('issueFilter');
+
             const currentIssue = issueFilter.value;
+
             issueFilter.innerHTML = '<option value="All">ทุกปัญหา (All)</option>';
+
             issues.forEach(issue => {
+
                 const selected = issue === currentIssue ? 'selected' : '';
+
                 issueFilter.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
+
             });
+
+
 
             const inputIssue = document.getElementById('inputIssue');
+
             const currentInputIssue = inputIssue.value;
+
             inputIssue.innerHTML = '<option value="">-- เลือกปัญหา --</option>';
+
             issues.forEach(issue => {
+
                 const selected = issue === currentInputIssue ? 'selected' : '';
+
                 inputIssue.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
+
             });
+
+
 
             const monthFilter = document.getElementById('monthFilter');
+
             const currentMonth = monthFilter.value;
+
             const monthsSet = new Set();
+
             logsData.forEach(item => {
+
                 if (item.date && item.date.length >= 7) {
+
                     monthsSet.add(item.date.substring(0, 7));
+
                 }
+
             });
+
             const sortedMonths = [...monthsSet].sort().reverse();
 
+
+
             const thaiMonths = {
+
                 '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
+
                 '05': 'พฤษภาคม', '06': 'มิถุนายน', '07': 'กรกฎาคม', '08': 'สิงหาคม',
+
                 '09': 'กันยายน', '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม'
+
             };
+
+
 
             monthFilter.innerHTML = '<option value="All">ทุกเดือน (All)</option>';
+
             sortedMonths.forEach(ym => {
+
                 const [year, monthNum] = ym.split('-');
+
                 const thaiYear = parseInt(year);
+
                 const label = `${thaiMonths[monthNum] || monthNum} ${thaiYear}`;
+
                 const selected = ym === currentMonth ? 'selected' : '';
+
                 monthFilter.innerHTML += `<option value="${ym}" ${selected}>${label}</option>`;
+
             });
+
         }
+
+
 
         function toggleForm() {
+
             document.getElementById('addLogForm').classList.toggle('hidden');
+
         }
+
+
 
         async function addNewLog(event) {
+
             event.preventDefault();
+
             const btn = document.getElementById('submitBtn');
+
             btn.innerText = 'กำลังบันทึก...';
+
             btn.disabled = true;
 
+
+
             const newLog = {
+
                 date: document.getElementById('inputDate').value,
+
                 shift: document.getElementById('inputShift').value,
+
                 line: document.getElementById('inputLine').value,
+
                 machine: document.getElementById('inputMachine').value,
+
                 station: document.getElementById('inputStation').value || '-',
+
                 issue: document.getElementById('inputIssue').value,
+
                 cause: document.getElementById('inputCause').value || '-',
+
                 fix: document.getElementById('inputFix').value || '-',
+
                 downtime: Number(document.getElementById('inputDowntime').value)
+
             };
 
+
+
             try {
+
                 const { error } = await supabaseClient.from('breakdown_logs').insert([newLog]);
+
                 if (error) throw error;
 
+
+
                 toggleForm();
+
                 document.getElementById('addLogForm').reset();
+
                 document.getElementById('inputDate').valueAsDate = new Date();
+
                 currentPage = 1;
+
                 await fetchLogs();
+
             } catch (err) {
+
                 console.error("Error adding log:", err);
+
                 alert("บันทึกข้อมูลไม่สำเร็จ: " + err.message);
+
             } finally {
+
                 btn.innerText = 'บันทึกข้อมูล';
+
                 btn.disabled = false;
+
             }
+
         }
+
+
 
         async function deleteLog(id) {
+
             if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+
                 try {
+
                     const { error } = await supabaseClient.from('breakdown_logs').delete().eq('id', id);
+
                     if (error) throw error;
+
                     await fetchLogs();
+
                 } catch (err) {
+
                     console.error("Error deleting log:", err);
+
                     alert("ลบข้อมูลไม่สำเร็จ: " + err.message);
+
                 }
+
             }
+
         }
+
+
 
         function setLineFilter(lineName) {
+
             document.getElementById('lineFilter').value = lineName;
+
             const lines = ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
+
             lines.forEach(l => {
+
                 const btn = document.getElementById(`btn-line-${l}`);
+
                 if (l === lineName) {
+
                     btn.className = "px-2 py-1 rounded bg-orange-600 text-white font-medium transition";
+
                 } else {
+
                     btn.className = "px-2 py-1 rounded text-gray-300 hover:text-white transition";
+
                 }
+
             });
+
             currentPage = 1;
+
             updateDashboard();
+
         }
+
+
 
         function setShiftFilter(shiftName) {
+
             document.getElementById('shiftFilter').value = shiftName;
+
             const shifts = ['All', 'Day', 'Night'];
+
             shifts.forEach(s => {
+
                 const btn = document.getElementById(`btn-shift-${s}`);
+
                 if (s === shiftName) {
+
                     btn.className = "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition";
+
                 } else {
+
                     btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
+
                 }
+
             });
+
             currentPage = 1;
+
             updateDashboard();
+
         }
+
+
 
         function clearFilters() {
+
             const statusEl = document.getElementById('loadingStatus');
+
             statusEl.classList.remove('hidden');
+
             statusEl.innerText = 'กำลังล้างตัวกรอง...';
 
+
+
             setTimeout(() => {
+
                 ['all', 'today', 'week', 'month'].forEach(type => {
+
                     const btn = document.getElementById(`btn-date-${type}`);
+
                     if (btn) {
+
                         btn.className = type === 'all' 
+
                             ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"
+
                             : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
+
                     }
+
                 });
+
+
 
                 document.getElementById('lineFilter').value = 'All';
+
                 ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
+
                     const btn = document.getElementById(`btn-line-${l}`);
+
                     if (btn) {
+
                         btn.className = l === 'All'
+
                             ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition"
+
                             : "px-2 py-1 rounded text-gray-300 hover:text-white transition";
+
                     }
+
                 });
+
+
 
                 document.getElementById('shiftFilter').value = 'All';
+
                 ['All', 'Day', 'Night'].forEach(s => {
+
                     const btn = document.getElementById(`btn-shift-${s}`);
+
                     if (btn) {
+
                         btn.className = s === 'All'
+
                             ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"
+
                             : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
+
                     }
+
                 });
 
+
+
                 document.getElementById('stationFilter').value = 'All';
+
                 document.getElementById('issueFilter').value = 'All';
+
                 document.getElementById('monthFilter').value = 'All';
+
                 document.getElementById('startDateFilter').value = '';
+
                 document.getElementById('endDateFilter').value = '';
 
+
+
                 currentPage = 1;
+
                 updateDashboard();
+
                 statusEl.classList.add('hidden');
+
             }, 10);
+
         }
+
+
 
         function setQuickDate(type) {
+
             clearActiveQuickDateBtn();
+
             const targetBtn = document.getElementById(`btn-date-${type}`);
+
             if (targetBtn) {
+
                 targetBtn.className = "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition";
+
             }
+
+
 
             document.getElementById('startDateFilter').value = '';
+
             document.getElementById('endDateFilter').value = '';
+
             document.getElementById('monthFilter').value = 'All';
 
+
+
             const today = new Date();
+
             const formatDate = (d) => d.toISOString().split('T')[0];
 
+
+
             if (type === 'today') {
+
                 const tStr = formatDate(today);
+
                 document.getElementById('startDateFilter').value = tStr;
+
                 document.getElementById('endDateFilter').value = tStr;
+
             } else if (type === 'week') {
+
                 const firstDay = new Date(today);
+
                 firstDay.setDate(today.getDate() - today.getDay());
+
                 document.getElementById('startDateFilter').value = formatDate(firstDay);
+
                 document.getElementById('endDateFilter').value = formatDate(today);
+
             } else if (type === 'month') {
+
                 const currentYm = today.toISOString().slice(0, 7);
+
                 const monthSelect = document.getElementById('monthFilter');
+
                 let found = false;
+
                 for (let opt of monthSelect.options) {
+
                     if (opt.value === currentYm) {
+
                         monthSelect.value = currentYm;
+
                         found = true;
+
                         break;
+
                     }
+
                 }
+
                 if (!found) monthSelect.value = 'All';
+
             }
 
+
+
             currentPage = 1;
+
             updateDashboard();
+
         }
+
+
 
         function clearActiveQuickDateBtn() {
+
             ['all', 'today', 'week', 'month'].forEach(type => {
+
                 const btn = document.getElementById(`btn-date-${type}`);
+
                 if (btn) {
+
                     btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
+
                 }
+
             });
+
         }
+
+
 
         function getFilteredData() {
+
             const lineVal = document.getElementById('lineFilter').value;
+
             const shiftVal = document.getElementById('shiftFilter').value;
+
             const stationVal = document.getElementById('stationFilter').value;
+
             const issueVal = document.getElementById('issueFilter').value;
+
             const startDate = document.getElementById('startDateFilter').value;
+
             const endDate = document.getElementById('endDateFilter').value;
+
             const monthVal = document.getElementById('monthFilter').value;
 
+
+
             return logsData.filter(item => {
+
                 const itemDate = item.date;
+
                 
+
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
+
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
+
                 if (stationVal !== 'All' && item.station !== stationVal) return false;
+
                 if (issueVal !== 'All' && item.issue !== issueVal) return false;
 
+
+
                 if (monthVal && monthVal !== 'All') {
+
                     if (!itemDate || !itemDate.startsWith(monthVal)) return false;
+
                 }
+
+
 
                 if (startDate && itemDate < startDate) return false;
+
                 if (endDate && itemDate > endDate) return false;
 
+
+
                 return true;
+
             });
+
         }
+
+
 
         function changeRowsPerPage() {
+
             currentPage = 1;
+
             renderTableWithPagination(getFilteredData());
-        }
 
-        // ฟังก์ชันสร้าง Chart (ปรับค่า Doughnut และเพิ่ม Plugin เชื่อมเส้นโยง)
-        function initCharts() {
-            const ctxShift = document.getElementById('shiftChart').getContext('2d');
-            shiftChartInstance = new Chart(ctxShift, {
-                type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: {
-                        padding: 80 // เพิ่มพื้นที่รอบกราฟให้กว้างขึ้นเพื่อรองรับเส้นและป้ายชื่อ
-                    },
-                    cutout: '58%',
-                    radius: '60%', 
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: {
-                            color: '#ffffff',
-                            font: { size: 11, weight: 'bold' },
-                            formatter: (value, ctx) => {
-                                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                let percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
-                                let label = ctx.chart.data.labels[ctx.dataIndex] || '';
-                                return `${label}\n${value.toLocaleString()} ครั้ง (${percentage})`;
-                            },
-                            anchor: 'end',
-                            align: 'end',
-                            offset: 28, // ดันตำแหน่งตัวหนังสือให้อยู่พอดีปลายเส้นโยง
-                            textAlign: 'center',
-                            display: true,
-                            clamp: false
-                        }
-                    }
-                },
-                plugins: [ChartDataLabels, doughnutConnectorPlugin]
-            });
+        } 
 
-            const ctxLine = document.getElementById('lineChart').getContext('2d');
-            lineChartInstance = new Chart(ctxLine, {
-                type: 'bar',
-                data: { labels: [], datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#2d3748' }, ticks: { color: '#a0aec0' } },
-                        x: { grid: { display: false }, ticks: { color: '#a0aec0' } }
-                    },
-                    plugins: { legend: { labels: { color: '#ffffff' } }, datalabels: { display: false } }
-                },
-                plugins: [ChartDataLabels]
-            });
-        }
-
-        function updateDashboard() {
-            const filtered = getFilteredData();
-            
-            // อัปเดต KPI Cards
-            let aMins = 0, aCount = 0;
-            let bMins = 0, bCount = 0;
-            let cMins = 0, cCount = 0;
-
-            filtered.forEach(item => {
-                const dt = Number(item.downtime) || 0;
-                if (item.line === 'A-Door') { aMins += dt; aCount++; }
-                else if (item.line === 'B-Door') { bMins += dt; bCount++; }
-                else if (item.line === 'C-Door') { cMins += dt; cCount++; }
-            });
-
-            document.getElementById('kpi-a-mins').innerText = aMins.toLocaleString();
-            document.getElementById('kpi-a-count').innerText = aCount.toLocaleString();
-            document.getElementById('kpi-b-mins').innerText = bMins.toLocaleString();
-            document.getElementById('kpi-b-count').innerText = bCount.toLocaleString();
-            document.getElementById('kpi-c-mins').innerText = cMins.toLocaleString();
-            document.getElementById('kpi-c-count').innerText = cCount.toLocaleString();
-
-            // อัปเดต Doughnut Chart (Issue Breakdown)
-            const issueCounts = {};
-            filtered.forEach(item => {
-                if (item.issue) {
-                    issueCounts[item.issue] = (issueCounts[item.issue] || 0) + 1;
-                }
-            });
-
-            const sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
-            const issueLabels = sortedIssues.map(i => i[0]);
-            const issueValues = sortedIssues.map(i => i[1]);
-            const totalIssues = issueValues.reduce((a, b) => a + b, 0);
-
-            document.getElementById('centerTotalValue').innerText = totalIssues.toLocaleString();
-
-            const colors = ['#f97316', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#eab308', '#ec4899', '#06b6d4'];
-            const bgColors = issueLabels.map((_, idx) => colors[idx % colors.length]);
-
-            shiftChartInstance.data.labels = issueLabels;
-            shiftChartInstance.data.datasets[0].data = issueValues;
-            shiftChartInstance.data.datasets[0].backgroundColor = bgColors;
-            shiftChartInstance.update();
-
-            // อัปเดต Line Chart (ตัวอย่างการแสดงผลแนวโน้มตาม Line)
-            const lineDataMap = {};
-            const datesSet = new Set();
-            filtered.forEach(item => {
-                if (item.date && item.line) {
-                    datesSet.add(item.date);
-                    if (!lineDataMap[item.line]) lineDataMap[item.line] = {};
-                    lineDataMap[item.line][item.date] = (lineDataMap[item.line][item.date] || 0) + (Number(item.downtime) || 0);
-                }
-            });
-
-            const sortedDates = [...datesSet].sort();
-            const linesList = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
-            const lineDatasets = linesList.map((lineName, idx) => {
-                const dataArr = sortedDates.map(d => lineDataMap[lineName]?.[d] || 0);
-                const lineColors = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'];
-                return {
-                    label: lineName,
-                    data: dataArr,
-                    borderColor: lineColors[idx % lineColors.length],
-                    backgroundColor: lineColors[idx % lineColors.length],
-                    tension: 0.1
-                };
-            });
-
-            lineChartInstance.data.labels = sortedDates;
-            lineChartInstance.data.datasets = lineDatasets;
-            lineChartInstance.update();
-
-            // เรนเดอร์ข้อมูลลงในตาราง
-            renderTableWithPagination(filtered);
-        }
-
-        function renderTableWithPagination(dataList) {
-            const tbody = document.getElementById('logTableBody');
-            tbody.innerHTML = '';
-
-            const rowsPerPageSelect = document.getElementById('rowsPerPageSelect').value;
-            const totalRows = dataList.length;
-
-            let paginatedData = dataList;
-            let totalPages = 1;
-
-            if (rowsPerPageSelect !== 'All') {
-                const rpp = parseInt(rowsPerPageSelect);
-                totalPages = Math.ceil(totalRows / rpp) || 1;
-                if (currentPage > totalPages) currentPage = totalPages;
-                const start = (currentPage - 1) * rpp;
-                paginatedData = dataList.slice(start, start + rpp);
-            }
-
-            if (paginatedData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="text-center p-6 text-gray-500">ไม่พบข้อมูลการขัดข้องตามเงื่อนไขที่เลือก</td></tr>`;
-                document.getElementById('paginationInfo').innerText = `แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ`;
-                document.getElementById('paginationControls').innerHTML = '';
-                return;
-            }
-
-            paginatedData.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-[#242b35]/50 transition";
-                tr.innerHTML = `
-                    <td class="p-2.5 border-r border-gray-800">${item.date || '-'}</td>
-                    <td class="p-2.5 border-r border-gray-800">${item.shift || '-'}</td>
-                    <td class="p-2.5 border-r border-gray-800 font-medium text-orange-400">${item.line || '-'}</td>
-                    <td class="p-2.5 border-r border-gray-800">${item.machine || '-'}</td>
-                    <td class="p-2.5 border-r border-gray-800">${item.station || '-'}</td>
-                    <td class="p-2.5 border-r border-gray-800">${item.issue || '-'}</td>
-                    <td class="p-2.5 border-r border-gray-800">${item.cause || '-'}</td>
-                    <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
-                    <td class="p-2.5 border-r border-gray-800 text-right font-semibold text-rose-400">${(Number(item.downtime) || 0).toLocaleString()}</td>
-                    <td class="p-2.5 text-center">
-                        <button onclick="deleteLog(${item.id})" class="bg-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white px-2 py-1 rounded transition text-[10px]">ลบ</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // คำนวณช่วงข้อมูลที่แสดงผลมุมซ้ายล่าง
-            let startNum = 0, endNum = 0;
-            if (rowsPerPageSelect === 'All') {
-                startNum = totalRows > 0 ? 1 : 0;
-                endNum = totalRows;
-            } else {
-                const rpp = parseInt(rowsPerPageSelect);
-                startNum = totalRows > 0 ? (currentPage - 1) * rpp + 1 : 0;
-                endNum = Math.min(currentPage * rpp, totalRows);
-            }
-            document.getElementById('paginationInfo').innerText = `แสดง ${startNum} ถึง ${endNum} จากทั้งหมด ${totalRows} รายการ`;
-
-            // สร้างปุ่มกดแบ่งหน้า (Pagination Buttons)
-            const controlsEl = document.getElementById('paginationControls');
-            controlsEl.innerHTML = '';
-
-            if (rowsPerPageSelect !== 'All' && totalPages > 1) {
-                // ปุ่มหน้าก่อนหน้า
-                const prevBtn = document.createElement('button');
-                prevBtn.innerText = '‹ ก่อนหน้า';
-                prevBtn.className = `px-2.5 py-1 rounded border border-gray-700 transition ${currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-[#181c24]' : 'bg-[#242b35] hover:bg-gray-700 text-white'}`;
-                prevBtn.disabled = currentPage === 1;
-                prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableWithPagination(dataList); } };
-                controlsEl.appendChild(prevBtn);
-
-                // แสดงเลขหน้าปัจจุบัน
-                const pageIndicator = document.createElement('span');
-                pageIndicator.className = 'px-3 py-1 text-gray-300';
-                pageIndicator.innerText = `หน้า ${currentPage} / ${totalPages}`;
-                controlsEl.appendChild(pageIndicator);
-
-                // ปุ่มหน้าถัดไป
-                const nextBtn = document.createElement('button');
-                nextBtn.innerText = 'ถัดไป ›';
-                nextBtn.className = `px-2.5 py-1 rounded border border-gray-700 transition ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-[#181c24]' : 'bg-[#242b35] hover:bg-gray-700 text-white'}`;
-                nextBtn.disabled = currentPage === totalPages;
-                nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableWithPagination(dataList); } };
-                controlsEl.appendChild(nextBtn);
-            }
-        }
-    </script>
-</body>
-</html>
