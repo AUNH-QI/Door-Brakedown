@@ -707,14 +707,42 @@
                 issueCounts[issue] = (issueCounts[issue] || 0) + 1;
             });
 
-            const labels = Object.keys(issueCounts);
-            const counts = Object.values(issueCounts);
+            // แปลงเป็น Array แล้วเรียงลำดับจากมากไปน้อย (Top)
+            let sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
 
-            const totalDefects = counts.reduce((a, b) => a + b, 0);
+            let finalLabels = [];
+            let finalCounts = [];
+
+            if (sortedIssues.length > 5) {
+                // เอา 4 อันดับแรกไว้เหมือนเดิม
+                for (let i = 0; i < 4; i++) {
+                    finalLabels.push(sortedIssues[i][0]);
+                    finalCounts.push(sortedIssues[i][1]);
+                }
+                // อันดับที่ 5 รวมปัญหาที่เหลือทั้งหมด
+                let othersSum = 0;
+                for (let i = 4; i < sortedIssues.length; i++) {
+                    othersSum += sortedIssues[i][1];
+                }
+                finalLabels.push('ปัญหาอื่นๆ (รวม)');
+                finalCounts.push(othersSum);
+            } else {
+                // ถ้ามีจำนวนปัญหาน้อยกว่าหรือเท่ากับ 5 ให้แสดงตามปกติ
+                sortedIssues.forEach(item => {
+                    finalLabels.push(item[0]);
+                    finalCounts.push(item[1]);
+                });
+            }
+
+            const totalDefects = finalCounts.reduce((a, b) => a + b, 0);
             document.getElementById('centerTotalValue').innerText = totalDefects.toLocaleString();
 
-            shiftChartInstance.data.labels = labels.length > 0 ? labels : ['ไม่มีข้อมูล'];
-            shiftChartInstance.data.datasets[0].data = counts.length > 0 ? counts : [1];
+            // เปลี่ยนข้อความคำว่า Defects ตรงกลางวงโดนัทเป็น "ปัญหา"
+            const centerLabel = document.querySelector('#shiftChart').parentElement.querySelector('.absolute span:nth-child(2)');
+            if (centerLabel) centerLabel.innerText = 'ปัญหา';
+
+            shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
+            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [1];
             shiftChartInstance.update();
         }
     </script>
