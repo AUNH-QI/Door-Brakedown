@@ -152,12 +152,12 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
             <div class="flex items-center gap-4">
                 <h3 class="text-sm font-bold text-orange-500">บันทึกข้อมูลขัดข้อง (Breakdown Log)</h3>
-                <!-- Rows per page selector -->
+                <!-- Rows per page selector (Default 10) -->
                 <div class="flex items-center gap-1.5 text-xs text-gray-300">
                     <span>แสดง:</span>
                     <select id="rowsPerPageSelect" onchange="changeRowsPerPage()" class="bg-[#242b35] text-white px-2 py-1 rounded border border-gray-700 focus:outline-none cursor-pointer">
-                        <option value="10">10</option>
-                        <option value="20" selected>20</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
                         <option value="All">ทั้งหมด</option>
@@ -718,10 +718,10 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: 30 // เพิ่มช่องว่างรอบกราฟ ป้องกันป้ายชื่อชนขอบ
+                        padding: 45 // เพิ่มช่องว่างรอบกราฟให้กว้างขึ้น เพื่อให้เส้นชี้บ่งและตัวหนังสือไม่ชนขอบ
                     },
-                    cutout: '65%',
-                    radius: '62%',
+                    cutout: '60%',
+                    radius: '55%',
                     plugins: {
                         legend: { display: false },
                         datalabels: {
@@ -735,9 +735,13 @@
                             },
                             anchor: 'end',
                             align: 'end',
-                            offset: 6,
+                            offset: 8,
                             textAlign: 'center',
-                            clamp: true
+                            display: true,
+                            // เปิดใช้งานเส้นชี้บ่ง (arc lines) จากชิ้นโดนัทไปยังป้ายชื่อ
+                            connectorColor: '#6b7280',
+                            lineWidth: 1,
+                            clamp: false
                         },
                         tooltip: {
                             callbacks: {
