@@ -132,13 +132,12 @@
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
             <h3 class="text-sm font-bold text-orange-500 mb-2">สัดส่วนจำนวนครั้งตามประเภทปัญหา (Issue)</h3>
-            <!-- เพิ่มความสูงกราฟโดนัทเป็น 80 เพื่อให้มีพื้นที่รอบวงมากขึ้น -->
             <div class="h-80 relative flex justify-center items-center">
                 <canvas id="shiftChart"></canvas>
                 <!-- Center Total Value Overlay -->
                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span id="centerTotalValue" class="text-2xl font-extrabold text-white">0</span>
-                    <span class="text-[11px] text-gray-400 font-medium">Defects</span>
+                    <span class="text-[11px] text-gray-400 font-medium">ปัญหา</span>
                 </div>
             </div>
         </div>
@@ -250,6 +249,7 @@
         let logsData = [];
         let lineChartInstance = null;
         let shiftChartInstance = null;
+        let hiddenIssuesDetail = []; // ตัวแปรเก็บข้อมูลปัญหาที่ถูกยุบรวมใน "อื่นๆ"
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
@@ -638,9 +638,7 @@
                     cutout: '68%',
                     radius: '70%',
                     plugins: {
-                        legend: { 
-                            display: false 
-                        },
+                        legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
                             font: { size: 10, weight: 'bold' },
@@ -648,7 +646,7 @@
                                 let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                                 let percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
                                 let label = ctx.chart.data.labels[ctx.dataIndex] || '';
-                                return `${label}\n${value.toLocaleString()} (${percentage})`;
+                                return `${label}\n${value.toLocaleString()} ครั้ง (${percentage})`;
                             },
                             anchor: 'end',
                             align: 'end',
@@ -660,6 +658,15 @@
                                 label: function(context) {
                                     let sum = context.dataset.data.reduce((a, b) => a + b, 0);
                                     let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
+                                    
+                                    if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
+                                        let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
+                                        hiddenIssuesDetail.forEach(item => {
+                                            details.push(` - ${item.issue}: ${item.count} ครั้ง`);
+                                        });
+                                        return details;
+                                    }
+
                                     return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
                                 }
                             }
@@ -707,27 +714,26 @@
                 issueCounts[issue] = (issueCounts[issue] || 0) + 1;
             });
 
-            // แปลงเป็น Array แล้วเรียงลำดับจากมากไปน้อย (Top)
             let sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
 
             let finalLabels = [];
             let finalCounts = [];
+            hiddenIssuesDetail = [];
 
             if (sortedIssues.length > 5) {
-                // เอา 4 อันดับแรกไว้เหมือนเดิม
                 for (let i = 0; i < 4; i++) {
                     finalLabels.push(sortedIssues[i][0]);
                     finalCounts.push(sortedIssues[i][1]);
                 }
-                // อันดับที่ 5 รวมปัญหาที่เหลือทั้งหมด
+                
                 let othersSum = 0;
                 for (let i = 4; i < sortedIssues.length; i++) {
                     othersSum += sortedIssues[i][1];
+                    hiddenIssuesDetail.push({ issue: sortedIssues[i][0], count: sortedIssues[i][1] });
                 }
                 finalLabels.push('ปัญหาอื่นๆ (รวม)');
                 finalCounts.push(othersSum);
             } else {
-                // ถ้ามีจำนวนปัญหาน้อยกว่าหรือเท่ากับ 5 ให้แสดงตามปกติ
                 sortedIssues.forEach(item => {
                     finalLabels.push(item[0]);
                     finalCounts.push(item[1]);
@@ -737,7 +743,6 @@
             const totalDefects = finalCounts.reduce((a, b) => a + b, 0);
             document.getElementById('centerTotalValue').innerText = totalDefects.toLocaleString();
 
-            // เปลี่ยนข้อความคำว่า Defects ตรงกลางวงโดนัทเป็น "ปัญหา"
             const centerLabel = document.querySelector('#shiftChart').parentElement.querySelector('.absolute span:nth-child(2)');
             if (centerLabel) centerLabel.innerText = 'ปัญหา';
 
