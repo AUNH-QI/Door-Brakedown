@@ -953,7 +953,12 @@
             let finalCounts = [];
             hiddenIssuesDetail = [];
 
-            if (sortedIssues.length > 5) {
+            // ถ้ามีการเลือก Filter ปัญหาเจาะจงอยู่แล้ว ให้แสดงปัญหานั้นตรงๆ ได้เลย
+            const selectedIssueVal = document.getElementById('issueFilter').value;
+            if (selectedIssueVal !== 'All') {
+                finalLabels = [selectedIssueVal];
+                finalCounts = [data.length]; // นับจำนวนทั้งหมดของข้อมูลที่กรองมา
+            } else if (sortedIssues.length > 5) {
                 for (let i = 0; i < 4; i++) {
                     finalLabels.push(sortedIssues[i][0]);
                     finalCounts.push(sortedIssues[i][1]);
@@ -972,6 +977,11 @@
                     finalCounts.push(item.count);
                 });
             }
+
+            shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
+            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
+            shiftChartInstance.update();
+        }
 
             shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
             shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
