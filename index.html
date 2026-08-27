@@ -174,7 +174,14 @@
                     <span>แถว</span>
                 </div>
             </div>
-            <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded transition">+ADD</button>
+
+            <div class="flex items-center gap-2">
+                <!-- Quick Preset Button -->
+                <button onclick="applyQuickPreset()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3 py-1.5 rounded transition flex items-center gap-1 shadow">
+                    ⚡ ด่วน: Robot จับฝาร่วง (Line C)
+                </button>
+                <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded transition">+ADD</button>
+            </div>
         </div>
 
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
@@ -301,8 +308,8 @@
         let hiddenIssuesDetail = []; 
         let currentPage = 1;
         let editingId = null;
-        let pendingAction = null; // เก็บข้อมูลว่ากำลังทำอะไรอยู่ ('edit' หรือ 'delete')
-        let targetId = null;    // เก็บ ID ของแถวที่จะทำรายการ
+        let pendingAction = null; 
+        let targetId = null;    
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
@@ -404,6 +411,62 @@
             });
         }
 
+        // ฟังก์ชันปุ่มสำเร็จรูปด่วน
+        function applyQuickPreset() {
+            resetFormState();
+
+            // ตั้งค่าฟิลด์ตามที่กำหนดไว้ล่วงหน้า
+            document.getElementById('inputLine').value = 'C-Door';
+            document.getElementById('inputMachine').value = 'เครื่องฉีดโฟม';
+            
+            // ตั้งค่า Station เป็น Robot (ถ้ามีในตัวเลือก ถ้าไม่มีให้เพิ่มหรือเลือกค่าเริ่มต้น)
+            const stationEl = document.getElementById('inputStation');
+            let foundStation = false;
+            for (let opt of stationEl.options) {
+                if (opt.value === 'Robot') {
+                    stationEl.value = 'Robot';
+                    foundStation = true;
+                    break;
+                }
+            }
+            if (!foundStation) {
+                // หากยังไม่มีใน dropdown ให้สร้างตัวเลือก Robot เพิ่มชั่วคราว
+                const opt = document.createElement('option');
+                opt.value = 'Robot';
+                opt.text = 'Robot';
+                stationEl.add(opt);
+                stationEl.value = 'Robot';
+            }
+
+            // ตั้งค่า Issue เป็น จับฝาแล้วล่วงตก
+            const issueEl = document.getElementById('inputIssue');
+            let foundIssue = false;
+            for (let opt of issueEl.options) {
+                if (opt.value === 'จับฝาแล้วล่วงตก') {
+                    issueEl.value = 'จับฝาแล้วล่วงตก';
+                    foundIssue = true;
+                    break;
+                }
+            }
+            if (!foundIssue) {
+                const opt = document.createElement('option');
+                opt.value = 'จับฝาแล้วล่วงตก';
+                opt.text = 'จับฝาแล้วล่วงตก';
+                issueEl.add(opt);
+                issueEl.value = 'จับฝาแล้วล่วงตก';
+            }
+
+            // กำหนด Downtime เป็น 2 นาที
+            document.getElementById('inputDowntime').value = 2;
+
+            // เปิดฟอร์มและเลื่อนหน้าจอมาที่ฟอร์มเพื่อให้ผู้ใช้งานกรอก Cause, Fix, Date, Time, Shift เพิ่มเติม
+            const formEl = document.getElementById('addLogForm');
+            if (formEl.classList.contains('hidden')) {
+                formEl.classList.remove('hidden');
+            }
+            window.scrollTo({ top: formEl.offsetTop - 50, behavior: 'smooth' });
+        }
+
         function toggleForm() {
             const formEl = document.getElementById('addLogForm');
             formEl.classList.toggle('hidden');
@@ -421,7 +484,6 @@
             btn.className = 'bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white';
         }
 
-        // ฟังก์ชันเปิด Modal สำหรับ Edit
         function editLog(id) {
             pendingAction = 'edit';
             targetId = id;
@@ -430,7 +492,6 @@
             openPasswordModal();
         }
 
-        // ฟังก์ชันเปิด Modal สำหรับ Delete
         function deleteLog(id) {
             pendingAction = 'delete';
             targetId = id;
@@ -451,7 +512,6 @@
             targetId = null;
         }
 
-        // ตรวจสอบรหัสผ่านเมื่อกดปุ่มยืนยันใน Modal
         async function handlePasswordSubmit(event) {
             event.preventDefault();
             const passwordInput = document.getElementById('modalPasswordInput').value;
@@ -461,12 +521,15 @@
                 return;
             }
 
+            const action = pendingAction;
+            const idToProcess = targetId;
+
             closePasswordModal();
 
-            if (pendingAction === 'edit') {
-                executeEdit(targetId);
-            } else if (pendingAction === 'delete') {
-                executeDelete(targetId);
+            if (action === 'edit') {
+                executeEdit(idToProcess);
+            } else if (action === 'delete') {
+                executeDelete(idToProcess);
             }
         }
 
@@ -474,7 +537,6 @@
             const item = logsData.find(d => d.id === id);
             if (!item) return;
 
-            // กำหนดค่า editingId ให้ถูกต้องเพื่อให้กดอัปเดตข้อมูลได้สมบูรณ์
             editingId = id;
 
             document.getElementById('inputDate').value = item.date || '';
@@ -968,8 +1030,8 @@
                 finalCounts.push(othersSum);
             } else {
                 sortedIssues.forEach(item => {
-                    finalLabels.push(item[0]);
-                    finalCounts.push(item[1]);
+                    finalLabels.push(item.issue);
+                    finalCounts.push(item.count);
                 });
             }
 
