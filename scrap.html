@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrap By Machine Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #0b0f19; color: #9ca3af; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card-bg { background-color: #111827; border: 1px solid #1f2937; }
+        .gradient-card-1 { background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); }
+        .gradient-card-2 { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); }
+    </style>
+</head>
+<body class="p-6">
+
+    <!-- Top Navigation / Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-white">Scrap By Machine Dashboard</h1>
+            <p class="text-sm text-gray-400">Monitoring production scrap, defects, and analysis</p>
+        </div>
+        <div>
+            <a href="index.html" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg border border-gray-700 transition">ย้อนกลับหน้าหลัก</a>
+        </div>
+    </div>
+
+    <!-- Top Metric Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="gradient-card-1 rounded-2xl p-6 text-white shadow-lg">
+            <p class="text-sm uppercase tracking-wider opacity-80">Total Scrap Quantity</p>
+            <h2 id="total-scrap" class="text-3xl font-extrabold mt-2">Loading...</h2>
+        </div>
+        <div class="gradient-card-2 rounded-2xl p-6 text-white shadow-lg">
+            <p class="text-sm uppercase tracking-wider opacity-80">Total Records</p>
+            <h2 id="total-records" class="text-3xl font-extrabold mt-2">Loading...</h2>
+        </div>
+        <div class="card-bg rounded-2xl p-6 shadow-lg flex flex-col justify-between">
+            <span class="text-sm text-gray-400">Top Problem Line</span>
+            <h3 id="top-line" class="text-xl font-bold text-white mt-1">Loading...</h3>
+        </div>
+        <div class="card-bg rounded-2xl p-6 shadow-lg flex flex-col justify-between">
+            <span class="text-sm text-gray-400">Top Defect Model</span>
+            <h3 id="top-model" class="text-xl font-bold text-white mt-1">Loading...</h3>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Main Line Chart: Scrap Trend over time -->
+        <div class="card-bg rounded-2xl p-6 lg:col-span-2 shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">Scrap Quantity Trend</h3>
+            </div>
+            <div class="relative h-72">
+                <canvas id="scrapTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Right Side Bar Chart: Scrap by Line -->
+        <div class="card-bg rounded-2xl p-6 shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white">Scrap by Production Line</h3>
+            </div>
+            <div class="relative h-72">
+                <canvas id="scrapLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Donut Chart: Scrap by Model -->
+        <div class="card-bg rounded-2xl p-6 shadow-lg">
+            <h3 class="text-lg font-bold text-white mb-4">Scrap Distribution by Model</h3>
+            <div class="relative h-64 flex justify-center">
+                <canvas id="scrapModelChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Donut Chart: Scrap by Department -->
+        <div class="card-bg rounded-2xl p-6 shadow-lg">
+            <h3 class="text-lg font-bold text-white mb-4">Scrap by Department</h3>
+            <div class="relative h-64 flex justify-center">
+                <canvas id="scrapDeptChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script ข้อมูลและการเชื่อมต่อ Supabase -->
+    <script>
+        // ตั้งค่า Supabase URL และ Anon Key ของคุณที่นี่
+        const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadDashboardData() {
+            const { data, error } = await _supabase.from('scrap_data').select('*');
+            
+            if (error) {
+                console.error('Error fetching data:', error);
+                alert('ไม่สามารถดึงข้อมูลจาก Supabase ได้ กรุณาตรวจสอบ Config');
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                console.warn('No data found in table.');
+                return;
+            }
+
+            processMetrics(data);
+            renderCharts(data);
+        }
+
+        function processMetrics(data) {
+            let totalQty = 0;
+            const lineCounts = {};
+            const modelCounts = {};
+
+            data.forEach(row => {
+                const qty = Number(row.quaintly) || 0;
+                totalQty += qty;
+
+                // นับแยกตาม Line
+                lineCounts[row.line] = (lineCounts[row.line] || 0) + qty;
+                // นับแยกตาม Model
+                modelCounts[row.model] = (modelCounts[row.model] || 0) + qty;
+            });
+
+            document.getElementById('total-scrap').innerText = totalQty.toLocaleString();
+            document.getElementById('total-records').innerText = data.length.toLocaleString();
+
+            // หา Line ที่ Scrap สูงสุด
+            const topLine = Object.keys(lineCounts).reduce((a, b) => lineCounts[a] > lineCounts[b] ? a : b, '-');
+            document.getElementById('top-line').innerText = topLine;
+
+            // หา Model ที่ Scrap สูงสุด
+            const topModel = Object.keys(modelCounts).reduce((a, b) => modelCounts[a] > modelCounts[b] ? a : b, '-');
+            document.getElementById('top-model').innerText = topModel;
+        }
+
+        function renderCharts(data) {
+            // 1. Trend Chart (Group by Date)
+            const dateMap = {};
+            data.forEach(row => {
+                const d = row.date;
+                dateMap[d] = (dateMap[d] || 0) + Number(row.quaintly);
+            });
+            const sortedDates = Object.keys(dateMap).sort();
+            const dateValues = sortedDates.map(d => dateMap[d]);
+
+            const ctxTrend = document.getElementById('scrapTrendChart').getContext('2d');
+            new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [{
+                        label: 'Scrap Quantity',
+                        data: dateValues,
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 2. Line Chart (Bar)
+            const lineMap = {};
+            data.forEach(row => {
+                lineMap[row.line] = (lineMap[row.line] || 0) + Number(row.quaintly);
+            });
+            const ctxLine = document.getElementById('scrapLineChart').getContext('2d');
+            new Chart(ctxLine, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(lineMap),
+                    datasets: [{
+                        data: Object.values(lineMap),
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 3. Model Donut Chart
+            const modelMap = {};
+            data.forEach(row => {
+                modelMap[row.model] = (modelMap[row.model] || 0) + Number(row.quaintly);
+            });
+            const ctxModel = document.getElementById('scrapModelChart').getContext('2d');
+            new Chart(ctxModel, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(modelMap),
+                    datasets: [{
+                        data: Object.values(modelMap),
+                        backgroundColor: ['#3b82f6', '#06b6d4', '#8b5cf6', '#ec4899', '#f59e0b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 4. Department Donut Chart
+            const deptMap = {};
+            data.forEach(row => {
+                const dept = row.department || 'N/A';
+                deptMap[dept] = (deptMap[dept] || 0) + Number(row.quaintly);
+            });
+            const ctxDept = document.getElementById('scrapDeptChart').getContext('2d');
+            new Chart(ctxDept, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(deptMap),
+                    datasets: [{
+                        data: Object.values(deptMap),
+                        backgroundColor: ['#10b981', '#6366f1', '#f43f5e', '#84cc16']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
+        loadDashboardData();
+    </script>
+</body>
+</html>
