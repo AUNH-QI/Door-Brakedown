@@ -367,7 +367,6 @@
                 }
             });
             const sortedStations = Object.keys(stationCounts).sort((a, b) => stationCounts[b] - stationCounts[a]);
-            // เก็บสถานีที่เหลือที่ไม่มีใน log หรือไม่มีค่าความถี่ต่อท้าย
             const allStationsSet = [...new Set(logsData.map(item => item.station))].filter(Boolean);
             const remainingStations = allStationsSet.filter(st => !stationCounts[st]).sort();
             const finalStations = [...sortedStations, ...remainingStations];
@@ -919,9 +918,9 @@
                         legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
-                            font: { size: 10, weight: 'bold' },
-                            anchor: 'end',
-                            align: 'top',
+                            font: { size: 11, weight: 'bold' },
+                            anchor: 'center',
+                            align: 'center',
                             formatter: (value) => value > 0 ? value.toLocaleString() + ' ครั้ง' : ''
                         },
                         tooltip: {
