@@ -940,10 +940,10 @@
             lineChartInstance.update();
         }
 
-        function updateShiftChart(data) {
+       function updateShiftChart(data) {
             const issueCounts = {};
             data.forEach(item => {
-                const issue = item.issue || 'ไม่ระบุ';
+                const issue = item.issue ? item.issue.trim() : 'ไม่ระบุ'; // ตัดช่องว่างส่วนเกินป้องกันปัญหาชื่อไม่ตรงกัน
                 issueCounts[issue] = (issueCounts[issue] || 0) + 1;
             });
 
@@ -953,15 +953,14 @@
             let finalCounts = [];
             hiddenIssuesDetail = [];
 
-            // ตรวจสอบว่ามีการเลือก Filter ปัญหา (Issue) เจาะจงไว้หรือไม่
             const selectedIssueVal = document.getElementById('issueFilter').value;
 
-            if (selectedIssueVal !== 'All') {
-                // ถ้าเลือกปัญหาเฉพาะเจาะจง ให้แสดงปัญหานั้นตรงๆ เลย
+            // ถ้าผู้ใช้เลือก Issue เจาะจงจาก Dropdown
+            if (selectedIssueVal && selectedIssueVal !== 'All') {
                 finalLabels = [selectedIssueVal];
-                finalCounts = [data.length];
+                // นับจำนวนเฉพาะข้อมูลที่กรองมาได้จริง หาก data ว่าง ให้แสดงเป็น 0
+                finalCounts = [data.length]; 
             } else if (sortedIssues.length > 5) {
-                // ถ้ามีมากกว่า 5 ปัญหา ให้แสดง Top 4 และรวมที่เหลือเป็น "ปัญหาอื่นๆ (รวม)"
                 for (let i = 0; i < 4; i++) {
                     finalLabels.push(sortedIssues[i][0]);
                     finalCounts.push(sortedIssues[i][1]);
@@ -974,16 +973,18 @@
                 }
                 finalLabels.push('ปัญหาอื่นๆ (รวม)');
                 finalCounts.push(othersSum);
-            } else {
-                // กรณีทั่วไป (น้อยกว่าหรือเท่ากับ 5 ปัญหา) แก้ไขการดึงค่าจาก Array ให้ถูกต้อง[cite: 3]
+            } else if (sortedIssues.length > 0) {
                 sortedIssues.forEach(item => {
-                    finalLabels.push(item[0]); // ชื่อปัญหา[cite: 3]
-                    finalCounts.push(item[1]); // จำนวนครั้ง[cite: 3]
+                    finalLabels.push(item[0]);[cite: 3]
+                    finalCounts.push(item[1]);[cite: 3]
                 });
+            } else {
+                finalLabels = ['ไม่มีข้อมูล'];
+                finalCounts = [0];
             }
 
-            shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
-            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
+            shiftChartInstance.data.labels = finalLabels;
+            shiftChartInstance.data.datasets[0].data = finalCounts;
             shiftChartInstance.update();
         }
     </script>
