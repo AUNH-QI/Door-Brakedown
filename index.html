@@ -358,12 +358,24 @@
         }
 
         function populateDropdowns() {
-            const stations = [...new Set(logsData.map(item => item.station))].filter(Boolean).sort();
+            // คำนวณความถี่ของ Station จากข้อมูลทั้งหมด เพื่อจัดลำดับจากมากไปน้อย
+            const stationCounts = {};
+            logsData.forEach(item => {
+                const st = item.station;
+                if (st && st !== '-') {
+                    stationCounts[st] = (stationCounts[st] || 0) + 1;
+                }
+            });
+            const sortedStations = Object.keys(stationCounts).sort((a, b) => stationCounts[b] - stationCounts[a]);
+            // เก็บสถานีที่เหลือที่ไม่มีใน log หรือไม่มีค่าความถี่ต่อท้าย
+            const allStationsSet = [...new Set(logsData.map(item => item.station))].filter(Boolean);
+            const remainingStations = allStationsSet.filter(st => !stationCounts[st]).sort();
+            const finalStations = [...sortedStations, ...remainingStations];
             
             const stationFilter = document.getElementById('stationFilter');
             const currentStation = stationFilter.value;
             stationFilter.innerHTML = '<option value="All">ทุก Station (All)</option>';
-            stations.forEach(st => {
+            finalStations.forEach(st => {
                 const selected = st === currentStation ? 'selected' : '';
                 stationFilter.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
             });
@@ -371,17 +383,28 @@
             const inputStation = document.getElementById('inputStation');
             const currentInputStation = inputStation.value;
             inputStation.innerHTML = '<option value="-">-- เลือก Station --</option>';
-            stations.forEach(st => {
+            finalStations.forEach(st => {
                 const selected = st === currentInputStation ? 'selected' : '';
                 inputStation.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
             });
 
-            const issues = [...new Set(logsData.map(item => item.issue))].filter(Boolean).sort();
+            // คำนวณความถี่ของ Issue จากข้อมูลทั้งหมด เพื่อจัดลำดับจากมากไปน้อย
+            const issueCounts = {};
+            logsData.forEach(item => {
+                const issue = item.issue;
+                if (issue) {
+                    issueCounts[issue] = (issueCounts[issue] || 0) + 1;
+                }
+            });
+            const sortedIssues = Object.keys(issueCounts).sort((a, b) => issueCounts[b] - issueCounts[a]);
+            const allIssuesSet = [...new Set(logsData.map(item => item.issue))].filter(Boolean);
+            const remainingIssues = allIssuesSet.filter(issue => !issueCounts[issue]).sort();
+            const finalIssues = [...sortedIssues, ...remainingIssues];
 
             const issueFilter = document.getElementById('issueFilter');
             const currentIssue = issueFilter.value;
             issueFilter.innerHTML = '<option value="All">ทุกปัญหา (All)</option>';
-            issues.forEach(issue => {
+            finalIssues.forEach(issue => {
                 const selected = issue === currentIssue ? 'selected' : '';
                 issueFilter.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
             });
@@ -389,7 +412,7 @@
             const inputIssue = document.getElementById('inputIssue');
             const currentInputIssue = inputIssue.value;
             inputIssue.innerHTML = '<option value="">-- เลือกปัญหา --</option>';
-            issues.forEach(issue => {
+            finalIssues.forEach(issue => {
                 const selected = issue === currentInputIssue ? 'selected' : '';
                 inputIssue.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
             });
