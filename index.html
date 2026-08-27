@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOOR LINE BREAKDOWN</title>
+    <title>Door Line BREAKDOWN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Chart.js DataLabels Plugin -->
@@ -17,7 +17,7 @@
     <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
         <div>
             <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold tracking-wide text-orange-500">DOOR LINE BREAKDOWN</h1>
+                <h1 class="text-2xl font-bold tracking-wide text-orange-500">Door Line BREAKDOWN</h1>
                 <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังดึงข้อมูล...</span>
             </div>
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
@@ -285,6 +285,7 @@
         let shiftChartInstance = null;
         let hiddenIssuesDetail = []; 
         let currentPage = 1;
+        let editingId = null; // ตัวแปรเก็บ ID รายการที่กำลังแก้ไข
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
@@ -387,16 +388,66 @@
         }
 
         function toggleForm() {
-            document.getElementById('addLogForm').classList.toggle('hidden');
+            const formEl = document.getElementById('addLogForm');
+            formEl.classList.toggle('hidden');
+            if (formEl.classList.contains('hidden')) {
+                resetFormState();
+            }
+        }
+
+        function resetFormState() {
+            editingId = null;
+            document.getElementById('addLogForm').reset();
+            document.getElementById('inputDate').valueAsDate = new Date();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = 'บันทึกข้อมูล';
+            btn.className = 'bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white';
+        }
+
+        function editLog(id) {
+            const passwordInput = prompt('กรุณากรอกรหัสผ่านเพื่อยืนยันการแก้ไขข้อมูล:');
+            
+            if (passwordInput === null) return;
+
+            if (passwordInput !== 'Doorline') {
+                alert('รหัสผ่านไม่ถูกต้อง! ไม่อนุญาตให้แก้ไขข้อมูล');
+                return;
+            }
+
+            const item = logsData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('inputDate').value = item.date || '';
+            document.getElementById('inputTime').value = item.time || '';
+            document.getElementById('inputShift').value = item.shift || 'Day';
+            document.getElementById('inputLine').value = item.line || 'A-Door';
+            document.getElementById('inputMachine').value = item.machine || '';
+            document.getElementById('inputStation').value = item.station || '-';
+            document.getElementById('inputIssue').value = item.issue || '';
+            document.getElementById('inputCause').value = item.cause || '';
+            document.getElementById('inputDowntime').value = item.downtime || 0;
+            document.getElementById('inputFix').value = item.fix || '';
+
+            editingId = id;
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = 'อัปเดตข้อมูล';
+            btn.className = 'bg-amber-600 hover:bg-amber-700 px-4 py-1.5 rounded text-white';
+
+            const formEl = document.getElementById('addLogForm');
+            if (formEl.classList.contains('hidden')) {
+                formEl.classList.remove('hidden');
+            }
+            window.scrollTo({ top: formEl.offsetTop - 50, behavior: 'smooth' });
         }
 
         async function addNewLog(event) {
             event.preventDefault();
             const btn = document.getElementById('submitBtn');
+            const originalBtnText = btn.innerText;
             btn.innerText = 'กำลังบันทึก...';
             btn.disabled = true;
 
-            const newLog = {
+            const logData = {
                 date: document.getElementById('inputDate').value,
                 time: document.getElementById('inputTime').value,
                 shift: document.getElementById('inputShift').value,
@@ -410,19 +461,26 @@
             };
 
             try {
-                const { error } = await supabaseClient.from('breakdown_logs').insert([newLog]);
+                let error;
+                if (editingId !== null) {
+                    const res = await supabaseClient.from('breakdown_logs').update(logData).eq('id', editingId);
+                    error = res.error;
+                } else {
+                    const res = await supabaseClient.from('breakdown_logs').insert([logData]);
+                    error = res.error;
+                }
+
                 if (error) throw error;
 
                 toggleForm();
-                document.getElementById('addLogForm').reset();
-                document.getElementById('inputDate').valueAsDate = new Date();
+                resetFormState();
                 currentPage = 1;
                 await fetchLogs();
             } catch (err) {
-                console.error("Error adding log:", err);
+                console.error("Error saving log:", err);
                 alert("บันทึกข้อมูลไม่สำเร็จ: " + err.message);
             } finally {
-                btn.innerText = 'บันทึกข้อมูล';
+                btn.innerText = originalBtnText;
                 btn.disabled = false;
             }
         }
@@ -658,7 +716,10 @@
                         <td class="p-2.5 border-r border-gray-800 font-mono text-gray-300">${item.time || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${Number(item.downtime).toLocaleString()}</td>
                         <td class="p-2.5 text-center">
-                            <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded transition" title="Delete">🗑️</button>
+                            <div class="flex items-center justify-center gap-1">
+                                <button onclick="editLog(${item.id})" class="text-xs bg-yellow-600/30 hover:bg-yellow-600 text-yellow-300 hover:text-white px-2 py-1 rounded transition" title="Edit">✏️</button>
+                                <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2 py-1 rounded transition" title="Delete">🗑️</button>
+                            </div>
                         </td>
                     </tr>
                 `;
