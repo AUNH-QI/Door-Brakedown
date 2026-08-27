@@ -940,10 +940,10 @@
             lineChartInstance.update();
         }
 
-       function updateShiftChart(data) {
+        function updateShiftChart(data) {
             const issueCounts = {};
             data.forEach(item => {
-                const issue = item.issue ? item.issue.trim() : 'ไม่ระบุ'; // ตัดช่องว่างส่วนเกินป้องกันปัญหาชื่อไม่ตรงกัน
+                const issue = item.issue || 'ไม่ระบุ';
                 issueCounts[issue] = (issueCounts[issue] || 0) + 1;
             });
 
@@ -953,14 +953,7 @@
             let finalCounts = [];
             hiddenIssuesDetail = [];
 
-            const selectedIssueVal = document.getElementById('issueFilter').value;
-
-            // ถ้าผู้ใช้เลือก Issue เจาะจงจาก Dropdown
-            if (selectedIssueVal && selectedIssueVal !== 'All') {
-                finalLabels = [selectedIssueVal];
-                // นับจำนวนเฉพาะข้อมูลที่กรองมาได้จริง หาก data ว่าง ให้แสดงเป็น 0
-                finalCounts = [data.length]; 
-            } else if (sortedIssues.length > 5) {
+            if (sortedIssues.length > 5) {
                 for (let i = 0; i < 4; i++) {
                     finalLabels.push(sortedIssues[i][0]);
                     finalCounts.push(sortedIssues[i][1]);
@@ -973,18 +966,15 @@
                 }
                 finalLabels.push('ปัญหาอื่นๆ (รวม)');
                 finalCounts.push(othersSum);
-            } else if (sortedIssues.length > 0) {
-                sortedIssues.forEach(item => {
-                    finalLabels.push(item[0]);[cite: 3]
-                    finalCounts.push(item[1]);[cite: 3]
-                });
             } else {
-                finalLabels = ['ไม่มีข้อมูล'];
-                finalCounts = [0];
+                sortedIssues.forEach(item => {
+                    finalLabels.push(item.issue);
+                    finalCounts.push(item.count);
+                });
             }
 
-            shiftChartInstance.data.labels = finalLabels;
-            shiftChartInstance.data.datasets[0].data = finalCounts;
+            shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
+            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
             shiftChartInstance.update();
         }
     </script>
