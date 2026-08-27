@@ -20,226 +20,197 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
 
-    <!-- Main Container -->
-    <div class="flex h-screen overflow-hidden">
+    <!-- Main Container (Full Width without Sidebar) -->
+    <div class="flex flex-col h-screen overflow-hidden">
         
-        <!-- Slim Sidebar -->
-        <aside class="w-48 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col justify-between shrink-0">
-            <div class="p-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="bg-blue-600 p-2 rounded-xl text-white">
-                        <i class="fa-solid fa-industry text-lg"></i>
-                    </div>
-                    <span class="text-sm font-bold tracking-wide leading-tight">Factory Dashboard</span>
+        <!-- Top Navbar / Filter Bar -->
+        <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-xl text-white">
+                    <i class="fa-solid fa-industry text-lg"></i>
                 </div>
+                <h1 class="text-xl font-bold text-white flex items-center gap-2">
+                    Factory Dashboard - Scrap Logs
+                </h1>
             </div>
-            <div class="p-4 border-t border-slate-800 text-[10px] text-slate-500 text-center">
-                Production System v2.6
-            </div>
-        </aside>
 
-        <!-- Content Area -->
-        <div class="flex-1 flex flex-col overflow-y-auto">
+            <!-- Filters Control -->
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Date Range -->
+                <div class="flex items-center bg-slate-800 rounded-lg px-3 py-1.5 border border-slate-700">
+                    <i class="fa-regular fa-calendar text-slate-400 mr-2 text-sm"></i>
+                    <input type="date" id="startDate" class="bg-transparent text-xs text-slate-200 outline-none">
+                    <span class="text-slate-500 mx-2 text-xs">ถึง</span>
+                    <input type="date" id="endDate" class="bg-transparent text-xs text-slate-200 outline-none">
+                </div>
+
+                <!-- Month Dropdown -->
+                <select id="filterMonth" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none">
+                    <option value="">ทุกเดือน</option>
+                    <option value="1">มกราคม</option>
+                    <option value="2">กุมภาพันธ์</option>
+                    <option value="3">มีนาคม</option>
+                    <option value="4">เมษายน</option>
+                    <option value="5">พฤษภาคม</option>
+                    <option value="6">มิถุนายน</option>
+                    <option value="7">กรกฎาคม</option>
+                    <option value="8">สิงหาคม</option>
+                    <option value="9">กันยายน</option>
+                    <option value="10">ตุลาคม</option>
+                    <option value="11">พฤศจิกายน</option>
+                    <option value="12">ธันวาคม</option>
+                </select>
+
+                <!-- Line Dropdown -->
+                <select id="filterLine" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none font-medium">
+                    <option value="">ทุก Line การผลิต</option>
+                    <option value="A-Door">A-Door</option>
+                    <option value="B-Door">B-Door</option>
+                    <option value="C-Door">C-Door</option>
+                    <option value="DND">DND</option>
+                </select>
+
+                <button onclick="applyFilters()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded-lg font-medium transition shadow">
+                    <i class="fa-solid fa-filter mr-1"></i> กรองข้อมูล
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content (Full Width) -->
+        <main class="flex-1 overflow-y-auto p-6 space-y-6">
             
-            <!-- Top Navbar / Filter Bar -->
-            <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <h1 class="text-xl font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-blue-500"></i> Scrap Dashboard & Logs
-                    </h1>
+            <!-- KPI Top Cards (Line A-Door, B-Door, C-Door, DND) - Removed descriptions -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-slate-400 text-xs font-medium">Line: A-Door (ชิ้นงานเสีย)</div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">pcs</span></div>
                 </div>
-
-                <!-- Filters Control -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <!-- Date Range -->
-                    <div class="flex items-center bg-slate-800 rounded-lg px-3 py-1.5 border border-slate-700">
-                        <i class="fa-regular fa-calendar text-slate-400 mr-2 text-sm"></i>
-                        <input type="date" id="startDate" class="bg-transparent text-xs text-slate-200 outline-none">
-                        <span class="text-slate-500 mx-2 text-xs">ถึง</span>
-                        <input type="date" id="endDate" class="bg-transparent text-xs text-slate-200 outline-none">
-                    </div>
-
-                    <!-- Month Dropdown -->
-                    <select id="filterMonth" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none">
-                        <option value="">ทุกเดือน</option>
-                        <option value="1">มกราคม</option>
-                        <option value="2">กุมภาพันธ์</option>
-                        <option value="3">มีนาคม</option>
-                        <option value="4">เมษายน</option>
-                        <option value="5">พฤษภาคม</option>
-                        <option value="6">มิถุนายน</option>
-                        <option value="7">กรกฎาคม</option>
-                        <option value="8">สิงหาคม</option>
-                        <option value="9">กันยายน</option>
-                        <option value="10">ตุลาคม</option>
-                        <option value="11">พฤศจิกายน</option>
-                        <option value="12">ธันวาคม</option>
-                    </select>
-
-                    <!-- Line Dropdown -->
-                    <select id="filterLine" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none font-medium">
-                        <option value="">ทุก Line การผลิต</option>
-                        <option value="A-Door">A-Door</option>
-                        <option value="B-Door">B-Door</option>
-                        <option value="C-Door">C-Door</option>
-                        <option value="DND">DND</option>
-                    </select>
-
-                    <button onclick="applyFilters()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded-lg font-medium transition shadow">
-                        <i class="fa-solid fa-filter mr-1"></i> กรองข้อมูล
-                    </button>
+                <div class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-slate-400 text-xs font-medium">Line: B-Door (ชิ้นงานเสีย)</div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">pcs</span></div>
                 </div>
-            </header>
+                <div class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-slate-400 text-xs font-medium">Line: C-Door (ชิ้นงานเสีย)</div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">pcs</span></div>
+                </div>
+                <div class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden">
+                    <div class="text-slate-400 text-xs font-medium">Line: DND (ชิ้นงานเสีย)</div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">pcs</span></div>
+                </div>
+            </div>
 
-            <!-- Main Dashboard Content -->
-            <main class="p-6 space-y-6">
-                
-                <!-- KPI Top Cards (Line A-Door, B-Door, C-Door, DND) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden">
-                        <div class="text-slate-400 text-xs font-medium">Line: A-Door (ชิ้นงานเสีย)</div>
-                        <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">pcs</span></div>
-                        <div class="mt-2 text-xs text-blue-400 flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> ข้อมูลจากฐานข้อมูล</div>
+            <!-- Charts Section 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Bar Chart: Top 5 Problems -->
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
+                        <span class="text-xs text-slate-400">สถิติสะสม</span>
                     </div>
-                    <div class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden">
-                        <div class="text-slate-400 text-xs font-medium">Line: B-Door (ชิ้นงานเสีย)</div>
-                        <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">pcs</span></div>
-                        <div class="mt-2 text-xs text-purple-400 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down"></i> ข้อมูลจากฐานข้อมูล</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden">
-                        <div class="text-slate-400 text-xs font-medium">Line: C-Door (ชิ้นงานเสีย)</div>
-                        <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">pcs</span></div>
-                        <div class="mt-2 text-xs text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down"></i> ข้อมูลจากฐานข้อมูล</div>
-                    </div>
-                    <div class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden">
-                        <div class="text-slate-400 text-xs font-medium">Line: DND (ชิ้นงานเสีย)</div>
-                        <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">pcs</span></div>
-                        <div class="mt-2 text-xs text-amber-400 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> ข้อมูลจากฐานข้อมูล</div>
+                    <div class="h-72 relative">
+                        <canvas id="topProblemsChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Charts Section 1 -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Bar Chart: Top 5 Problems -->
-                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl lg:col-span-2 flex flex-col justify-between">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
-                            <span class="text-xs text-slate-400">สถิติสะสม</span>
-                        </div>
-                        <div class="h-72 relative">
-                            <canvas id="topProblemsChart"></canvas>
-                        </div>
+                <!-- Doughnut Chart: Department (Accumulated Quantity) -->
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                    <h2 class="text-sm font-bold text-white mb-2">Tickets By Department (จำนวนสะสมตามแผนก)</h2>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="departmentChart"></canvas>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Doughnut Chart: Department -->
-                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-                        <h2 class="text-sm font-bold text-white mb-2">Tickets By Department (สัดส่วนตามแผนก)</h2>
-                        <div class="h-64 relative flex items-center justify-center">
-                            <canvas id="departmentChart"></canvas>
+            <!-- Additional Tables Section: Top 5 Models -->
+            <div class="grid grid-cols-1 gap-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i> Top 5 อันดับ Model ที่เสียเยอะที่สุด</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-800/70 text-slate-400 uppercase font-semibold">
+                                    <tr>
+                                        <th class="p-2.5 rounded-l-lg">An.</th>
+                                        <th class="p-2.5">Model</th>
+                                        <th class="p-2.5">Line</th>
+                                        <th class="p-2.5 rounded-r-lg text-right">จำนวน (Pcs)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topModelsTableBody" class="divide-y divide-slate-800">
+                                    <!-- โหลดข้อมูลจาก Supabase -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Additional Tables Section: Top 5 Models & Logs -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Top 5 Models Table -->
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
-                        <div>
-                            <h2 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i> Top 5 อันดับ Model ที่เสียเยอะที่สุด</h2>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-xs text-slate-300">
-                                    <thead class="bg-slate-800/70 text-slate-400 uppercase font-semibold">
-                                        <tr>
-                                            <th class="p-2.5 rounded-l-lg">An.</th>
-                                            <th class="p-2.5">Model</th>
-                                            <th class="p-2.5">Line</th>
-                                            <th class="p-2.5 rounded-r-lg text-right">จำนวน (Pcs)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="topModelsTableBody" class="divide-y divide-slate-800">
-                                        <!-- โหลดข้อมูลจาก Supabase -->
-                                    </tbody>
-                                </table>
-                            </div>
+            <!-- Log Table Section with Pagination -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-base font-bold text-white"><i class="fa-solid fa-table-list text-blue-500 mr-2"></i> บันทึก Log ข้อมูล Scrap ล่าสุด</h2>
+                        <div class="flex items-center gap-2 text-xs text-slate-400">
+                            แสดงผล 
+                            <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 outline-none">
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">ทั้งหมด</option>
+                            </select>
+                            บรรทัด
                         </div>
                     </div>
-
-                    <!-- Other Charts Container -->
-                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-                        <h2 class="text-sm font-bold text-white mb-2">Tickets By Type (ประเภทปัญหา)</h2>
-                        <div class="h-64 relative flex items-center justify-center">
-                            <canvas id="typeChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-                        <h2 class="text-sm font-bold text-white mb-2">Number of Tickets / Week Day</h2>
-                        <div class="h-64 relative">
-                            <canvas id="weekdayChart"></canvas>
-                        </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="searchLog" placeholder="ค้นหา Model, Problem..." onkeyup="searchTable()" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none w-60">
                     </div>
                 </div>
 
-                <!-- Log Table Section -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                        <div class="flex items-center gap-3">
-                            <h2 class="text-base font-bold text-white"><i class="fa-solid fa-table-list text-blue-500 mr-2"></i> บันทึก Log ข้อมูล Scrap ล่าสุด</h2>
-                            <div class="flex items-center gap-2 text-xs text-slate-400">
-                                แสดงผล 
-                                <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 outline-none">
-                                    <option value="10">10</option>
-                                    <option value="20">20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="all">all</option>
-                                </select>
-                                บรรทัด
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <input type="text" id="searchLog" placeholder="ค้นหา Model, Problem..." onkeyup="searchTable()" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none w-60">
-                        </div>
-                    </div>
-
-                    <!-- Table -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-slate-300">
-                            <thead class="bg-slate-800/70 text-slate-400 uppercase font-semibold">
-                                <tr>
-                                    <th class="p-3 rounded-l-lg">Date</th>
-                                    <th class="p-3">Model</th>
-                                    <th class="p-3">Quantity</th>
-                                    <th class="p-3">Line</th>
-                                    <th class="p-3">Problem</th>
-                                    <th class="p-3">Cause</th>
-                                    <th class="p-3">Solution</th>
-                                    <th class="p-3 rounded-r-lg">Department</th>
-                                </tr>
-                            </thead>
-                            <tbody id="scrapTableBody" class="divide-y divide-slate-800">
-                                <!-- โหลดข้อมูลจาก Supabase -->
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-800/70 text-slate-400 uppercase font-semibold">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">Date</th>
+                                <th class="p-3">Model</th>
+                                <th class="p-3">Quantity</th>
+                                <th class="p-3">Line</th>
+                                <th class="p-3">Problem</th>
+                                <th class="p-3">Cause</th>
+                                <th class="p-3">Solution</th>
+                                <th class="p-3 rounded-r-lg">Department</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scrapTableBody" class="divide-y divide-slate-800">
+                            <!-- โหลดข้อมูลจาก Supabase -->
+                        </tbody>
+                    </table>
                 </div>
 
-            </main>
-        </div>
+                <!-- Pagination UI Controls -->
+                <div class="flex flex-wrap items-center justify-between mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400">
+                    <div id="paginationInfo">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
+                    <div id="paginationControls" class="flex items-center gap-1">
+                        <!-- ปุ่มกดเปลี่ยนหน้าจะถูกสร้างอัตโนมัติด้วย JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
     <!-- Scripts for Supabase Connection & Charts -->
     <script>
-        // ---------------------------------------------------------
-        // TODO: ใส่ URL และ Anon Key ของ Supabase ของคุณตรงนี้
-        // ---------------------------------------------------------
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ตัวแปรเก็บ Instance ของกราฟ
-        let topProblemsChart, deptChart, typeChart, weekdayChart;
+        let topProblemsChart, deptChart;
+        let allData = []; // เก็บข้อมูลดิบทั้งหมด
+        let currentPage = 1;
+        let rowsPerPage = 10;
 
         document.addEventListener("DOMContentLoaded", () => {
             initCharts();
@@ -258,26 +229,12 @@
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#06b6d4', '#3b82f6', '#6366f1', '#a855f7'], borderWidth: 0 }] },
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#f59e0b', '#ec4899'], borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } } }
-            });
-
-            const ctxType = document.getElementById('typeChart').getContext('2d');
-            typeChart = new Chart(ctxType, {
-                type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } } }
-            });
-
-            const ctxWeekday = document.getElementById('weekdayChart').getContext('2d');
-            weekdayChart = new Chart(ctxWeekday, {
-                type: 'bar',
-                data: { labels: ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'], datasets: [{ data: [0,0,0,0,0,0], backgroundColor: '#06b6d4', borderRadius: 6 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } } } }
             });
         }
 
-        // ดึงข้อมูลจากตาราง Supabase (เปลี่ยนชื่อตาราง 'scrap_logs' ตามที่คุณใช้งานจริง)
+        // ดึงข้อมูลจากตาราง Supabase ('scrap_logs')
         async function fetchScrapData() {
             const { data, error } = await supabaseClient
                 .from('scrap_logs')
@@ -290,19 +247,46 @@
             }
 
             if (data) {
-                renderTable(data);
-                updateKPIs(data);
-                updateTopModelsTable(data);
-                updateChartsData(data);
+                allData = data;
+                updateDashboard(allData);
             }
         }
 
-        // แสดงข้อมูลในตาราง Log
-        function renderTable(data) {
+        // ประมวลผลข้อมูลและอัปเดตหน้าจอทั้งหมด
+        function updateDashboard(data) {
+            updateKPIs(data);
+            updateTopModelsTable(data);
+            updateChartsData(data);
+            renderTableWithPagination(data);
+        }
+
+        // แสดงข้อมูลในตาราง Log พร้อมระบบ Pagination
+        function renderTableWithPagination(data) {
             const tbody = document.getElementById('scrapTableBody');
             tbody.innerHTML = '';
 
-            data.forEach(row => {
+            const totalRows = data.length;
+            const rppSelect = document.getElementById('rowsPerPage').value;
+            
+            let paginatedData = [];
+            let totalPages = 1;
+
+            if (rppSelect === 'all') {
+                paginatedData = data;
+                totalPages = 1;
+            } else {
+                rowsPerPage = parseInt(rppSelect);
+                totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
+
+                const start = (currentPage - 1) * rowsPerPage;
+                const end = start + rowsPerPage;
+                paginatedData = data.slice(start, end);
+            }
+
+            // เติมข้อมูลลงตาราง
+            paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-800/40 transition";
                 tr.innerHTML = `
@@ -317,6 +301,57 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // อัปเดตข้อความบอกสถานะข้อมูล
+            const startInfo = totalRows === 0 ? 0 : (rppSelect === 'all' ? 1 : (currentPage - 1) * rowsPerPage + 1);
+            const endInfo = rppSelect === 'all' ? totalRows : Math.min(currentPage * rowsPerPage, totalRows);
+            document.getElementById('paginationInfo').innerText = `แสดง ${startInfo} ถึง ${endInfo} จากทั้งหมด ${totalRows} รายการ`;
+
+            // สร้างปุ่มเปลี่ยนหน้า (Pagination Controls)
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const container = document.getElementById('paginationControls');
+            container.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // ปุ่มย้อนกลับ
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`;
+            prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableWithPagination(allData); } };
+            container.appendChild(prevBtn);
+
+            // สร้างปุ่มเลขหน้า (1, 2, 3 ... 100)
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = `px-2.5 py-1 rounded text-xs font-medium ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`;
+                    pageBtn.innerText = i;
+                    pageBtn.onclick = () => { currentPage = i; renderTableWithPagination(allData); };
+                    container.appendChild(pageBtn);
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    const span = document.createElement('span');
+                    span.className = 'px-1 text-slate-500';
+                    span.innerText = '...';
+                    container.appendChild(span);
+                }
+            }
+
+            // ปุ่มถัดไป
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`;
+            nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableWithPagination(allData); } };
+            container.appendChild(nextBtn);
+        }
+
+        // เมื่อเปลี่ยนจำนวนแถวต่อหน้า
+        function changeRowsPerPage() {
+            currentPage = 1;
+            renderTableWithPagination(allData);
         }
 
         // อัปเดตตัวเลขยอดเสียแยกตาม Line ลง KPI Cards
@@ -352,7 +387,6 @@
                 modelMap[model].totalQty += qty;
             });
 
-            // แปลงเป็น Array แล้วเรียงลำดับจากมากไปน้อย
             const sortedModels = Object.keys(modelMap).map(model => ({
                 model: model,
                 line: modelMap[model].line,
@@ -375,9 +409,9 @@
             });
         }
 
-        // อัปเดตข้อมูลในกราฟต่างๆ
+        // อัปเดตข้อมูลกราฟ Top 5 ปัญหา และ กราฟโดนัทจำนวนสะสมตาม Department
         function updateChartsData(data) {
-            // ตัวอย่าง: นับจำนวนปัญหา (Problem) สำหรับกราฟ Top 5 ปัญหา
+            // Top 5 Problems
             const problemCounts = {};
             data.forEach(item => {
                 const prob = item.problem || 'อื่นๆ';
@@ -390,6 +424,32 @@
             topProblemsChart.data.labels = sortedProbs.map(x => x.p);
             topProblemsChart.data.datasets[0].data = sortedProbs.map(x => x.count);
             topProblemsChart.update();
+
+            // Tickets By Department (Accumulated Quantity)
+            const deptQtyMap = {};
+            data.forEach(item => {
+                const dept = item.department || 'Unassigned';
+                const qty = parseInt(item.quantity) || 0;
+                deptQtyMap[dept] = (deptQtyMap[dept] || 0) + qty;
+            });
+
+            const sortedDepts = Object.keys(deptQtyMap).map(dept => ({ dept, totalQty: deptQtyMap[dept] }))
+                                .sort((a, b) => b.totalQty - a.totalQty);
+
+            deptChart.data.labels = sortedDepts.map(x => x.dept);
+            deptChart.data.datasets[0].data = sortedDepts.map(x => x.totalQty);
+            deptChart.update();
+        }
+
+        // ค้นหาข้อมูลในตาราง Log
+        function searchTable() {
+            const input = document.getElementById('searchLog').value.toLowerCase();
+            const filtered = allData.filter(row => {
+                const text = Object.values(row).join(' ').toLowerCase();
+                return text.includes(input);
+            });
+            currentPage = 1;
+            renderTableWithPagination(filtered);
         }
 
         function applyFilters() {
@@ -398,23 +458,33 @@
             const month = document.getElementById('filterMonth').value;
             const line = document.getElementById('filterLine').value;
             
-            console.log("Filtering:", { startDate, endDate, month, line });
-            // สามารถเพิ่มเงื่อนไข .gte() .lte() .eq() ของ Supabase ตรงนี้ได้ตามต้องการ
-            alert("กรองข้อมูลเรียบร้อย!");
-        }
+            let filtered = allData;
 
-        function changeRowsPerPage() {
-            const rows = document.getElementById('rowsPerPage').value;
-            console.log("Rows per page:", rows);
-        }
+            if (line) {
+                filtered = filtered.filter(item => item.line === line);
+            }
 
-        function searchTable() {
-            const input = document.getElementById('searchLog').value.toLowerCase();
-            const rows = document.querySelectorAll('#scrapTableBody tr');
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(input) ? '' : 'none';
-            });
+            if (month) {
+                filtered = filtered.filter(item => {
+                    if (!item.date) return false;
+                    const itemMonth = new Date(item.date).getMonth() + 1;
+                    return itemMonth === parseInt(month);
+                });
+            }
+
+            if (startDate) {
+                filtered = filtered.filter(item => item.date >= startDate);
+            }
+
+            if (endDate) {
+                filtered = filtered.filter(item => item.date <= endDate);
+            }
+
+            currentPage = 1;
+            renderTableWithPagination(filtered);
+            updateKPIs(filtered);
+            updateTopModelsTable(filtered);
+            updateChartsData(filtered);
         }
     </script>
 </body>
