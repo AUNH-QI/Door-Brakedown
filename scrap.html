@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Font (Prompt) -->
@@ -21,7 +23,7 @@
     <!-- Main Container -->
     <div class="flex h-screen overflow-hidden">
         
-        <!-- Slim Sidebar (Reduced width & removed empty space) -->
+        <!-- Slim Sidebar -->
         <aside class="w-48 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col justify-between shrink-0">
             <div class="p-4">
                 <div class="flex items-center gap-2.5">
@@ -96,23 +98,23 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden">
                         <div class="text-slate-400 text-xs font-medium">Line: A-Door (ชิ้นงานเสีย)</div>
-                        <div class="text-3xl font-bold mt-2 text-white">428 <span class="text-sm font-normal text-blue-300">pcs</span></div>
-                        <div class="mt-2 text-xs text-blue-400 flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> สูงสุดในสัปดาห์นี้</div>
+                        <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">pcs</span></div>
+                        <div class="mt-2 text-xs text-blue-400 flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> ข้อมูลจากฐานข้อมูล</div>
                     </div>
                     <div class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden">
                         <div class="text-slate-400 text-xs font-medium">Line: B-Door (ชิ้นงานเสีย)</div>
-                        <div class="text-3xl font-bold mt-2 text-white">315 <span class="text-sm font-normal text-purple-300">pcs</span></div>
-                        <div class="mt-2 text-xs text-purple-400 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down"></i> -5.3% จากสัปดาห์ก่อน</div>
+                        <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">pcs</span></div>
+                        <div class="mt-2 text-xs text-purple-400 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down"></i> ข้อมูลจากฐานข้อมูล</div>
                     </div>
                     <div class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden">
                         <div class="text-slate-400 text-xs font-medium">Line: C-Door (ชิ้นงานเสีย)</div>
-                        <div class="text-3xl font-bold mt-2 text-white">290 <span class="text-sm font-normal text-emerald-300">pcs</span></div>
-                        <div class="mt-2 text-xs text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down"></i> -8.1% ดีขึ้น</div>
+                        <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">pcs</span></div>
+                        <div class="mt-2 text-xs text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down"></i> ข้อมูลจากฐานข้อมูล</div>
                     </div>
                     <div class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden">
                         <div class="text-slate-400 text-xs font-medium">Line: DND (ชิ้นงานเสีย)</div>
-                        <div class="text-3xl font-bold mt-2 text-white">215 <span class="text-sm font-normal text-amber-300">pcs</span></div>
-                        <div class="mt-2 text-xs text-amber-400 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> ควบคุมได้ตามเป้า</div>
+                        <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">pcs</span></div>
+                        <div class="mt-2 text-xs text-amber-400 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> ข้อมูลจากฐานข้อมูล</div>
                     </div>
                 </div>
 
@@ -154,37 +156,8 @@
                                             <th class="p-2.5 rounded-r-lg text-right">จำนวน (Pcs)</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-800">
-                                        <tr class="hover:bg-slate-800/40">
-                                            <td class="p-2.5 font-bold text-amber-400">1</td>
-                                            <td class="p-2.5 font-medium text-white">TM19/21_BB</td>
-                                            <td class="p-2.5 text-slate-400">A-Door</td>
-                                            <td class="p-2.5 text-right font-bold text-rose-400">500</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-800/40">
-                                            <td class="p-2.5 font-bold text-slate-300">2</td>
-                                            <td class="p-2.5 font-medium text-white">X-Series V2</td>
-                                            <td class="p-2.5 text-slate-400">B-Door</td>
-                                            <td class="p-2.5 text-right font-bold text-rose-400">350</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-800/40">
-                                            <td class="p-2.5 font-bold text-slate-400">3</td>
-                                            <td class="p-2.5 font-medium text-white">DND-Door-01</td>
-                                            <td class="p-2.5 text-slate-400">DND</td>
-                                            <td class="p-2.5 text-right font-bold text-rose-400">215</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-800/40">
-                                            <td class="p-2.5 font-bold text-slate-500">4</td>
-                                            <td class="p-2.5 font-medium text-white">Pro-Line 99</td>
-                                            <td class="p-2.5 text-slate-400">C-Door</td>
-                                            <td class="p-2.5 text-right font-bold text-rose-400">180</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-800/40">
-                                            <td class="p-2.5 font-bold text-slate-600">5</td>
-                                            <td class="p-2.5 font-medium text-white">Alpha-Gen_X</td>
-                                            <td class="p-2.5 text-slate-400">A-Door</td>
-                                            <td class="p-2.5 text-right font-bold text-rose-400">120</td>
-                                        </tr>
+                                    <tbody id="topModelsTableBody" class="divide-y divide-slate-800">
+                                        <!-- โหลดข้อมูลจาก Supabase -->
                                     </tbody>
                                 </table>
                             </div>
@@ -245,36 +218,7 @@
                                 </tr>
                             </thead>
                             <tbody id="scrapTableBody" class="divide-y divide-slate-800">
-                                <tr class="hover:bg-slate-800/40 transition">
-                                    <td class="p-3 text-slate-400">2026-04-18</td>
-                                    <td class="p-3 font-medium text-white">TM19/21_BB</td>
-                                    <td class="p-3 text-amber-400 font-bold">500 ฝา</td>
-                                    <td class="p-3">A-Door</td>
-                                    <td class="p-3">รอยขีดข่วนพิมพ์ผิดรูป</td>
-                                    <td class="p-3">แม่พิมพ์สึกหรอ</td>
-                                    <td class="p-3">เปลี่ยนบล็อกแม่พิมพ์ใหม่</td>
-                                    <td class="p-3"><span class="bg-blue-950 text-blue-400 px-2 py-0.5 rounded border border-blue-900">Production</span></td>
-                                </tr>
-                                <tr class="hover:bg-slate-800/40 transition">
-                                    <td class="p-3 text-slate-400">2026-04-18</td>
-                                    <td class="p-3 font-medium text-white">X-Series V2</td>
-                                    <td class="p-3 text-amber-400 font-bold">120 ชิ้น</td>
-                                    <td class="p-3">B-Door</td>
-                                    <td class="p-3">ขนาดคลาดเคลื่อน</td>
-                                    <td class="p-3">แรงดันลมไม่คงที่</td>
-                                    <td class="p-3">ปรับวาล์วแรงดันลมหลัก</td>
-                                    <td class="p-3"><span class="bg-purple-950 text-purple-400 px-2 py-0.5 rounded border border-purple-900">Maintenance</span></td>
-                                </tr>
-                                <tr class="hover:bg-slate-800/40 transition">
-                                    <td class="p-3 text-slate-400">2026-04-17</td>
-                                    <td class="p-3 font-medium text-white">DND-Door-01</td>
-                                    <td class="p-3 text-amber-400 font-bold">85 ชิ้น</td>
-                                    <td class="p-3">DND</td>
-                                    <td class="p-3">สีเคลือบไม่สม่ำเสมอ</td>
-                                    <td class="p-3">อุณหภูมิห้องอบต่ำเกินไป</td>
-                                    <td class="p-3">เพิ่มอุณหภูมิเตาเผา 15°C</td>
-                                    <td class="p-3"><span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded border border-emerald-900">Quality Control</span></td>
-                                </tr>
+                                <!-- โหลดข้อมูลจาก Supabase -->
                             </tbody>
                         </table>
                     </div>
@@ -284,108 +228,184 @@
         </div>
     </div>
 
-    <!-- Scripts for Charts Configuration -->
+    <!-- Scripts for Supabase Connection & Charts -->
     <script>
-        // Bar Chart: Top 5 Problems
-        const ctxTopProblems = document.getElementById('topProblemsChart').getContext('2d');
-        new Chart(ctxTopProblems, {
-            type: 'bar',
-            data: {
-                labels: ['รอยขีดข่วน/พิมพ์ผิดรูป', 'ขนาดคลาดเคลื่อน', 'สีเคลือบไม่สม่ำเสมอ', 'รอยแตก/ร้าว', 'ชิ้นงานไม่เต็มบล็อก'],
-                datasets: [{
-                    label: 'จำนวนเคสปัญหา',
-                    data: [85, 64, 48, 35, 22],
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+        // ---------------------------------------------------------
+        // TODO: ใส่ URL และ Anon Key ของ Supabase ของคุณตรงนี้
+        // ---------------------------------------------------------
+        const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ตัวแปรเก็บ Instance ของกราฟ
+        let topProblemsChart, deptChart, typeChart, weekdayChart;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initCharts();
+            fetchScrapData();
+        });
+
+        // สร้างโครงสร้างกราฟเริ่มต้น
+        function initCharts() {
+            const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
+            topProblemsChart = new Chart(ctxTop, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'จำนวนเคส', data: [], backgroundColor: '#3b82f6', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } } } }
+            });
+
+            const ctxDept = document.getElementById('departmentChart').getContext('2d');
+            deptChart = new Chart(ctxDept, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#06b6d4', '#3b82f6', '#6366f1', '#a855f7'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } } }
+            });
+
+            const ctxType = document.getElementById('typeChart').getContext('2d');
+            typeChart = new Chart(ctxType, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } } }
+            });
+
+            const ctxWeekday = document.getElementById('weekdayChart').getContext('2d');
+            weekdayChart = new Chart(ctxWeekday, {
+                type: 'bar',
+                data: { labels: ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'], datasets: [{ data: [0,0,0,0,0,0], backgroundColor: '#06b6d4', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } } } }
+            });
+        }
+
+        // ดึงข้อมูลจากตาราง Supabase (เปลี่ยนชื่อตาราง 'scrap_logs' ตามที่คุณใช้งานจริง)
+        async function fetchScrapData() {
+            const { data, error } = await supabaseClient
+                .from('scrap_logs')
+                .select('*')
+                .order('date', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching data from Supabase:', error);
+                return;
+            }
+
+            if (data) {
+                renderTable(data);
+                updateKPIs(data);
+                updateTopModelsTable(data);
+                updateChartsData(data);
+            }
+        }
+
+        // แสดงข้อมูลในตาราง Log
+        function renderTable(data) {
+            const tbody = document.getElementById('scrapTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition";
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-400">${row.date || '-'}</td>
+                    <td class="p-3 font-medium text-white">${row.model || '-'}</td>
+                    <td class="p-3 text-amber-400 font-bold">${row.quantity || 0}</td>
+                    <td class="p-3">${row.line || '-'}</td>
+                    <td class="p-3">${row.problem || '-'}</td>
+                    <td class="p-3">${row.cause || '-'}</td>
+                    <td class="p-3">${row.solution || '-'}</td>
+                    <td class="p-3"><span class="bg-blue-950 text-blue-400 px-2 py-0.5 rounded border border-blue-900">${row.department || '-'}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // อัปเดตตัวเลขยอดเสียแยกตาม Line ลง KPI Cards
+        function updateKPIs(data) {
+            let lineA = 0, lineB = 0, lineC = 0, lineDND = 0;
+
+            data.forEach(item => {
+                const qty = parseInt(item.quantity) || 0;
+                const lineName = (item.line || '').trim();
+                if (lineName === 'A-Door') lineA += qty;
+                else if (lineName === 'B-Door') lineB += qty;
+                else if (lineName === 'C-Door') lineC += qty;
+                else if (lineName === 'DND' || lineName === 'DND Door') lineDND += qty;
+            });
+
+            document.getElementById('kpi-adoor').innerHTML = `${lineA} <span class="text-sm font-normal text-blue-300">pcs</span>`;
+            document.getElementById('kpi-bdoor').innerHTML = `${lineB} <span class="text-sm font-normal text-purple-300">pcs</span>`;
+            document.getElementById('kpi-cdoor').innerHTML = `${lineC} <span class="text-sm font-normal text-emerald-300">pcs</span>`;
+            document.getElementById('kpi-dnd').innerHTML = `${lineDND} <span class="text-sm font-normal text-amber-300">pcs</span>`;
+        }
+
+        // ประมวลผลและแสดงตาราง Top 5 Models ที่เสียเยอะที่สุด
+        function updateTopModelsTable(data) {
+            const modelMap = {};
+            data.forEach(item => {
+                const model = item.model || 'Unknown';
+                const line = item.line || '-';
+                const qty = parseInt(item.quantity) || 0;
+
+                if (!modelMap[model]) {
+                    modelMap[model] = { totalQty: 0, line: line };
                 }
-            }
-        });
+                modelMap[model].totalQty += qty;
+            });
 
-        // Department Doughnut Chart
-        const ctxDept = document.getElementById('departmentChart').getContext('2d');
-        new Chart(ctxDept, {
-            type: 'doughnut',
-            data: {
-                labels: ['Production', 'Maintenance', 'QC', 'Engineering'],
-                datasets: [{
-                    data: [44, 25, 19, 12],
-                    backgroundColor: ['#06b6d4', '#3b82f6', '#6366f1', '#a855f7'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } }
-            }
-        });
+            // แปลงเป็น Array แล้วเรียงลำดับจากมากไปน้อย
+            const sortedModels = Object.keys(modelMap).map(model => ({
+                model: model,
+                line: modelMap[model].line,
+                totalQty: modelMap[model].totalQty
+            })).sort((a, b) => b.totalQty - a.totalQty).slice(0, 5);
 
-        // Type Doughnut Chart
-        const ctxType = document.getElementById('typeChart').getContext('2d');
-        new Chart(ctxType, {
-            type: 'doughnut',
-            data: {
-                labels: ['Machine Error', 'Material Defect', 'Operator Error', 'Other'],
-                datasets: [{
-                    data: [50, 30, 15, 5],
-                    backgroundColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } }
-            }
-        });
+            const tbody = document.getElementById('topModelsTableBody');
+            tbody.innerHTML = '';
 
-        // Weekday Bar Chart
-        const ctxWeekday = document.getElementById('weekdayChart').getContext('2d');
-        new Chart(ctxWeekday, {
-            type: 'bar',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'],
-                datasets: [{
-                    label: 'Tickets',
-                    data: [40, 25, 60, 45, 55, 30],
-                    backgroundColor: '#06b6d4',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
-                }
-            }
-        });
+            sortedModels.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40";
+                tr.innerHTML = `
+                    <td class="p-2.5 font-bold text-amber-400">${index + 1}</td>
+                    <td class="p-2.5 font-medium text-white">${item.model}</td>
+                    <td class="p-2.5 text-slate-400">${item.line}</td>
+                    <td class="p-2.5 text-right font-bold text-rose-400">${item.totalQty}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
-        // Filter and Search Functions
+        // อัปเดตข้อมูลในกราฟต่างๆ
+        function updateChartsData(data) {
+            // ตัวอย่าง: นับจำนวนปัญหา (Problem) สำหรับกราฟ Top 5 ปัญหา
+            const problemCounts = {};
+            data.forEach(item => {
+                const prob = item.problem || 'อื่นๆ';
+                problemCounts[prob] = (problemCounts[prob] || 0) + 1;
+            });
+
+            const sortedProbs = Object.keys(problemCounts).map(p => ({ p, count: problemCounts[p] }))
+                                .sort((a, b) => b.count - a.count).slice(0, 5);
+
+            topProblemsChart.data.labels = sortedProbs.map(x => x.p);
+            topProblemsChart.data.datasets[0].data = sortedProbs.map(x => x.count);
+            topProblemsChart.update();
+        }
+
         function applyFilters() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const month = document.getElementById('filterMonth').value;
             const line = document.getElementById('filterLine').value;
             
-            console.log("Applying filters:", { startDate, endDate, month, line });
+            console.log("Filtering:", { startDate, endDate, month, line });
+            // สามารถเพิ่มเงื่อนไข .gte() .lte() .eq() ของ Supabase ตรงนี้ได้ตามต้องการ
             alert("กรองข้อมูลเรียบร้อย!");
         }
 
         function changeRowsPerPage() {
             const rows = document.getElementById('rowsPerPage').value;
-            console.log("Change rows to:", rows);
+            console.log("Rows per page:", rows);
         }
 
         function searchTable() {
