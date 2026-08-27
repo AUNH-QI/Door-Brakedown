@@ -436,18 +436,18 @@
             const issueEl = document.getElementById('inputIssue');
             let foundIssue = false;
             for (let opt of issueEl.options) {
-                if (opt.value === 'จับฝาแล้วล่วงตก') {
-                    issueEl.value = 'จับฝาแล้วล่วงตก';
+                if (opt.value === 'จับฝาแล้วร่วงตก') {
+                    issueEl.value = 'จับฝาแล้วร่วงตก';
                     foundIssue = true;
                     break;
                 }
             }
             if (!foundIssue) {
                 const opt = document.createElement('option');
-                opt.value = 'จับฝาแล้วล่วงตก';
-                opt.text = 'จับฝาแล้วล่วงตก';
+                opt.value = 'จับฝาแล้วร่วงตก';
+                opt.text = 'จับฝาแล้วร่วงตก';
                 issueEl.add(opt);
-                issueEl.value = 'จับฝาแล้วล่วงตก';
+                issueEl.value = 'จับฝาแล้วร่วงตก';
             }
 
             document.getElementById('inputDowntime').value = 2;
