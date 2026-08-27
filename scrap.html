@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrap Management Dashboard</title>
+    <title>SCRAP BY MACHINE</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -26,26 +26,27 @@
         <!-- Top Navbar / Filter Bar -->
         <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2 rounded-xl text-white">
-                    <i class="fa-solid fa-industry text-lg"></i>
-                </div>
+                <!-- ปุ่มย้อนกลับไปหน้า DOOR LINE BREAKDOWN -->
+                <a href="door_line_breakdown.html" class="bg-white text-slate-900 hover:bg-slate-200 p-2.5 rounded-xl transition shadow flex items-center justify-center font-bold" title="ย้อนกลับไปหน้า DOOR LINE BREAKDOWN">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                </a>
                 <h1 class="text-xl font-bold text-white flex items-center gap-2">
-                    Factory Dashboard - Scrap Logs
+                    SCRAP BY MACHINE
                 </h1>
             </div>
 
-            <!-- Filters Control -->
+            <!-- Filters Control (Background White for inputs) -->
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Date Range -->
-                <div class="flex items-center bg-slate-800 rounded-lg px-3 py-1.5 border border-slate-700">
-                    <i class="fa-regular fa-calendar text-slate-400 mr-2 text-sm"></i>
-                    <input type="date" id="startDate" class="bg-transparent text-xs text-slate-200 outline-none">
+                <div class="flex items-center bg-white rounded-lg px-3 py-1.5 border border-slate-300 shadow-sm">
+                    <i class="fa-regular fa-calendar text-slate-500 mr-2 text-sm"></i>
+                    <input type="date" id="startDate" onchange="applyFilters()" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
                     <span class="text-slate-500 mx-2 text-xs">ถึง</span>
-                    <input type="date" id="endDate" class="bg-transparent text-xs text-slate-200 outline-none">
+                    <input type="date" id="endDate" onchange="applyFilters()" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
                 </div>
 
                 <!-- Month Dropdown -->
-                <select id="filterMonth" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none">
+                <select id="filterMonth" onchange="applyFilters()" class="bg-white text-xs text-slate-900 font-medium border border-slate-300 rounded-lg px-3 py-2 outline-none shadow-sm cursor-pointer">
                     <option value="">ทุกเดือน</option>
                     <option value="1">มกราคม</option>
                     <option value="2">กุมภาพันธ์</option>
@@ -60,26 +61,23 @@
                     <option value="11">พฤศจิกายน</option>
                     <option value="12">ธันวาคม</option>
                 </select>
-
-                <!-- Line Dropdown -->
-                <select id="filterLine" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none font-medium">
-                    <option value="">ทุก Line การผลิต</option>
-                    <option value="A-Door">A-Door</option>
-                    <option value="B-Door">B-Door</option>
-                    <option value="C-Door">C-Door</option>
-                    <option value="DND">DND</option>
-                </select>
-
-                <button onclick="applyFilters()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded-lg font-medium transition shadow">
-                    <i class="fa-solid fa-filter mr-1"></i> กรองข้อมูล
-                </button>
             </div>
         </header>
+
+        <!-- Line Filter Buttons Bar -->
+        <div class="bg-slate-900/60 border-b border-slate-800 px-6 py-3 flex flex-wrap items-center gap-2">
+            <span class="text-xs text-slate-400 font-medium mr-2"><i class="fa-solid fa-filter mr-1"></i> Line การผลิต:</span>
+            <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn bg-blue-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">ทุก Line</button>
+            <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">A-Door</button>
+            <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">B-Door</button>
+            <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">C-Door</button>
+            <button onclick="setLineFilter('DND')" id="btn-line-DND" class="line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">DND</button>
+        </div>
 
         <!-- Main Dashboard Content (Full Width) -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
             
-            <!-- KPI Top Cards (Line A-Door, B-Door, C-Door, DND) - Removed descriptions -->
+            <!-- KPI Top Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden">
                     <div class="text-slate-400 text-xs font-medium">Line: A-Door (ชิ้นงานเสีย)</div>
@@ -152,7 +150,7 @@
                         <h2 class="text-base font-bold text-white"><i class="fa-solid fa-table-list text-blue-500 mr-2"></i> บันทึก Log ข้อมูล Scrap ล่าสุด</h2>
                         <div class="flex items-center gap-2 text-xs text-slate-400">
                             แสดงผล 
-                            <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 outline-none">
+                            <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-white text-slate-900 font-medium border border-slate-300 rounded px-2 py-1 outline-none shadow-sm cursor-pointer">
                                 <option value="10" selected>10</option>
                                 <option value="20">20</option>
                                 <option value="50">50</option>
@@ -163,7 +161,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="text" id="searchLog" placeholder="ค้นหา Model, Problem..." onkeyup="searchTable()" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none w-60">
+                        <input type="text" id="searchLog" placeholder="ค้นหา Model, Problem..." onkeyup="searchTable()" class="bg-white text-xs text-slate-900 font-medium border border-slate-300 rounded-lg px-3 py-2 outline-none w-60 shadow-sm placeholder:text-slate-400">
                     </div>
                 </div>
 
@@ -192,7 +190,7 @@
                 <div class="flex flex-wrap items-center justify-between mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400">
                     <div id="paginationInfo">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
                     <div id="paginationControls" class="flex items-center gap-1">
-                        <!-- ปุ่มกดเปลี่ยนหน้าจะถูกสร้างอัตโนมัติด้วย JavaScript -->
+                        <!-- ปุ่มเปลี่ยนหน้าสร้างด้วย JS -->
                     </div>
                 </div>
             </div>
@@ -209,6 +207,7 @@
 
         let topProblemsChart, deptChart;
         let allData = []; // เก็บข้อมูลดิบทั้งหมด
+        let currentLineFilter = ''; // ค่าตัวเลือก Line ปัจจุบัน
         let currentPage = 1;
         let rowsPerPage = 10;
 
@@ -217,19 +216,34 @@
             fetchScrapData();
         });
 
-        // สร้างโครงสร้างกราฟเริ่มต้น
+        // สร้างโครงสร้างกราฟพร้อมกำหนดสีโทนแตกต่างกัน
         function initCharts() {
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
                 type: 'bar',
-                data: { labels: [], datasets: [{ label: 'จำนวนเคส', data: [], backgroundColor: '#3b82f6', borderRadius: 6 }] },
+                data: { 
+                    labels: [], 
+                    datasets: [{ 
+                        label: 'จำนวนเคส', 
+                        data: [], 
+                        backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6', '#06b6d4', '#f59e0b'], 
+                        borderRadius: 6 
+                    }] 
+                },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } } } }
             });
 
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#f59e0b', '#ec4899'], borderWidth: 0 }] },
+                data: { 
+                    labels: [], 
+                    datasets: [{ 
+                        data: [], 
+                        backgroundColor: ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'], 
+                        borderWidth: 0 
+                    }] 
+                },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } } }
             });
         }
@@ -248,11 +262,67 @@
 
             if (data) {
                 allData = data;
-                updateDashboard(allData);
+                applyFilters();
             }
         }
 
-        // ประมวลผลข้อมูลและอัปเดตหน้าจอทั้งหมด
+        // เลือกปุ่ม Line Filter
+        function setLineFilter(lineValue) {
+            currentLineFilter = lineValue;
+            
+            // อัปเดตสไตล์ปุ่ม Line
+            document.querySelectorAll('.line-btn').forEach(btn => {
+                btn.className = "line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow";
+            });
+            
+            const activeBtnId = lineValue === '' ? 'btn-line-all' : `btn-line-${lineValue}`;
+            const targetBtn = document.getElementById(activeBtnId);
+            if (targetBtn) {
+                targetBtn.className = "line-btn bg-blue-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow";
+            }
+
+            applyFilters();
+        }
+
+        // ระบบกรองข้อมูลอัตโนมัติทันทีที่เปลี่ยนเงื่อนไข
+        function applyFilters() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const month = document.getElementById('filterMonth').value;
+            
+            let filtered = allData;
+
+            if (currentLineFilter) {
+                filtered = filtered.filter(item => {
+                    const l = (item.line || '').trim();
+                    if (currentLineFilter === 'DND') {
+                        return l === 'DND' || l === 'DND Door';
+                    }
+                    return l === currentLineFilter;
+                });
+            }
+
+            if (month) {
+                filtered = filtered.filter(item => {
+                    if (!item.date) return false;
+                    const itemMonth = new Date(item.date).getMonth() + 1;
+                    return itemMonth === parseInt(month);
+                });
+            }
+
+            if (startDate) {
+                filtered = filtered.filter(item => item.date >= startDate);
+            }
+
+            if (endDate) {
+                filtered = filtered.filter(item => item.date <= endDate);
+            }
+
+            currentPage = 1;
+            updateDashboard(filtered);
+        }
+
+        // อัปเดตหน้าจอทั้งหมดตามข้อมูลที่กรองแล้ว
         function updateDashboard(data) {
             updateKPIs(data);
             updateTopModelsTable(data);
@@ -260,7 +330,7 @@
             renderTableWithPagination(data);
         }
 
-        // แสดงข้อมูลในตาราง Log พร้อมระบบ Pagination
+        // แสดงข้อมูลในตาราง Log พร้อม Pagination
         function renderTableWithPagination(data) {
             const tbody = document.getElementById('scrapTableBody');
             tbody.innerHTML = '';
@@ -285,7 +355,6 @@
                 paginatedData = data.slice(start, end);
             }
 
-            // เติมข้อมูลลงตาราง
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-800/40 transition";
@@ -302,35 +371,31 @@
                 tbody.appendChild(tr);
             });
 
-            // อัปเดตข้อความบอกสถานะข้อมูล
             const startInfo = totalRows === 0 ? 0 : (rppSelect === 'all' ? 1 : (currentPage - 1) * rowsPerPage + 1);
             const endInfo = rppSelect === 'all' ? totalRows : Math.min(currentPage * rowsPerPage, totalRows);
             document.getElementById('paginationInfo').innerText = `แสดง ${startInfo} ถึง ${endInfo} จากทั้งหมด ${totalRows} รายการ`;
 
-            // สร้างปุ่มเปลี่ยนหน้า (Pagination Controls)
-            renderPaginationControls(totalPages);
+            renderPaginationControls(totalPages, data);
         }
 
-        function renderPaginationControls(totalPages) {
+        function renderPaginationControls(totalPages, data) {
             const container = document.getElementById('paginationControls');
             container.innerHTML = '';
 
             if (totalPages <= 1) return;
 
-            // ปุ่มย้อนกลับ
             const prevBtn = document.createElement('button');
             prevBtn.className = `px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`;
             prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
-            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableWithPagination(allData); } };
+            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableWithPagination(data); } };
             container.appendChild(prevBtn);
 
-            // สร้างปุ่มเลขหน้า (1, 2, 3 ... 100)
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
                     const pageBtn = document.createElement('button');
                     pageBtn.className = `px-2.5 py-1 rounded text-xs font-medium ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`;
                     pageBtn.innerText = i;
-                    pageBtn.onclick = () => { currentPage = i; renderTableWithPagination(allData); };
+                    pageBtn.onclick = () => { currentPage = i; renderTableWithPagination(data); };
                     container.appendChild(pageBtn);
                 } else if (i === currentPage - 3 || i === currentPage + 3) {
                     const span = document.createElement('span');
@@ -340,18 +405,16 @@
                 }
             }
 
-            // ปุ่มถัดไป
             const nextBtn = document.createElement('button');
             nextBtn.className = `px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`;
             nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
-            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableWithPagination(allData); } };
+            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableWithPagination(data); } };
             container.appendChild(nextBtn);
         }
 
-        // เมื่อเปลี่ยนจำนวนแถวต่อหน้า
         function changeRowsPerPage() {
             currentPage = 1;
-            renderTableWithPagination(allData);
+            applyFilters();
         }
 
         // อัปเดตตัวเลขยอดเสียแยกตาม Line ลง KPI Cards
@@ -373,7 +436,7 @@
             document.getElementById('kpi-dnd').innerHTML = `${lineDND} <span class="text-sm font-normal text-amber-300">pcs</span>`;
         }
 
-        // ประมวลผลและแสดงตาราง Top 5 Models ที่เสียเยอะที่สุด
+        // ตาราง Top 5 Models
         function updateTopModelsTable(data) {
             const modelMap = {};
             data.forEach(item => {
@@ -409,9 +472,8 @@
             });
         }
 
-        // อัปเดตข้อมูลกราฟ Top 5 ปัญหา และ กราฟโดนัทจำนวนสะสมตาม Department
+        // อัปเดตกราฟทั้งสองตัว
         function updateChartsData(data) {
-            // Top 5 Problems
             const problemCounts = {};
             data.forEach(item => {
                 const prob = item.problem || 'อื่นๆ';
@@ -425,7 +487,6 @@
             topProblemsChart.data.datasets[0].data = sortedProbs.map(x => x.count);
             topProblemsChart.update();
 
-            // Tickets By Department (Accumulated Quantity)
             const deptQtyMap = {};
             data.forEach(item => {
                 const dept = item.department || 'Unassigned';
@@ -441,50 +502,40 @@
             deptChart.update();
         }
 
-        // ค้นหาข้อมูลในตาราง Log
+        // ค้นหาข้อความในตาราง Log
         function searchTable() {
             const input = document.getElementById('searchLog').value.toLowerCase();
-            const filtered = allData.filter(row => {
-                const text = Object.values(row).join(' ').toLowerCase();
-                return text.includes(input);
-            });
-            currentPage = 1;
-            renderTableWithPagination(filtered);
-        }
-
-        function applyFilters() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const month = document.getElementById('filterMonth').value;
-            const line = document.getElementById('filterLine').value;
             
             let filtered = allData;
 
-            if (line) {
-                filtered = filtered.filter(item => item.line === line);
+            if (currentLineFilter) {
+                filtered = filtered.filter(item => {
+                    const l = (item.line || '').trim();
+                    if (currentLineFilter === 'DND') return l === 'DND' || l === 'DND Door';
+                    return l === currentLineFilter;
+                });
             }
-
             if (month) {
                 filtered = filtered.filter(item => {
                     if (!item.date) return false;
-                    const itemMonth = new Date(item.date).getMonth() + 1;
-                    return itemMonth === parseInt(month);
+                    return (new Date(item.date).getMonth() + 1) === parseInt(month);
                 });
             }
+            if (startDate) filtered = filtered.filter(item => item.date >= startDate);
+            if (endDate) filtered = filtered.filter(item => item.date <= endDate);
 
-            if (startDate) {
-                filtered = filtered.filter(item => item.date >= startDate);
-            }
-
-            if (endDate) {
-                filtered = filtered.filter(item => item.date <= endDate);
+            if (input) {
+                filtered = filtered.filter(row => {
+                    const text = Object.values(row).join(' ').toLowerCase();
+                    return text.includes(input);
+                });
             }
 
             currentPage = 1;
             renderTableWithPagination(filtered);
-            updateKPIs(filtered);
-            updateTopModelsTable(filtered);
-            updateChartsData(filtered);
         }
     </script>
 </body>
