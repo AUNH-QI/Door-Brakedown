@@ -953,7 +953,15 @@
             let finalCounts = [];
             hiddenIssuesDetail = [];
 
-            if (sortedIssues.length > 5) {
+            // ตรวจสอบว่ามีการเลือก Filter ปัญหา (Issue) เจาะจงไว้หรือไม่
+            const selectedIssueVal = document.getElementById('issueFilter').value;
+
+            if (selectedIssueVal !== 'All') {
+                // ถ้าเลือกปัญหาเฉพาะเจาะจง ให้แสดงปัญหานั้นตรงๆ เลย
+                finalLabels = [selectedIssueVal];
+                finalCounts = [data.length];
+            } else if (sortedIssues.length > 5) {
+                // ถ้ามีมากกว่า 5 ปัญหา ให้แสดง Top 4 และรวมที่เหลือเป็น "ปัญหาอื่นๆ (รวม)"
                 for (let i = 0; i < 4; i++) {
                     finalLabels.push(sortedIssues[i][0]);
                     finalCounts.push(sortedIssues[i][1]);
@@ -967,9 +975,10 @@
                 finalLabels.push('ปัญหาอื่นๆ (รวม)');
                 finalCounts.push(othersSum);
             } else {
+                // กรณีทั่วไป (น้อยกว่าหรือเท่ากับ 5 ปัญหา) แก้ไขการดึงค่าจาก Array ให้ถูกต้อง[cite: 3]
                 sortedIssues.forEach(item => {
-                    finalLabels.push(item.issue);
-                    finalCounts.push(item.count);
+                    finalLabels.push(item[0]); // ชื่อปัญหา[cite: 3]
+                    finalCounts.push(item[1]); // จำนวนครั้ง[cite: 3]
                 });
             }
 
