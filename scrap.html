@@ -1,236 +1,406 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrap By Machine Dashboard</title>
-    <!-- Tailwind CSS -->
+    <title>Scrap Management Dashboard</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Supabase JS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Prompt) -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0b0f19; color: #9ca3af; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card-bg { background-color: #111827; border: 1px solid #1f2937; }
-        .gradient-card-1 { background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); }
-        .gradient-card-2 { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); }
+        body { font-family: 'Prompt', sans-serif; }
     </style>
 </head>
-<body class="p-6">
+<body class="bg-slate-950 text-slate-100 min-h-screen">
 
-    <!-- Top Navigation / Header -->
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-2xl font-bold text-white">Scrap By Machine Dashboard</h1>
-            <p class="text-sm text-gray-400">Monitoring production scrap, defects, and analysis</p>
-        </div>
-        <div>
-            <a href="index.html" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg border border-gray-700 transition">ย้อนกลับหน้าหลัก</a>
-        </div>
-    </div>
-
-    <!-- Top Metric Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="gradient-card-1 rounded-2xl p-6 text-white shadow-lg">
-            <p class="text-sm uppercase tracking-wider opacity-80">Total Scrap Quantity</p>
-            <h2 id="total-scrap" class="text-3xl font-extrabold mt-2">Loading...</h2>
-        </div>
-        <div class="gradient-card-2 rounded-2xl p-6 text-white shadow-lg">
-            <p class="text-sm uppercase tracking-wider opacity-80">Total Records</p>
-            <h2 id="total-records" class="text-3xl font-extrabold mt-2">Loading...</h2>
-        </div>
-        <div class="card-bg rounded-2xl p-6 shadow-lg flex flex-col justify-between">
-            <span class="text-sm text-gray-400">Top Problem Line</span>
-            <h3 id="top-line" class="text-xl font-bold text-white mt-1">Loading...</h3>
-        </div>
-        <div class="card-bg rounded-2xl p-6 shadow-lg flex flex-col justify-between">
-            <span class="text-sm text-gray-400">Top Defect Model</span>
-            <h3 id="top-model" class="text-xl font-bold text-white mt-1">Loading...</h3>
-        </div>
-    </div>
-
-    <!-- Charts Row 1 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Main Line Chart: Scrap Trend over time -->
-        <div class="card-bg rounded-2xl p-6 lg:col-span-2 shadow-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-white">Scrap Quantity Trend</h3>
-            </div>
-            <div class="relative h-72">
-                <canvas id="scrapTrendChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Right Side Bar Chart: Scrap by Line -->
-        <div class="card-bg rounded-2xl p-6 shadow-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-white">Scrap by Production Line</h3>
-            </div>
-            <div class="relative h-72">
-                <canvas id="scrapLineChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Row 2 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Donut Chart: Scrap by Model -->
-        <div class="card-bg rounded-2xl p-6 shadow-lg">
-            <h3 class="text-lg font-bold text-white mb-4">Scrap Distribution by Model</h3>
-            <div class="relative h-64 flex justify-center">
-                <canvas id="scrapModelChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Donut Chart: Scrap by Department -->
-        <div class="card-bg rounded-2xl p-6 shadow-lg">
-            <h3 class="text-lg font-bold text-white mb-4">Scrap by Department</h3>
-            <div class="relative h-64 flex justify-center">
-                <canvas id="scrapDeptChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script ข้อมูลและการเชื่อมต่อ Supabase -->
-    <script>
-        // ตั้งค่า Supabase URL และ Anon Key ของคุณที่นี่
-        const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
         
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        <!-- Sidebar (Optional / Consistent with Index) -->
+        <aside class="w-64 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col justify-between">
+            <div class="p-5">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="bg-blue-600 p-2 rounded-xl text-white">
+                        <i class="fa-solid fa-industry text-xl"></i>
+                    </div>
+                    <span class="text-lg font-bold tracking-wide">Factory Dashboard</span>
+                </div>
+                <nav class="space-y-2">
+                    <a href="index.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-chart-pie w-5"></i> ภาพรวมระบบ
+                    </a>
+                    <a href="scrap.html" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600 text-white font-medium shadow-lg shadow-blue-600/30">
+                        <i class="fa-solid fa-triangle-exclamation w-5"></i> จัดการ Scrap
+                    </a>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+                Production System v2.6
+            </div>
+        </aside>
 
-        async function loadDashboardData() {
-            const { data, error } = await _supabase.from('scrap_data').select('*');
+        <!-- Content Area -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
             
-            if (error) {
-                console.error('Error fetching data:', error);
-                alert('ไม่สามารถดึงข้อมูลจาก Supabase ได้ กรุณาตรวจสอบ Config');
-                return;
+            <!-- Top Navbar / Filter Bar -->
+            <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-blue-500"></i> Scrap Dashboard & Logs
+                    </h1>
+                </div>
+
+                <!-- Filters Control -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Date Range -->
+                    <div class="flex items-center bg-slate-800 rounded-lg px-3 py-1.5 border border-slate-700">
+                        <i class="fa-regular fa-calendar text-slate-400 mr-2 text-sm"></i>
+                        <input type="date" id="startDate" class="bg-transparent text-xs text-slate-200 outline-none">
+                        <span class="text-slate-500 mx-2 text-xs">ถึง</span>
+                        <input type="date" id="endDate" class="bg-transparent text-xs text-slate-200 outline-none">
+                    </div>
+
+                    <!-- Month Dropdown -->
+                    <select id="filterMonth" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none">
+                        <option value="">ทุกเดือน</option>
+                        <option value="1">มกราคม</option>
+                        <option value="2">กุมภาพันธ์</option>
+                        <option value="3">มีนาคม</option>
+                        <option value="4">เมษายน</option>
+                        <option value="5">พฤษภาคม</option>
+                        <option value="6">มิถุนายน</option>
+                        <option value="7">กรกฎาคม</option>
+                        <option value="8">สิงหาคม</option>
+                        <option value="9">กันยายน</option>
+                        <option value="10">ตุลาคม</option>
+                        <option value="11">พฤศจิกายน</option>
+                        <option value="12">ธันวาคม</option>
+                    </select>
+
+                    <!-- Line Dropdown -->
+                    <select id="filterLine" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none font-medium">
+                        <option value="">ทุก Line การผลิต</option>
+                        <option value="Line A">Line A</option>
+                        <option value="Line B">Line B</option>
+                        <option value="Line C">Line C</option>
+                        <option value="DND Door">DND Door</option>
+                    </select>
+
+                    <button onclick="applyFilters()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-2 rounded-lg font-medium transition shadow">
+                        <i class="fa-solid fa-filter mr-1"></i> กรองข้อมูล
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Content -->
+            <main class="p-6 space-y-6">
+                
+                <!-- KPI Top Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden">
+                        <div class="text-slate-400 text-xs font-medium">Avg First Rate / Scrap</div>
+                        <div class="text-3xl font-bold mt-2 text-white">30 <span class="text-sm font-normal text-purple-300">pcs/hr</span></div>
+                        <div class="mt-2 text-xs text-purple-400 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> +4.2% จากสัปดาห์ก่อน</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden">
+                        <div class="text-slate-400 text-xs font-medium">Total Scrap Quantity</div>
+                        <div class="text-3xl font-bold mt-2 text-white">1,248 <span class="text-sm font-normal text-blue-300">Units</span></div>
+                        <div class="mt-2 text-xs text-blue-400 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down"></i> -2.1% ดีขึ้นจากเดือนก่อน</div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <div class="text-slate-400 text-xs font-medium">Total Issues Logged</div>
+                            <div class="text-2xl font-bold mt-2 text-white">342 เคส</div>
+                            <span class="text-xs text-rose-400 font-medium bg-rose-950/50 px-2 py-0.5 rounded border border-rose-900">-20% สัปดาห์นี้</span>
+                        </div>
+                        <div class="bg-rose-500/10 text-rose-400 p-3 rounded-xl"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <div class="text-slate-400 text-xs font-medium">Resolved Cases</div>
+                            <div class="text-2xl font-bold mt-2 text-white">310 เคส</div>
+                            <span class="text-xs text-emerald-400 font-medium bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-900">+33% อัตราการแก้ไข</span>
+                        </div>
+                        <div class="bg-emerald-500/10 text-emerald-400 p-3 rounded-xl"><i class="fa-solid fa-circle-check text-xl"></i></div>
+                    </div>
+                </div>
+
+                <!-- Charts Section 1 -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Line Chart: Trend -->
+                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-sm font-bold text-white">Tickets Created vs Tickets Solved (แนวโน้มปัญหา Scrap)</h2>
+                            <span class="text-xs text-slate-400">อัปเดตแบบเรียลไทม์</span>
+                        </div>
+                        <div class="h-72 relative">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Doughnut Chart: Department -->
+                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                        <h2 class="text-sm font-bold text-white mb-2">Tickets By Department (สัดส่วนตามแผนก)</h2>
+                        <div class="h-64 relative flex items-center justify-center">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section 2 -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Doughnut Chart: Type -->
+                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                        <h2 class="text-sm font-bold text-white mb-2">Tickets By Type (ประเภทปัญหา)</h2>
+                        <div class="h-64 relative flex items-center justify-center">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Doughnut / Status Chart -->
+                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                        <h2 class="text-sm font-bold text-white mb-2">New Tickets vs Returned Tickets</h2>
+                        <div class="h-64 relative flex items-center justify-center">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Bar Chart: Top Week Day / Model Accumulation -->
+                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                        <h2 class="text-sm font-bold text-white mb-2">Number of Tickets / Week Day</h2>
+                        <div class="h-64 relative">
+                            <canvas id="weekdayChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Log Table Section -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-base font-bold text-white"><i class="fa-solid fa-table-list text-blue-500 mr-2"></i> บันทึก Log ข้อมูล Scrap ล่าสุด</h2>
+                            <div class="flex items-center gap-2 text-xs text-slate-400">
+                                แสดงผล 
+                                <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 outline-none">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="all">all</option>
+                                </select>
+                                บรรทัด
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="searchLog" placeholder="ค้นหา Model, Problem..." onkeyup="searchTable()" class="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-2 outline-none w-60">
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-800/70 text-slate-400 uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3 rounded-l-lg">Date</th>
+                                    <th class="p-3">Model</th>
+                                    <th class="p-3">Quantity</th>
+                                    <th class="p-3">Line</th>
+                                    <th class="p-3">Problem</th>
+                                    <th class="p-3">Cause</th>
+                                    <th class="p-3">Solution</th>
+                                    <th class="p-3 rounded-r-lg">Department</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scrapTableBody" class="divide-y divide-slate-800">
+                                <!-- Example rows (Can be populated dynamically from Supabase) -->
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 text-slate-400">2026-04-18</td>
+                                    <td class="p-3 font-medium text-white">TM19/21_BB</td>
+                                    <td class="p-3 text-amber-400 font-bold">500 ฝา</td>
+                                    <td class="p-3">Line A</td>
+                                    <td class="p-3">รอยขีดข่วนพิมพ์ผิดรูป</td>
+                                    <td class="p-3">แม่พิมพ์สึกหรอ</td>
+                                    <td class="p-3">เปลี่ยนบล็อกแม่พิมพ์ใหม่</td>
+                                    <td class="p-3"><span class="bg-blue-950 text-blue-400 px-2 py-0.5 rounded border border-blue-900">Production</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 text-slate-400">2026-04-18</td>
+                                    <td class="p-3 font-medium text-white">X-Series V2</td>
+                                    <td class="p-3 text-amber-400 font-bold">120 ชิ้น</td>
+                                    <td class="p-3">Line B</td>
+                                    <td class="p-3">ขนาดคลาดเคลื่อน</td>
+                                    <td class="p-3">แรงดันลมไม่คงที่</td>
+                                    <td class="p-3">ปรับวาล์วแรงดันลมหลัก</td>
+                                    <td class="p-3"><span class="bg-purple-950 text-purple-400 px-2 py-0.5 rounded border border-purple-900">Maintenance</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 text-slate-400">2026-04-17</td>
+                                    <td class="p-3 font-medium text-white">DND-Door-01</td>
+                                    <td class="p-3 text-amber-400 font-bold">85 ชิ้น</td>
+                                    <td class="p-3">DND Door</td>
+                                    <td class="p-3">สีเคลือบไม่สม่ำเสมอ</td>
+                                    <td class="p-3">อุณหภูมิห้องอบต่ำเกินไป</td>
+                                    <td class="p-3">เพิ่มอุณหภูมิเตาเผา 15°C</td>
+                                    <td class="p-3"><span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded border border-emerald-900">Quality Control</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts for Charts Configuration -->
+    <script>
+        // Line Chart (Trend)
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                datasets: [
+                    {
+                        label: 'Tickets Solved',
+                        data: [20, 45, 32, 40, 38, 62, 55],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Tickets Created',
+                        data: [25, 38, 48, 35, 42, 50, 60],
+                        borderColor: '#a855f7',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Prompt' } } } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                }
             }
+        });
 
-            if (!data || data.length === 0) {
-                console.warn('No data found in table.');
-                return;
+        // Department Doughnut Chart
+        const ctxDept = document.getElementById('departmentChart').getContext('2d');
+        new Chart(ctxDept, {
+            type: 'doughnut',
+            data: {
+                labels: ['Sales', 'Setup', 'Bug', 'Features'],
+                datasets: [{
+                    data: [44, 25, 19, 12],
+                    backgroundColor: ['#06b6d4', '#3b82f6', '#6366f1', '#a855f7'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } }
             }
+        });
 
-            processMetrics(data);
-            renderCharts(data);
+        // Type Doughnut Chart
+        const ctxType = document.getElementById('typeChart').getContext('2d');
+        new Chart(ctxType, {
+            type: 'doughnut',
+            data: {
+                labels: ['Machine Error', 'Material Defect', 'Operator Error', 'Other'],
+                datasets: [{
+                    data: [50, 30, 15, 5],
+                    backgroundColor: ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } }
+            }
+        });
+
+        // Status Chart
+        const ctxStatus = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctxStatus, {
+            type: 'doughnut',
+            data: {
+                labels: ['New Tickets', 'Returned Tickets'],
+                datasets: [{
+                    data: [75.2, 24.8],
+                    backgroundColor: ['#ec4899', '#3b82f6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } }
+            }
+        });
+
+        // Weekday Bar Chart
+        const ctxWeekday = document.getElementById('weekdayChart').getContext('2d');
+        new Chart(ctxWeekday, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'],
+                datasets: [{
+                    label: 'Tickets',
+                    data: [40, 25, 60, 45, 55, 30],
+                    backgroundColor: '#06b6d4',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        // Filter and Search Placeholders
+        function applyFilters() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const month = document.getElementById('filterMonth').value;
+            const line = document.getElementById('filterLine').value;
+            
+            console.log("Applying filters:", { startDate, endDate, month, line });
+            // TODO: เรียกฟังก์ชันดึงข้อมูลจาก Supabase มากรองที่นี่
+            alert("กรองข้อมูลเรียบร้อย (เชื่อมต่อฟังก์ชัน Supabase ตามต้องการ)");
         }
 
-        function processMetrics(data) {
-            let totalQty = 0;
-            const lineCounts = {};
-            const modelCounts = {};
-
-            data.forEach(row => {
-                const qty = Number(row.quaintly) || 0;
-                totalQty += qty;
-
-                // นับแยกตาม Line
-                lineCounts[row.line] = (lineCounts[row.line] || 0) + qty;
-                // นับแยกตาม Model
-                modelCounts[row.model] = (modelCounts[row.model] || 0) + qty;
-            });
-
-            document.getElementById('total-scrap').innerText = totalQty.toLocaleString();
-            document.getElementById('total-records').innerText = data.length.toLocaleString();
-
-            // หา Line ที่ Scrap สูงสุด
-            const topLine = Object.keys(lineCounts).reduce((a, b) => lineCounts[a] > lineCounts[b] ? a : b, '-');
-            document.getElementById('top-line').innerText = topLine;
-
-            // หา Model ที่ Scrap สูงสุด
-            const topModel = Object.keys(modelCounts).reduce((a, b) => modelCounts[a] > modelCounts[b] ? a : b, '-');
-            document.getElementById('top-model').innerText = topModel;
+        function changeRowsPerPage() {
+            const rows = document.getElementById('rowsPerPage').value;
+            console.log("Change rows to:", rows);
         }
 
-        function renderCharts(data) {
-            // 1. Trend Chart (Group by Date)
-            const dateMap = {};
-            data.forEach(row => {
-                const d = row.date;
-                dateMap[d] = (dateMap[d] || 0) + Number(row.quaintly);
-            });
-            const sortedDates = Object.keys(dateMap).sort();
-            const dateValues = sortedDates.map(d => dateMap[d]);
-
-            const ctxTrend = document.getElementById('scrapTrendChart').getContext('2d');
-            new Chart(ctxTrend, {
-                type: 'line',
-                data: {
-                    labels: sortedDates,
-                    datasets: [{
-                        label: 'Scrap Quantity',
-                        data: dateValues,
-                        borderColor: '#06b6d4',
-                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
-            // 2. Line Chart (Bar)
-            const lineMap = {};
-            data.forEach(row => {
-                lineMap[row.line] = (lineMap[row.line] || 0) + Number(row.quaintly);
-            });
-            const ctxLine = document.getElementById('scrapLineChart').getContext('2d');
-            new Chart(ctxLine, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(lineMap),
-                    datasets: [{
-                        data: Object.values(lineMap),
-                        backgroundColor: '#8b5cf6',
-                        borderRadius: 4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
-            // 3. Model Donut Chart
-            const modelMap = {};
-            data.forEach(row => {
-                modelMap[row.model] = (modelMap[row.model] || 0) + Number(row.quaintly);
-            });
-            const ctxModel = document.getElementById('scrapModelChart').getContext('2d');
-            new Chart(ctxModel, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(modelMap),
-                    datasets: [{
-                        data: Object.values(modelMap),
-                        backgroundColor: ['#3b82f6', '#06b6d4', '#8b5cf6', '#ec4899', '#f59e0b']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // 4. Department Donut Chart
-            const deptMap = {};
-            data.forEach(row => {
-                const dept = row.department || 'N/A';
-                deptMap[dept] = (deptMap[dept] || 0) + Number(row.quaintly);
-            });
-            const ctxDept = document.getElementById('scrapDeptChart').getContext('2d');
-            new Chart(ctxDept, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(deptMap),
-                    datasets: [{
-                        data: Object.values(deptMap),
-                        backgroundColor: ['#10b981', '#6366f1', '#f43f5e', '#84cc16']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
+        function searchTable() {
+            const input = document.getElementById('searchLog').value.toLowerCase();
+            const rows = document.querySelectorAll('#scrapTableBody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? '' : 'none';
             });
         }
-
-        // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
-        loadDashboardData();
     </script>
 </body>
 </html>
