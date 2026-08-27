@@ -33,26 +33,6 @@
             </div>
             <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
         </div>
-        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
-        <div>
-            <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold tracking-wide text-orange-500">DOOR LINE BREAKDOWN</h1>
-                <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังดึงข้อมูล...</span>
-            </div>
-            <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
-        </div>
-        
-        <!-- 📍 เพิ่มปุ่มลิงก์ไปหน้า Scrap by Machine ตรงนี้ครับ -->
-        <div class="flex items-center gap-3">
-            <a href="scrap.html" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-xs font-bold rounded-lg shadow-md transition flex items-center gap-1.5 border border-cyan-400/30">
-                <span>📊 ไปที่หน้า SCRAP BY MACHINE</span>
-            </a>
-        </div>
-
-        <div class="flex flex-wrap gap-2.5 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs items-center">
-            
-            <!-- Quick Date Buttons -->
-            <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
         
         <div class="flex flex-wrap gap-2.5 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs items-center">
             
@@ -131,6 +111,14 @@
                 <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
                 <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
             </div>
+
+            <!-- SCRAP BY MACHINE Button -->
+            <div class="flex items-end mt-auto ml-auto">
+                <a href="scrap.html" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-4 py-1.5 rounded transition shadow flex items-center gap-1">
+                    📊 SCRAP BY MACHINE
+                </a>
+            </div>
+
         </div>
     </div>
 
@@ -270,17 +258,14 @@
                 <label class="block text-gray-400 mb-1">cause</label>
                 <input type="text" id="inputCause" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
-            
-            <!-- ปรับให้ Downtime และ Fix อยู่บรรทัดเดียวกัน -->
             <div>
                 <label class="block text-gray-400 mb-1">downtime (min)</label>
                 <input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
-            <div class="col-span-1 md:col-span-3">
+            <div class="col-span-2 md:col-span-4">
                 <label class="block text-gray-400 mb-1">fix</label>
                 <input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
-
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
                 <button type="button" onclick="toggleForm()" class="bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded text-white">ยกเลิก</button>
                 <button type="submit" id="submitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white">บันทึกข้อมูล</button>
