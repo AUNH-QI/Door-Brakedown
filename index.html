@@ -690,50 +690,55 @@
 
         async function handleUploadExistingLog(event) {
     event.preventDefault();
-    if (!selectedLogIdForImage) return;
+    if (!currentLogIdForUpload) return;
 
     const fileInput = document.getElementById('existingImageFile');
-    if (fileInput.files.length === 0) return;
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("กรุณาเลือกไฟล์รูปภาพ");
+        return;
+    }
 
-    const btn = document.getElementById('uploadSubmitBtn');
-    btn.innerText = 'กำลังอัปโหลด...';
-    btn.disabled = true;
+    const submitBtn = document.getElementById('uploadSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'กำลังอัปโหลด...';
 
     try {
-        const file = fileInput.files[0];
+        // 1. อัปโหลดรูปภาพไปยัง Supabase Storage (ใช้ Bucket 'issue-images')
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabaseClient.storage
             .from('issue-images')
-            .upload(fileName, file);
+            .upload(filePath, file);
 
         if (uploadError) throw uploadError;
 
-        const { data: publicURLData } = supabaseClient.storage
+        // 2. ดึง Public URL ของรูปภาพ
+        const { data: publicUrlData } = supabaseClient.storage
             .from('issue-images')
-            .getPublicUrl(fileName);
+            .getPublicUrl(filePath);
 
-        const imageUrl = publicURLData.publicUrl;
+        const imageUrl = publicUrlData.publicUrl;
 
+        // 3. อัปเดต URL รูปภาพลงในตาราง breakdown_logs ตาม ID
         const { error: updateError } = await supabaseClient
             .from('breakdown_logs')
             .update({ image_url: imageUrl })
-            .eq('id', selectedLogIdForImage);
+            .eq('id', currentLogIdForUpload);
 
         if (updateError) throw updateError;
 
+        alert("อัปโหลดรูปภาพสำเร็จ!");
         closeUploadModal();
-        
-        // ➕ เพิ่มคำสั่งนี้เพื่อให้ระบบดึงข้อมูลใหม่และอัปเดตตารางทันทีหลังอัปโหลดเสร็จ
-        await fetchLogs();
-
+        fetchLogs(); // โหลดข้อมูลใหม่เพื่อแสดงผลรูปภาพล่าสุด
     } catch (err) {
         console.error("Error uploading image:", err);
-        alert("อัปโหลดรูปไม่สำเร็จ: " + err.message);
+        alert("เกิดข้อผิดพลาดในการอัปโหลด: " + err.message);
     } finally {
-        btn.innerText = 'อัปโหลด';
-        btn.disabled = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'อัปโหลด';
     }
 }
 
