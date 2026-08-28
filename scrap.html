@@ -6,8 +6,9 @@
     <title>SCRAP BY MACHINE</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
+    <!-- Chart.js & Chart.js DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels@2.2.0/chartjs-plugin-datalabels.min.js"></script>
     <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- FontAwesome Icons -->
@@ -20,13 +21,12 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
 
-    <!-- Main Container (Full Width without Sidebar) -->
+    <!-- Main Container -->
     <div class="flex flex-col h-screen overflow-hidden">
         
         <!-- Top Navbar / Filter Bar -->
         <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- ปุ่มย้อนกลับไปหน้า index.html -->
                 <a href="index.html" class="bg-white text-slate-900 hover:bg-slate-200 p-2.5 rounded-xl transition shadow flex items-center justify-center font-bold" title="ย้อนกลับไปหน้าแรก">
                     <i class="fa-solid fa-arrow-left text-base"></i>
                 </a>
@@ -35,63 +35,76 @@
                 </h1>
             </div>
 
-            <!-- Filters Control (Background White for inputs) -->
+            <!-- Filters Control (Matching index.html style) -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Date Range -->
-                <div class="flex items-center bg-white rounded-lg px-3 py-1.5 border border-slate-300 shadow-sm">
-                    <i class="fa-regular fa-calendar text-slate-500 mr-2 text-sm"></i>
-                    <input type="date" id="startDate" onchange="applyFilters()" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
+                <!-- Quick Date Range Buttons -->
+                <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button onclick="setDatePreset('all')" id="preset-all" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow">ทั้งหมด</button>
+                    <button onclick="setDatePreset('today')" id="preset-today" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">วันนี้</button>
+                    <button onclick="setDatePreset('week')" id="preset-week" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">สัปดาห์นี้</button>
+                    <button onclick="setDatePreset('month')" id="preset-month" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">เดือนนี้</button>
+                </div>
+
+                <!-- Custom Date Range -->
+                <div class="flex items-center bg-white rounded-xl px-3 py-1.5 border border-slate-300 shadow-sm">
+                    <span class="text-slate-500 mr-2 text-xs">ตั้งแต่</span>
+                    <input type="date" id="startDate" onchange="clearPresetActive(); applyFilters();" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
                     <span class="text-slate-500 mx-2 text-xs">ถึง</span>
-                    <input type="date" id="endDate" onchange="applyFilters()" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
+                    <input type="date" id="endDate" onchange="clearPresetActive(); applyFilters();" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
                 </div>
 
                 <!-- Month Dropdown -->
-                <select id="filterMonth" onchange="applyFilters()" class="bg-white text-xs text-slate-900 font-medium border border-slate-300 rounded-lg px-3 py-2 outline-none shadow-sm cursor-pointer">
-                    <option value="">ทุกเดือน</option>
-                    <option value="1">มกราคม</option>
-                    <option value="2">กุมภาพันธ์</option>
-                    <option value="3">มีนาคม</option>
-                    <option value="4">เมษายน</option>
-                    <option value="5">พฤษภาคม</option>
-                    <option value="6">มิถุนายน</option>
-                    <option value="7">กรกฎาคม</option>
-                    <option value="8">สิงหาคม</option>
-                    <option value="9">กันยายน</option>
-                    <option value="10">ตุลาคม</option>
-                    <option value="11">พฤศจิกายน</option>
-                    <option value="12">ธันวาคม</option>
-                </select>
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 mb-0.5 ml-1">เลือกเดือนเฉพาะ</span>
+                    <select id="filterMonth" onchange="applyFilters()" class="bg-white text-xs text-slate-900 font-medium border border-slate-300 rounded-xl px-3 py-2 outline-none shadow-sm cursor-pointer">
+                        <option value="">ทุกเดือน (All)</option>
+                        <option value="1">มกราคม</option>
+                        <option value="2">กุมภาพันธ์</option>
+                        <option value="3">มีนาคม</option>
+                        <option value="4">เมษายน</option>
+                        <option value="5">พฤษภาคม</option>
+                        <option value="6">มิถุนายน</option>
+                        <option value="7">กรกฎาคม</option>
+                        <option value="8">สิงหาคม</option>
+                        <option value="9">กันยายน</option>
+                        <option value="10">ตุลาคม</option>
+                        <option value="11">พฤศจิกายน</option>
+                        <option value="12">ธันวาคม</option>
+                    </select>
+                </div>
             </div>
         </header>
 
-        <!-- Line Filter Buttons Bar -->
+        <!-- Line Filter Buttons Bar (Matching index.html style) -->
         <div class="bg-slate-900/60 border-b border-slate-800 px-6 py-3 flex flex-wrap items-center gap-2">
-            <span class="text-xs text-slate-400 font-medium mr-2"><i class="fa-solid fa-filter mr-1"></i> Line การผลิต:</span>
-            <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn bg-blue-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">ทุก Line</button>
-            <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">A-Door</button>
-            <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">B-Door</button>
-            <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">C-Door</button>
-            <button onclick="setLineFilter('DND')" id="btn-line-DND" class="line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow">DND</button>
+            <span class="text-xs text-slate-400 font-medium mr-2">เลือก Line</span>
+            <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
+                <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow">All</button>
+                <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line A</button>
+                <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line B</button>
+                <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line C</button>
+                <button onclick="setLineFilter('DND')" id="btn-line-DND" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">DND</button>
+            </div>
         </div>
 
-        <!-- Main Dashboard Content (Full Width) -->
+        <!-- Main Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
             
-            <!-- KPI Top Cards -->
+            <!-- KPI Top Cards with Dynamic Highlight -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden">
+                <div id="card-adoor" class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: A-Door (ชิ้นงานเสีย)</div>
                     <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">pcs</span></div>
                 </div>
-                <div class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden">
+                <div id="card-bdoor" class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: B-Door (ชิ้นงานเสีย)</div>
                     <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">pcs</span></div>
                 </div>
-                <div class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden">
+                <div id="card-cdoor" class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: C-Door (ชิ้นงานเสีย)</div>
                     <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">pcs</span></div>
                 </div>
-                <div class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden">
+                <div id="card-dnd" class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: DND (ชิ้นงานเสีย)</div>
                     <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">pcs</span></div>
                 </div>
@@ -99,7 +112,7 @@
 
             <!-- Charts Section 1 -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Bar Chart: Top 5 Problems -->
+                <!-- Bar Chart: Top 5 Problems with DataLabels -->
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl lg:col-span-2 flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
@@ -110,7 +123,7 @@
                     </div>
                 </div>
 
-                <!-- Doughnut Chart: Department (Accumulated Quantity) -->
+                <!-- Doughnut Chart: Department -->
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
                     <h2 class="text-sm font-bold text-white mb-2">Tickets By Department (จำนวนสะสมตามแผนก)</h2>
                     <div class="h-64 relative flex items-center justify-center">
@@ -119,7 +132,7 @@
                 </div>
             </div>
 
-            <!-- Additional Tables Section: Top 5 Models -->
+            <!-- Top 5 Models Table -->
             <div class="grid grid-cols-1 gap-6">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
                     <div>
@@ -134,16 +147,14 @@
                                         <th class="p-2.5 rounded-r-lg text-right">จำนวน (Pcs)</th>
                                     </tr>
                                 </thead>
-                                <tbody id="topModelsTableBody" class="divide-y divide-slate-800">
-                                    <!-- โหลดข้อมูลจาก Supabase -->
-                                </tbody>
+                                <tbody id="topModelsTableBody" class="divide-y divide-slate-800"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Log Table Section with Pagination -->
+            <!-- Log Table Section -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                     <div class="flex items-center gap-3">
@@ -165,7 +176,6 @@
                     </div>
                 </div>
 
-                <!-- Table -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-slate-300">
                         <thead class="bg-slate-800/70 text-slate-400 uppercase font-semibold">
@@ -180,25 +190,19 @@
                                 <th class="p-3 rounded-r-lg">Department</th>
                             </tr>
                         </thead>
-                        <tbody id="scrapTableBody" class="divide-y divide-slate-800">
-                            <!-- โหลดข้อมูลจาก Supabase -->
-                        </tbody>
+                        <tbody id="scrapTableBody" class="divide-y divide-slate-800"></tbody>
                     </table>
                 </div>
 
-                <!-- Pagination UI Controls -->
                 <div class="flex flex-wrap items-center justify-between mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400">
                     <div id="paginationInfo">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
-                    <div id="paginationControls" class="flex items-center gap-1">
-                        <!-- ปุ่มเปลี่ยนหน้าสร้างด้วย JS -->
-                    </div>
+                    <div id="paginationControls" class="flex items-center gap-1"></div>
                 </div>
             </div>
-
         </main>
     </div>
 
-    <!-- Scripts for Supabase Connection & Charts -->
+    <!-- Scripts -->
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
@@ -206,8 +210,8 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let topProblemsChart, deptChart;
-        let allData = []; // เก็บข้อมูลดิบทั้งหมด
-        let currentLineFilter = ''; // ค่าตัวเลือก Line ปัจจุบัน
+        let allData = [];
+        let currentLineFilter = '';
         let currentPage = 1;
         let rowsPerPage = 10;
 
@@ -216,7 +220,9 @@
             fetchScrapData();
         });
 
-        // สร้างโครงสร้างกราฟพร้อมกำหนดสีโทนแตกต่างกัน
+        // ลงทะเบียน plugin datalabels ให้ Chart.js
+        Chart.register(ChartDataLabels);
+
         function initCharts() {
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
@@ -230,7 +236,24 @@
                         borderRadius: 6 
                     }] 
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#ffffff',
+                            anchor: 'end',
+                            align: 'top',
+                            font: { family: 'Prompt', weight: 'bold', size: 11 },
+                            formatter: (value) => value
+                        }
+                    }, 
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } }, 
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true } 
+                    } 
+                }
             });
 
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
@@ -244,11 +267,17 @@
                         borderWidth: 0 
                     }] 
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } },
+                        datalabels: { display: false }
+                    } 
+                }
             });
         }
 
-        // ดึงข้อมูลจากตาราง Supabase ('scrap_logs')
         async function fetchScrapData() {
             const { data, error } = await supabaseClient
                 .from('scrap_logs')
@@ -266,25 +295,91 @@
             }
         }
 
-        // เลือกปุ่ม Line Filter
+        // จัดการปุ่มช่วงเวลาด่วน (Preset)
+        function setDatePreset(type) {
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.className = "preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
+            });
+            document.getElementById(`preset-${type}`).className = "preset-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
+
+            const today = new Date();
+            let startStr = '', endStr = '';
+
+            const formatDate = (d) => d.toISOString().split('T')[0];
+
+            if (type === 'today') {
+                startStr = endStr = formatDate(today);
+            } else if (type === 'week') {
+                const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
+                const lastDay = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+                startStr = formatDate(firstDay);
+                endStr = formatDate(lastDay);
+            } else if (type === 'month') {
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                startStr = formatDate(firstDay);
+                endStr = formatDate(lastDay);
+            } else {
+                startStr = '';
+                endStr = '';
+            }
+
+            document.getElementById('startDate').value = startStr;
+            document.getElementById('endDate').value = endStr;
+            applyFilters();
+        }
+
+        function clearPresetActive() {
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.className = "preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
+            });
+        }
+
+        // ตั้งค่า Line Filter พร้อมไฮไลต์ KPI Cards
         function setLineFilter(lineValue) {
             currentLineFilter = lineValue;
             
-            // อัปเดตสไตล์ปุ่ม Line
             document.querySelectorAll('.line-btn').forEach(btn => {
-                btn.className = "line-btn bg-white text-slate-800 hover:bg-slate-100 text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow";
+                btn.className = "line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
             });
             
             const activeBtnId = lineValue === '' ? 'btn-line-all' : `btn-line-${lineValue}`;
             const targetBtn = document.getElementById(activeBtnId);
             if (targetBtn) {
-                targetBtn.className = "line-btn bg-blue-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium transition shadow";
+                targetBtn.className = "line-btn px-4 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
             }
 
+            highlightKpiCard(lineValue);
             applyFilters();
         }
 
-        // ระบบกรองข้อมูลอัตโนมัติทันทีที่เปลี่ยนเงื่อนไข
+        // ระบบไฮไลต์ KPI Card ตาม Line ที่เลือก
+        function highlightKpiCard(line) {
+            const cards = {
+                'A-Door': document.getElementById('card-adoor'),
+                'B-Door': document.getElementById('card-bdoor'),
+                'C-Door': document.getElementById('card-cdoor'),
+                'DND': document.getElementById('card-dnd')
+            };
+
+            Object.keys(cards).forEach(key => {
+                const card = cards[key];
+                if (!line || line === '') {
+                    // คืนค่าปกติทั้งหมดเมื่อเลือก All
+                    card.classList.remove('ring-2', 'ring-orange-500', 'scale-105', 'shadow-2xl');
+                    card.style.opacity = '1';
+                } else if (key === line || (line === 'DND' && key === 'DND')) {
+                    // ไฮไลต์การ์ดที่เลือก
+                    card.classList.add('ring-2', 'ring-orange-500', 'scale-105', 'shadow-2xl');
+                    card.style.opacity = '1';
+                } else {
+                    // หรี่การ์ดอื่นลงเล็กน้อยเพื่อให้เด่นชัด
+                    card.classList.remove('ring-2', 'ring-orange-500', 'scale-105', 'shadow-2xl');
+                    card.style.opacity = '0.4';
+                }
+            });
+        }
+
         function applyFilters() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
@@ -322,7 +417,6 @@
             updateDashboard(filtered);
         }
 
-        // อัปเดตหน้าจอทั้งหมดตามข้อมูลที่กรองแล้ว
         function updateDashboard(data) {
             updateKPIs(data);
             updateTopModelsTable(data);
@@ -330,7 +424,6 @@
             renderTableWithPagination(data);
         }
 
-        // แสดงข้อมูลในตาราง Log พร้อม Pagination
         function renderTableWithPagination(data) {
             const tbody = document.getElementById('scrapTableBody');
             tbody.innerHTML = '';
@@ -393,7 +486,7 @@
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
                     const pageBtn = document.createElement('button');
-                    pageBtn.className = `px-2.5 py-1 rounded text-xs font-medium ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`;
+                    pageBtn.className = `px-2.5 py-1 rounded text-xs font-medium ${i === currentPage ? 'bg-orange-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`;
                     pageBtn.innerText = i;
                     pageBtn.onclick = () => { currentPage = i; renderTableWithPagination(data); };
                     container.appendChild(pageBtn);
@@ -417,7 +510,6 @@
             applyFilters();
         }
 
-        // อัปเดตตัวเลขยอดเสียแยกตาม Line ลง KPI Cards
         function updateKPIs(data) {
             let lineA = 0, lineB = 0, lineC = 0, lineDND = 0;
 
@@ -436,7 +528,6 @@
             document.getElementById('kpi-dnd').innerHTML = `${lineDND} <span class="text-sm font-normal text-amber-300">pcs</span>`;
         }
 
-        // ตาราง Top 5 Models
         function updateTopModelsTable(data) {
             const modelMap = {};
             data.forEach(item => {
@@ -472,7 +563,6 @@
             });
         }
 
-        // อัปเดตกราฟทั้งสองตัว
         function updateChartsData(data) {
             const problemCounts = {};
             data.forEach(item => {
@@ -502,7 +592,6 @@
             deptChart.update();
         }
 
-        // ค้นหาข้อความในตาราง Log
         function searchTable() {
             const input = document.getElementById('searchLog').value.toLowerCase();
             const startDate = document.getElementById('startDate').value;
