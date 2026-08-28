@@ -689,50 +689,64 @@
         }
 
         async function handleUploadExistingLog(event) {
-            event.preventDefault();
-            if (!selectedLogIdForImage) return;
+    event.preventDefault();
+    if (!selectedLogIdForImage) {
+        alert('ไม่พบ ID ของ Log ที่ต้องการอัปโหลดรูป');
+        return;
+    }
 
-            const fileInput = document.getElementById('existingImageFile');
-            if (fileInput.files.length === 0) return;
+    const fileInput = document.getElementById('existingImageFile');
+    if (fileInput.files.length === 0) return;
 
-            const btn = document.getElementById('uploadSubmitBtn');
-            btn.innerText = 'กำลังอัปโหลด...';
-            btn.disabled = true;
+    const btn = document.getElementById('uploadSubmitBtn');
+    btn.innerText = 'กำลังอัปโหลด...';
+    btn.disabled = true;
 
-            try {
-                const file = fileInput.files[0];
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+    try {
+        const file = fileInput.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-                const { error: uploadError } = await supabaseClient.storage
-                    .from('issue-images')
-                    .upload(fileName, file);
+        console.log("กำลังอัปโหลดไฟล์ไป Storage:", fileName);
+        const { error: uploadError } = await supabaseClient.storage
+            .from('issue-images')
+            .upload(fileName, file);
 
-                if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-                const { data: publicURLData } = supabaseClient.storage
-                    .from('issue-images')
-                    .getPublicUrl(fileName);
+        const { data: publicURLData } = supabaseClient.storage
+            .from('issue-images')
+            .getPublicUrl(fileName);
 
-                const imageUrl = publicURLData.publicUrl;
+        const imageUrl = publicURLData.publicUrl;
+        console.log("ได้ Public URL แล้ว:", imageUrl);
+        console.log("กำลังอัปเดตตาราง Breakdown Logs สำหรับ ID:", selectedLogIdForImage);
 
-                const { error: updateError } = await supabaseClient
-                    .from('breakdown_logs')
-                    .update({ image_url: imageUrl })
-                    .eq('id', selectedLogIdForImage);
+        const { data, error: updateError, status } = await supabaseClient
+            .from('breakdown_logs')
+            .update({ image_url: imageUrl })
+            .eq('id', selectedLogIdForImage)
+            .select();
 
-                if (updateError) throw updateError;
+        console.log("ผลลัพธ์การ Update:", { data, updateError, status });
 
-                closeUploadModal();
-                await fetchLogs();
-            } catch (err) {
-                console.error("Error uploading image:", err);
-                alert("อัปโหลดรูปไม่สำเร็จ: " + err.message);
-            } finally {
-                btn.innerText = 'อัปโหลด';
-                btn.disabled = false;
-            }
+        if (updateError) throw updateError;
+
+        if (!data || data.length === 0) {
+            alert('อัปโหลดสำเร็จ แต่ไม่พบแถวข้อมูลที่ถูกอัปเดต (ตรวจสอบ RLS Policies ของตาราง breakdown_logs ว่าอนุญาตให้ UPDATE หรือไม่)');
+            return;
         }
+
+        closeUploadModal();
+        await fetchLogs();
+    } catch (err) {
+        console.error("Error uploading image:", err);
+        alert("อัปโหลดรูปไม่สำเร็จ: " + (err.message || JSON.stringify(err)));
+    } finally {
+        btn.innerText = 'อัปโหลด';
+        btn.disabled = false;
+    }
+}
 
         function setLineFilter(lineName) {
             document.getElementById('lineFilter').value = lineName;
