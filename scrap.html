@@ -35,8 +35,18 @@
                 </h1>
             </div>
 
-            <!-- Filters Control -->
+            <!-- Filters Control (รวมปุ่มกรอง Line และตัวกรองเวลามาไว้ด้วยกัน) -->
             <div class="flex flex-wrap items-center gap-3">
+                <!-- Line Filter Group -->
+                <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
+                    <span class="text-xs text-slate-400 font-medium px-2">Line:</span>
+                    <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow">All</button>
+                    <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line A</button>
+                    <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line B</button>
+                    <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line C</button>
+                    <button onclick="setLineFilter('DND')" id="btn-line-DND" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">DND</button>
+                </div>
+
                 <!-- Quick Date Range Buttons -->
                 <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
                     <button onclick="setDatePreset('all')" id="preset-all" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow">ทั้งหมด</button>
@@ -55,7 +65,6 @@
 
                 <!-- Month Dropdown -->
                 <div class="flex flex-col">
-                    <span class="text-[10px] text-slate-400 mb-0.5 ml-1">เลือกเดือนเฉพาะ</span>
                     <select id="filterMonth" onchange="applyFilters()" class="bg-white text-xs text-slate-900 font-medium border border-slate-300 rounded-xl px-3 py-2 outline-none shadow-sm cursor-pointer">
                         <option value="">ทุกเดือน (All)</option>
                         <option value="1">มกราคม</option>
@@ -74,18 +83,6 @@
                 </div>
             </div>
         </header>
-
-        <!-- Line Filter Buttons Bar -->
-        <div class="bg-slate-900/60 border-b border-slate-800 px-6 py-3 flex flex-wrap items-center gap-2">
-            <span class="text-xs text-slate-400 font-medium mr-2">เลือก Line</span>
-            <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
-                <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow">All</button>
-                <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line A</button>
-                <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line B</button>
-                <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line C</button>
-                <button onclick="setLineFilter('DND')" id="btn-line-DND" class="line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">DND</button>
-            </div>
-        </div>
 
         <!-- Main Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
@@ -110,15 +107,24 @@
                 </div>
             </div>
 
-            <!-- Charts Section 1: Trend Line Chart (แทนที่ตำแหน่งเดิมของ Top 5 ปัญหา) -->
-            <div class="grid grid-cols-1 gap-6">
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
+            <!-- Charts Section 1: Trend Line Chart (70%) & Department Doughnut Chart (30%) -->
+            <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+                <!-- Trend Line Chart (7 Col / 70%) -->
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-7">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-line text-amber-500 mr-2"></i> แนวโน้มจำนวนชิ้นงานเสียแยกตามวัน (Daily Scrap Trend)</h2>
                         <span class="text-xs text-slate-400">สถิติตามช่วงเวลา</span>
                     </div>
                     <div class="h-72 relative">
                         <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Doughnut Chart: Department (3 Col / 30%) -->
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-3">
+                    <h2 class="text-sm font-bold text-white mb-2">Tickets By Department</h2>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="departmentChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -145,7 +151,7 @@
                     </div>
                 </div>
 
-                <!-- Top 5 Problems Bar Chart (50% - ย้ายมาอยู่ข้างๆ) -->
+                <!-- Top 5 Problems Bar Chart (50%) -->
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
@@ -153,36 +159,6 @@
                     </div>
                     <div class="h-64 relative">
                         <canvas id="topProblemsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Department Doughnut Chart & Additional Info Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Doughnut Chart: Department (1 Col) -->
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
-                    <h2 class="text-sm font-bold text-white mb-2">Tickets By Department (จำนวนสะสมตามแผนก)</h2>
-                    <div class="h-60 relative flex items-center justify-center">
-                        <canvas id="departmentChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Quick Summary or Stats Box (2 Cols) -->
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-2">
-                    <h2 class="text-sm font-bold text-white mb-2"><i class="fa-solid fa-circle-info text-cyan-400 mr-2"></i> ข้อมูลสรุปภาพรวมระบบ</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-auto">
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
-                            <div class="text-slate-400 text-xs">รายการ Log ทั้งหมด</div>
-                            <div class="text-xl font-bold text-white mt-1" id="stat-total-logs">0</div>
-                        </div>
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
-                            <div class="text-slate-400 text-xs">จำนวนชิ้นงานเสียรวม</div>
-                            <div class="text-xl font-bold text-rose-400 mt-1" id="stat-total-qty">0 Pcs</div>
-                        </div>
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
-                            <div class="text-slate-400 text-xs">Model ที่พบปัญหามากที่สุด</div>
-                            <div class="text-sm font-bold text-amber-400 mt-1 truncate" id="stat-top-model">-</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -342,7 +318,7 @@
                     responsive: true, 
                     maintainAspectRatio: false, 
                     plugins: { 
-                        legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt', size: 10 } } },
+                        legend: { position: 'bottom', labels: { boxWidth: 12, color: '#94a3b8', font: { family: 'Prompt', size: 10 } } },
                         datalabels: { display: false }
                     } 
                 }
@@ -408,13 +384,13 @@
             currentLineFilter = lineValue;
             
             document.querySelectorAll('.line-btn').forEach(btn => {
-                btn.className = "line-btn px-4 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
+                btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
             });
             
             const activeBtnId = lineValue === '' ? 'btn-line-all' : `btn-line-${lineValue}`;
             const targetBtn = document.getElementById(activeBtnId);
             if (targetBtn) {
-                targetBtn.className = "line-btn px-4 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
+                targetBtn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
             }
 
             highlightKpiCard(lineValue);
@@ -486,33 +462,6 @@
             updateTopModelsTable(data);
             updateChartsData(data);
             renderTableWithPagination(data);
-            updateExtraStats(data);
-        }
-
-        function updateExtraStats(data) {
-            const totalLogs = data.length;
-            let totalQty = 0;
-            const modelMap = {};
-
-            data.forEach(item => {
-                const qty = parseInt(item.quantity) || 0;
-                totalQty += qty;
-                const m = item.model || 'Unknown';
-                modelMap[m] = (modelMap[m] || 0) + qty;
-            });
-
-            let topModel = '-';
-            let maxQty = -1;
-            for (const [m, q] of Object.entries(modelMap)) {
-                if (q > maxQty) {
-                    maxQty = q;
-                    topModel = m;
-                }
-            }
-
-            document.getElementById('stat-total-logs').innerText = totalLogs.toLocaleString() + ' รายการ';
-            document.getElementById('stat-total-qty').innerText = totalQty.toLocaleString() + ' Pcs';
-            document.getElementById('stat-top-model').innerText = topModel;
         }
 
         function renderTableWithPagination(data) {
