@@ -20,6 +20,15 @@
             transform: translateY(-2px);
             transition: all 0.3s ease;
         }
+        /* สไตล์สำหรับช่องลากวางไฟล์ (Drop Zone) */
+        .drop-zone {
+            border: 2px dashed #4b5563;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.dragover {
+            border-color: #f97316;
+            background-color: rgba(249, 115, 22, 0.1);
+        }
     </style>
 </head>
 <body class="bg-[#0f1115] text-white p-6 font-sans">
@@ -269,14 +278,24 @@
                 </div>
             </div>
             
-            <!-- ช่องอัปโหลดรูปภาพก่อน/หลังแก้ไข -->
+            <!-- ช่องอัปโหลดรูปภาพก่อน/หลังแก้ไข (รองรับ Drag & Drop และ Paste) -->
             <div class="col-span-2 md:col-span-2">
                 <label class="block text-gray-400 mb-1">รูปภาพก่อนแก้ไข (Before Image)</label>
-                <input type="file" id="inputBeforeImageFile" accept="image/*" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                <div id="dropZoneBefore" class="drop-zone bg-[#181c24] p-3 rounded-lg text-center cursor-pointer relative hover:border-orange-500">
+                    <input type="file" id="inputBeforeImageFile" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div id="beforePreviewContainer" class="flex flex-col items-center justify-center space-y-1">
+                        <span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
+                    </div>
+                </div>
             </div>
             <div class="col-span-2 md:col-span-2">
                 <label class="block text-gray-400 mb-1">รูปภาพหลังแก้ไข (After Image)</label>
-                <input type="file" id="inputAfterImageFile" accept="image/*" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
+                <div id="dropZoneAfter" class="drop-zone bg-[#181c24] p-3 rounded-lg text-center cursor-pointer relative hover:border-orange-500">
+                    <input type="file" id="inputAfterImageFile" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div id="afterPreviewContainer" class="flex flex-col items-center justify-center space-y-1">
+                        <span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
+                    </div>
+                </div>
             </div>
 
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
@@ -378,7 +397,99 @@
             document.getElementById('startDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('inputDate').valueAsDate = new Date();
+
+            // เปิดใช้งาน Drag & Drop และ Paste สำหรับฟอร์มเพิ่มข้อมูล
+            initDragAndDropAndPaste();
         });
+
+        function initDragAndDropAndPaste() {
+            setupDropZone('dropZoneBefore', 'inputBeforeImageFile', 'beforePreviewContainer');
+            setupDropZone('dropZoneAfter', 'inputAfterImageFile', 'afterPreviewContainer');
+
+            // รองรับการกด Ctrl+V วางรูปภาพเมื่อโฟกัสหรือกรอกฟอร์มอยู่
+            const formEl = document.getElementById('addLogForm');
+            formEl.addEventListener('paste', (e) => {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        const blob = items[i].getAsFile();
+                        if (blob) {
+                            // ค่าเริ่มต้นถ้าแปะในฟอร์ม จะให้ลงช่อง Before ก่อน ถ้าช่อง Before ว่าง หรือกำหนดให้เลือกช่องที่กำลัง Active
+                            const fileInput = document.getElementById('inputBeforeImageFile');
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(blob);
+                            fileInput.files = dataTransfer.files;
+                            
+                            updatePreview('beforePreviewContainer', blob, 'Before Image');
+                            e.preventDefault();
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupDropZone(dropZoneId, fileInputId, previewContainerId) {
+            const dropZone = document.getElementById(dropZoneId);
+            const fileInput = document.getElementById(fileInputId);
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    updatePreview(previewContainerId, files[0], files[0].name);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (fileInput.files.length > 0) {
+                    updatePreview(previewContainerId, fileInput.files[0], fileInput.files[0].name);
+                }
+            });
+        }
+
+        function updatePreview(containerId, file, labelText) {
+            const container = document.getElementById(containerId);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center gap-2">
+                        <img src="${e.target.result}" alt="Preview" class="w-10 h-10 object-cover rounded border border-gray-600">
+                        <span class="text-xs text-emerald-400 truncate max-w-[150px]">${labelText}</span>
+                        <button type="button" onclick="clearFileInput(event, '${containerId}')" class="text-xs text-red-400 hover:text-red-300 ml-2">✕</button>
+                    </div>
+                `;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function clearFileInput(event, containerId) {
+            event.stopPropagation();
+            if (containerId === 'beforePreviewContainer') {
+                document.getElementById('inputBeforeImageFile').value = '';
+                document.getElementById(containerId).innerHTML = '<span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>';
+            } else {
+                document.getElementById('inputAfterImageFile').value = '';
+                document.getElementById(containerId).innerHTML = '<span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>';
+            }
+        }
 
         async function fetchLogs() {
             const statusEl = document.getElementById('loadingStatus');
@@ -548,6 +659,8 @@
         function resetFormState() {
             document.getElementById('addLogForm').reset();
             document.getElementById('inputDate').valueAsDate = new Date();
+            document.getElementById('beforePreviewContainer').innerHTML = '<span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>';
+            document.getElementById('afterPreviewContainer').innerHTML = '<span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>';
             const btn = document.getElementById('submitBtn');
             btn.innerText = 'บันทึกข้อมูล';
             btn.className = 'bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white';
@@ -591,7 +704,6 @@
                     const targetLog = logsData.find(item => item.id === id);
                     
                     if (targetLog) {
-                        // ลบรูปภาพก่อนแก้ไข (ถ้ามี)
                         if (targetLog.before_image_url) {
                             const urlParts = targetLog.before_image_url.split('/');
                             const fileName = urlParts[urlParts.length - 1];
@@ -599,7 +711,6 @@
                                 await supabaseClient.storage.from('issue-images').remove([fileName]);
                             }
                         }
-                        // ลบรูปภาพหลังแก้ไข (ถ้ามี)
                         if (targetLog.after_image_url) {
                             const urlParts = targetLog.after_image_url.split('/');
                             const fileName = urlParts[urlParts.length - 1];
@@ -633,7 +744,6 @@
             let afterImageUrl = '';
 
             try {
-                // อัปโหลด Before Image
                 if (beforeFileInput.files.length > 0) {
                     const file = beforeFileInput.files[0];
                     const fileExt = file.name.split('.').pop();
@@ -652,7 +762,6 @@
                     beforeImageUrl = publicURLData.publicUrl;
                 }
 
-                // อัปโหลด After Image
                 if (afterFileInput.files.length > 0) {
                     const file = afterFileInput.files[0];
                     const fileExt = file.name.split('.').pop();
@@ -707,7 +816,7 @@
 
         function openUploadModal(id, type) {
             selectedLogIdForImage = id;
-            selectedImageType = type; // 'before' หรือ 'after'
+            selectedImageType = type;
             
             const titleEl = document.getElementById('uploadModalTitle');
             if (type === 'before') {
@@ -992,7 +1101,6 @@
             }
 
             paginatedData.forEach(item => {
-                // ปุ่มรูปภาพก่อนแก้ไข (Before)
                 const beforeImageButton = item.before_image_url 
                     ? `<div class="flex items-center justify-center">
                            <button onclick="openImageModal('${item.before_image_url}')" class="text-xs bg-blue-600/25 hover:bg-blue-600 text-blue-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพก่อนแก้ไข">🖼️ ดู</button>
@@ -1001,7 +1109,6 @@
                            <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพก่อนแก้ไข">➕ เพิ่ม</button>
                        </div>`;
 
-                // ปุ่มรูปภาพหลังแก้ไข (After)
                 const afterImageButton = item.after_image_url 
                     ? `<div class="flex items-center justify-center">
                            <button onclick="openImageModal('${item.after_image_url}')" class="text-xs bg-emerald-600/25 hover:bg-emerald-600 text-emerald-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพหลังแก้ไข">🖼️ ดู</button>
@@ -1256,3 +1363,4 @@
     </script>
 </body>
 </html>
+```[cite: 2]
