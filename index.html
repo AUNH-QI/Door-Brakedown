@@ -689,50 +689,53 @@
         }
 
         async function handleUploadExistingLog(event) {
-            event.preventDefault();
-            if (!selectedLogIdForImage) return;
+    event.preventDefault();
+    if (!selectedLogIdForImage) return;
 
-            const fileInput = document.getElementById('existingImageFile');
-            if (fileInput.files.length === 0) return;
+    const fileInput = document.getElementById('existingImageFile');
+    if (fileInput.files.length === 0) return;
 
-            const btn = document.getElementById('uploadSubmitBtn');
-            btn.innerText = 'กำลังอัปโหลด...';
-            btn.disabled = true;
+    const btn = document.getElementById('uploadSubmitBtn');
+    btn.innerText = 'กำลังอัปโหลด...';
+    btn.disabled = true;
 
-            try {
-                const file = fileInput.files[0];
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+    try {
+        const file = fileInput.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-                const { error: uploadError } = await supabaseClient.storage
-                    .from('issue-images')
-                    .upload(fileName, file);
+        const { error: uploadError } = await supabaseClient.storage
+            .from('issue-images')
+            .upload(fileName, file);
 
-                if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-                const { data: publicURLData } = supabaseClient.storage
-                    .from('issue-images')
-                    .getPublicUrl(fileName);
+        const { data: publicURLData } = supabaseClient.storage
+            .from('issue-images')
+            .getPublicUrl(fileName);
 
-                const imageUrl = publicURLData.publicUrl;
+        const imageUrl = publicURLData.publicUrl;
 
-                const { error: updateError } = await supabaseClient
-                    .from('breakdown_logs')
-                    .update({ image_url: imageUrl })
-                    .eq('id', selectedLogIdForImage);
+        const { error: updateError } = await supabaseClient
+            .from('breakdown_logs')
+            .update({ image_url: imageUrl })
+            .eq('id', selectedLogIdForImage);
 
-                if (updateError) throw updateError;
+        if (updateError) throw updateError;
 
-                closeUploadModal();
-                await fetchLogs();
-            } catch (err) {
-                console.error("Error uploading image:", err);
-                alert("อัปโหลดรูปไม่สำเร็จ: " + err.message);
-            } finally {
-                btn.innerText = 'อัปโหลด';
-                btn.disabled = false;
-            }
-        }
+        closeUploadModal();
+        
+        // ➕ เพิ่มคำสั่งนี้เพื่อให้ระบบดึงข้อมูลใหม่และอัปเดตตารางทันทีหลังอัปโหลดเสร็จ
+        await fetchLogs();
+
+    } catch (err) {
+        console.error("Error uploading image:", err);
+        alert("อัปโหลดรูปไม่สำเร็จ: " + err.message);
+    } finally {
+        btn.innerText = 'อัปโหลด';
+        btn.disabled = false;
+    }
+}
 
         function setLineFilter(lineName) {
             document.getElementById('lineFilter').value = lineName;
