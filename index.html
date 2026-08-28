@@ -12,6 +12,7 @@
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* สไตล์สำหรับ KPI Card ที่ถูกเลือกไฮไลท์ */
         .kpi-card-highlight {
             border: 2px solid #f97316 !important;
             background-color: rgba(249, 115, 22, 0.1) !important;
@@ -19,6 +20,7 @@
             transform: translateY(-2px);
             transition: all 0.3s ease;
         }
+        /* สไตล์สำหรับช่องลากวางไฟล์ (Drop Zone) */
         .drop-zone {
             border: 2px dashed #4b5563;
             transition: all 0.3s ease;
@@ -43,6 +45,7 @@
         
         <div class="flex flex-wrap gap-2.5 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs items-center">
             
+            <!-- Quick Date Buttons -->
             <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
                 <button onclick="setQuickDate('all')" id="btn-date-all" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">ทั้งหมด</button>
                 <button onclick="setQuickDate('today')" id="btn-date-today" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">วันนี้</button>
@@ -50,6 +53,7 @@
                 <button onclick="setQuickDate('month')" id="btn-date-month" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">เดือนนี้</button>
             </div>
 
+            <!-- Custom Date Range -->
             <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium">
                 <div>
                     <label class="block text-[9px] text-gray-600">ตั้งแต่วันที่</label>
@@ -62,6 +66,7 @@
                 </div>
             </div>
 
+            <!-- Month Dropdown Filter -->
             <div>
                 <label class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
                 <select id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
@@ -69,6 +74,7 @@
                 </select>
             </div>
 
+            <!-- Line Buttons Filter -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">เลือก Line</label>
                 <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
@@ -82,6 +88,7 @@
                 <input type="hidden" id="lineFilter" value="All">
             </div>
 
+            <!-- Shift Buttons Filter -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
                 <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
@@ -92,6 +99,7 @@
                 <input type="hidden" id="shiftFilter" value="All">
             </div>
 
+            <!-- Station Filter -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">Station</label>
                 <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
@@ -99,6 +107,7 @@
                 </select>
             </div>
 
+            <!-- Issue Category Filter -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
                 <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
@@ -106,11 +115,13 @@
                 </select>
             </div>
 
+            <!-- Action Buttons -->
             <div class="flex items-end gap-1.5 mt-auto">
                 <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
                 <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
             </div>
 
+            <!-- SCRAP BY MACHINE Button -->
             <div class="flex items-end mt-auto ml-auto">
                 <a href="scrap.html" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-4 py-1.5 rounded transition shadow flex items-center gap-1">
                     📊 SCRAP BY MACHINE
@@ -120,7 +131,7 @@
         </div>
     </div>
 
-    <!-- KPI Cards -->
+    <!-- KPI Cards (5 Lines) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
         <div id="card-A-Door" class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md transition-all duration-300">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line A-Door (Downtime รวม)</h3>
@@ -178,6 +189,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
             <div class="flex items-center gap-4">
                 <h3 class="text-sm font-bold text-orange-500">Breakdown Log Data</h3>
+                <!-- Rows per page selector (Default 10) -->
                 <div class="flex items-center gap-1.5 text-xs text-gray-300">
                     <span>แสดง:</span>
                     <select id="rowsPerPageSelect" onchange="changeRowsPerPage()" class="bg-[#242b35] text-white px-2 py-1 rounded border border-gray-700 focus:outline-none cursor-pointer">
@@ -192,6 +204,7 @@
             </div>
 
             <div class="flex items-center gap-2">
+                <!-- Quick Preset Button -->
                 <button onclick="applyQuickPreset()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3 py-1.5 rounded transition flex items-center gap-1 shadow">
                     ⚡ ด่วน: Robot จับฝาร่วง (Line C)
                 </button>
@@ -265,13 +278,13 @@
                 </div>
             </div>
             
-            <!-- Before Image Drop Zone -->
+            <!-- ช่องอัปโหลดรูปภาพก่อน/หลังแก้ไข (แก้ไขให้คลิกช่องเลือกไฟล์, ปุ่ม X, ลากวาง และ Ctrl+V ทำงานถูกต้องสมบูรณ์) -->
             <div class="col-span-2 md:col-span-2">
                 <label class="block text-gray-400 mb-1">รูปภาพก่อนแก้ไข (Before Image)</label>
                 <div id="dropZoneBefore" class="drop-zone bg-[#181c24] p-3 rounded-lg text-center cursor-pointer relative hover:border-orange-500">
                     <input type="file" id="inputBeforeImageFile" accept="image/*" class="hidden">
                     <div id="beforeInitialPrompt" class="flex flex-col items-center justify-center space-y-1">
-                        <span class="text-xs text-gray-400">ลากรูปจาก Line มาวาง, กด <span class="text-yellow-500 font-semibold">Ctrl+V</span>, หรือ <span class="text-orange-400 underline">คลิกเลือกไฟล์</span></span>
+                        <span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด <span class="text-yellow-500 font-semibold">Ctrl+V</span> เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
                     </div>
                     <div id="beforePreviewContainer" class="hidden flex items-center justify-between bg-[#2a303c] p-2 rounded">
                         <div class="flex items-center space-x-2">
@@ -282,14 +295,12 @@
                     </div>
                 </div>
             </div>
-
-            <!-- After Image Drop Zone -->
             <div class="col-span-2 md:col-span-2">
                 <label class="block text-gray-400 mb-1">รูปภาพหลังแก้ไข (After Image)</label>
                 <div id="dropZoneAfter" class="drop-zone bg-[#181c24] p-3 rounded-lg text-center cursor-pointer relative hover:border-orange-500">
                     <input type="file" id="inputAfterImageFile" accept="image/*" class="hidden">
                     <div id="afterInitialPrompt" class="flex flex-col items-center justify-center space-y-1">
-                        <span class="text-xs text-gray-400">ลากรูปจาก Line มาวาง, กด <span class="text-yellow-500 font-semibold">Ctrl+V</span>, หรือ <span class="text-orange-400 underline">คลิกเลือกไฟล์</span></span>
+                        <span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด <span class="text-yellow-500 font-semibold">Ctrl+V</span> เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
                     </div>
                     <div id="afterPreviewContainer" class="hidden flex items-center justify-between bg-[#2a303c] p-2 rounded">
                         <div class="flex items-center space-x-2">
@@ -337,7 +348,7 @@
         </div>
     </div>
 
-    <!-- Password Modal -->
+    <!-- Custom Password Modal Pop-up (สำหรับยืนยันการลบ) -->
     <div id="passwordModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
         <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-sm shadow-2xl">
             <h3 id="modalTitle" class="text-sm font-bold text-orange-500 mb-2">ยืนยันรหัสผ่าน</h3>
@@ -352,7 +363,7 @@
         </div>
     </div>
 
-    <!-- Image Preview Modal -->
+    <!-- Modal สำหรับแสดงรูปภาพขนาดใหญ่ -->
     <div id="imageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
         <div class="relative max-w-2xl w-full bg-[#181c24] p-4 rounded-xl border border-gray-700 shadow-2xl">
             <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white text-lg font-bold px-2">✕</button>
@@ -360,30 +371,16 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับอัปโหลด/แก้ไขรูปภาพย้อนหลัง (รองรับ Drag & Drop + Ctrl+V เต็มรูปแบบ) -->
+    <!-- Modal สำหรับอัปโหลดรูปภาพย้อนหลัง (แยก Before / After) -->
     <div id="uploadImageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
         <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <h3 id="uploadModalTitle" class="text-sm font-bold text-orange-500 mb-2">เพิ่มรูปภาพ Log ย้อนหลัง</h3>
-            <p class="text-xs text-gray-400 mb-3">ลากรูปจาก Line, วางด้วย Ctrl+V หรือคลิกเลือกไฟล์ด้านล่าง</p>
-            
+            <p class="text-xs text-gray-400 mb-4">เลือกไฟล์รูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้</p>
             <form onsubmit="handleUploadExistingLog(event)">
-                <div id="dropZoneExisting" class="drop-zone bg-[#242b35] p-4 rounded-lg text-center cursor-pointer relative hover:border-orange-500 mb-4">
-                    <input type="file" id="existingImageFile" accept="image/*" class="hidden">
-                    <div id="existingInitialPrompt" class="flex flex-col items-center justify-center space-y-1">
-                        <span class="text-xs text-gray-300">ลากรูปจาก Line มาวางที่นี่, กด <span class="text-yellow-500 font-semibold">Ctrl+V</span>, หรือคลิกเพื่อเลือกไฟล์</span>
-                    </div>
-                    <div id="existingPreviewContainer" class="hidden flex items-center justify-between bg-[#181c24] p-2 rounded">
-                        <div class="flex items-center space-x-2">
-                            <img id="existingPreviewImg" src="" alt="Preview" class="w-10 h-10 object-cover rounded border border-gray-600">
-                            <span id="existingFileName" class="text-xs text-emerald-400 truncate max-w-[200px]">Image File</span>
-                        </div>
-                        <button type="button" id="existingRemoveBtn" class="text-red-500 hover:text-red-400 font-bold px-2 py-1 text-sm">✕</button>
-                    </div>
-                </div>
-
+                <input type="file" id="existingImageFile" accept="image/*" required class="w-full bg-[#242b35] p-2 rounded border border-gray-600 text-white text-xs mb-4 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="closeUploadModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-1.5 rounded text-xs transition">ยกเลิก</button>
-                    <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-xs font-semibold transition" disabled>อัปโหลด</button>
+                    <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-xs font-semibold transition">อัปโหลด</button>
                 </div>
             </form>
         </div>
@@ -402,7 +399,7 @@
         let currentPage = 1;
         let targetId = null;    
         let selectedLogIdForImage = null;
-        let selectedImageType = null; 
+        let selectedImageType = null; // 'before' หรือ 'after'
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
@@ -415,159 +412,97 @@
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('inputDate').valueAsDate = new Date();
 
-            // เปิดใช้งานระบบอัปโหลดรูปภาพทั้งหมด (ฟอร์มใหม่ + โมเดลย้อนหลัง)
+            // เปิดใช้งานระบบอัปโหลดรูปภาพ (คลิก, ลากวาง และกด Ctrl+V วาง)
             initImageUploaderSystem();
         });
 
         function initImageUploaderSystem() {
             setupImageComponent('before');
             setupImageComponent('after');
-            setupExistingImageComponent();
+
+            // รองรับการกด Ctrl+V ทั่วทั้งฟอร์มเพิ่มข้อมูล เพื่อแปะรูปภาพอัตโนมัติ
+            const formEl = document.getElementById('addLogForm');
+            formEl.addEventListener('paste', (e) => {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        const blob = items[i].getAsFile();
+                        if (blob) {
+                            const beforeInput = document.getElementById('inputBeforeImageFile');
+                            const afterInput = document.getElementById('inputAfterImageFile');
+                            
+                            // เช็คว่าช่อง Before ว่างอยู่หรือไม่ ถ้าว่างให้ใส่ Before ก่อน ไม่งั้นใส่ After
+                            const targetType = !beforeInput.files.length ? 'before' : 'after';
+                            const fileInput = targetType === 'before' ? beforeInput : afterInput;
+                            
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(blob);
+                            fileInput.files = dataTransfer.files;
+                            
+                            updateImagePreview(targetType, blob, blob.name || 'Pasted Image');
+                            e.preventDefault();
+                            break;
+                        }
+                    }
+                }
+            });
         }
 
-        // ฟังก์ชันตั้งค่า Drop Zone และ Paste (Ctrl+V) สำหรับฟอร์มเพิ่มข้อมูลใหม่
         function setupImageComponent(type) {
             const dropZone = document.getElementById(`dropZone${type.charAt(0).toUpperCase() + type.slice(1)}`);
             const fileInput = document.getElementById(`input${type.charAt(0).toUpperCase() + type.slice(1)}ImageFile`);
             const removeBtn = document.getElementById(`${type}RemoveBtn`);
 
-            dropZone.addEventListener('click', (e) => {
-                if (e.target !== removeBtn && !removeBtn.contains(e.target)) {
-                    fileInput.click();
-                }
+            // 1. คลิกที่ DropZone เพื่อเปิดหน้าต่างเลือกไฟล์ (แก้ปัญหาคลิกแล้วเด้งผิดที่)
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
             });
 
+            // 2. เมื่อเลือกไฟล์ผ่าน Input ปกติ
             fileInput.addEventListener('change', (e) => {
                 if (fileInput.files && fileInput.files[0]) {
-                    updateImagePreviewUI(type, fileInput.files[0], fileInput.files[0].name);
+                    updateImagePreview(type, fileInput.files[0], fileInput.files[0].name);
                 }
             });
 
-            // ป้องกัน Event พื้นฐานเพื่อรองรับการลากไฟล์จาก Line / Desktop
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, preventDefaults, false);
+            // 3. รองรับ Drag & Drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('dragover');
             });
 
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
             });
 
             dropZone.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                if (files && files.length > 0) {
-                    fileInput.files = files;
-                    updateImagePreviewUI(type, files[0], files[0].name || 'Line_Image.png');
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
+                
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateImagePreview(type, e.dataTransfer.files[0], e.dataTransfer.files[0].name);
                 }
             });
 
-            // รองรับ Ctrl+V เฉพาะเมื่อกำลังโฟกัสหรือวางใน Drop Zone นั้นๆ
-            dropZone.addEventListener('paste', (e) => {
-                handlePasteEvent(e, (file, fileName) => {
-                    fileInput.files = createFileList(file);
-                    updateImagePreviewUI(type, file, fileName);
-                });
-            });
-
-            // เปิดให้ DropZone สามารถรับคีย์บอร์ด/Paste ได้
-            dropZone.setAttribute('tabindex', '0');
-
+            // 4. ปุ่มลบรูป (X) - ใส่ stopPropagation() ป้องกันไม่ให้คลิกทะลุไปเปิดหน้าต่างเลือกไฟล์ซ้ำ
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 fileInput.value = '';
-                document.getElementById(`${type}PreviewContainer`).classList.add('hidden');
-                document.getElementById(`${type}InitialPrompt`).classList.remove('hidden');
+                
+                const initialPrompt = document.getElementById(`${type}InitialPrompt`);
+                const previewContainer = document.getElementById(`${type}PreviewContainer`);
+                
+                previewContainer.classList.add('hidden');
+                initialPrompt.classList.remove('hidden');
             });
         }
 
-        // ฟังก์ชันตั้งค่าสำหรับโมเดลอัปโหลดรูปภาพย้อนหลัง
-        function setupExistingImageComponent() {
-            const dropZone = document.getElementById('dropZoneExisting');
-            const fileInput = document.getElementById('existingImageFile');
-            const removeBtn = document.getElementById('existingRemoveBtn');
-
-            dropZone.addEventListener('click', (e) => {
-                if (e.target !== removeBtn && !removeBtn.contains(e.target)) {
-                    fileInput.click();
-                }
-            });
-
-            fileInput.addEventListener('change', (e) => {
-                if (fileInput.files && fileInput.files[0]) {
-                    updateExistingPreviewUI(fileInput.files[0], fileInput.files[0].name);
-                }
-            });
-
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, preventDefaults, false);
-            });
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
-            });
-
-            dropZone.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                if (files && files.length > 0) {
-                    fileInput.files = files;
-                    updateExistingPreviewUI(files[0], files[0].name || 'Line_Image.png');
-                }
-            });
-
-            dropZone.addEventListener('paste', (e) => {
-                handlePasteEvent(e, (file, fileName) => {
-                    fileInput.files = createFileList(file);
-                    updateExistingPreviewUI(file, fileName);
-                });
-            });
-
-            dropZone.setAttribute('tabindex', '0');
-
-            removeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                fileInput.value = '';
-                document.getElementById('existingPreviewContainer').classList.add('hidden');
-                document.getElementById('existingInitialPrompt').classList.remove('hidden');
-                document.getElementById('uploadSubmitBtn').disabled = true;
-            });
-        }
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        function handlePasteEvent(e, callback) {
-            e.preventDefault();
-            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    const blob = items[i].getAsFile();
-                    if (blob) {
-                        const fileName = `pasted_image_${Date.now()}.png`;
-                        callback(blob, fileName);
-                        break;
-                    }
-                }
-            }
-        }
-
-        function createFileList(file) {
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            return dataTransfer.files;
-        }
-
-        function updateImagePreviewUI(type, file, fileName) {
+        function updateImagePreview(type, file, fileName) {
             const initialPrompt = document.getElementById(`${type}InitialPrompt`);
             const previewContainer = document.getElementById(`${type}PreviewContainer`);
             const previewImg = document.getElementById(`${type}PreviewImg`);
@@ -577,26 +512,9 @@
             reader.onload = function(e) {
                 previewImg.src = e.target.result;
                 fileNameSpan.innerText = fileName;
+                
                 initialPrompt.classList.add('hidden');
                 previewContainer.classList.remove('hidden');
-            }
-            reader.readAsDataURL(file);
-        }
-
-        function updateExistingPreviewUI(file, fileName) {
-            const initialPrompt = document.getElementById('existingInitialPrompt');
-            const previewContainer = document.getElementById('existingPreviewContainer');
-            const previewImg = document.getElementById('existingPreviewImg');
-            const fileNameSpan = document.getElementById('existingFileName');
-            const submitBtn = document.getElementById('uploadSubmitBtn');
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                fileNameSpan.innerText = fileName;
-                initialPrompt.classList.add('hidden');
-                previewContainer.classList.remove('hidden');
-                submitBtn.disabled = false;
             }
             reader.readAsDataURL(file);
         }
@@ -770,6 +688,7 @@
             document.getElementById('addLogForm').reset();
             document.getElementById('inputDate').valueAsDate = new Date();
             
+            // รีเซ็ตสถานะหน้าจออัปโหลดรูปภาพ
             ['before', 'after'].forEach(type => {
                 document.getElementById(`${type}PreviewContainer`).classList.add('hidden');
                 document.getElementById(`${type}InitialPrompt`).classList.remove('hidden');
@@ -861,7 +780,7 @@
             try {
                 if (beforeFileInput.files.length > 0) {
                     const file = beforeFileInput.files[0];
-                    const fileExt = file.name.split('.').pop() || 'png';
+                    const fileExt = file.name.split('.').pop();
                     const fileName = `before_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
                     const { error: uploadError } = await supabaseClient.storage
@@ -879,7 +798,7 @@
 
                 if (afterFileInput.files.length > 0) {
                     const file = afterFileInput.files[0];
-                    const fileExt = file.name.split('.').pop() || 'png';
+                    const fileExt = file.name.split('.').pop();
                     const fileName = `after_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
                     const { error: uploadError } = await supabaseClient.storage
@@ -941,10 +860,6 @@
             }
 
             document.getElementById('existingImageFile').value = '';
-            document.getElementById('existingPreviewContainer').classList.add('hidden');
-            document.getElementById('existingInitialPrompt').classList.remove('hidden');
-            document.getElementById('uploadSubmitBtn').disabled = true;
-
             document.getElementById('uploadImageModal').classList.remove('hidden');
         }
 
@@ -970,7 +885,7 @@
 
             try {
                 const file = fileInput.files[0];
-                const fileExt = file.name.split('.').pop() || 'png';
+                const fileExt = file.name.split('.').pop();
                 const fileName = `${selectedImageType}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
                 const { error: uploadError } = await supabaseClient.storage
@@ -985,14 +900,13 @@
 
                 const imageUrl = publicURLData.publicUrl;
                 
-                const updateField = selectedImageType === 'before' 
-                    ? { before_image_url: imageUrl } 
-                    : { after_image_url: imageUrl };
+                const updateField = selectedImageType === 'before' ? { before_image_url: imageUrl } : { after_image_url: imageUrl };
 
-                const { error: updateError } = await supabaseClient
+                const { data, error: updateError } = await supabaseClient
                     .from('breakdown_logs')
                     .update(updateField)
-                    .eq('id', selectedLogIdForImage);
+                    .eq('id', selectedLogIdForImage)
+                    .select();
 
                 if (updateError) throw updateError;
 
@@ -1222,21 +1136,19 @@
 
             paginatedData.forEach(item => {
                 const beforeImageButton = item.before_image_url 
-                    ? `<div class="flex items-center justify-center gap-1">
-                           <button onclick="openImageModal('${item.before_image_url}')" class="text-xs bg-blue-600/25 hover:bg-blue-600 text-blue-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพ">🖼️</button>
-                           <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เปลี่ยนรูป">✏️</button>
+                    ? `<div class="flex items-center justify-center">
+                           <button onclick="openImageModal('${item.before_image_url}')" class="text-xs bg-blue-600/25 hover:bg-blue-600 text-blue-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพก่อนแก้ไข">🖼️ ดู</button>
                        </div>`
                     : `<div class="flex items-center justify-center">
-                           <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพ">➕ เพิ่ม</button>
+                           <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพก่อนแก้ไข">➕ เพิ่ม</button>
                        </div>`;
 
                 const afterImageButton = item.after_image_url 
-                    ? `<div class="flex items-center justify-center gap-1">
-                           <button onclick="openImageModal('${item.after_image_url}')" class="text-xs bg-emerald-600/25 hover:bg-emerald-600 text-emerald-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพ">🖼️</button>
-                           <button onclick="openUploadModal(${item.id}, 'after')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เปลี่ยนรูป">✏️</button>
+                    ? `<div class="flex items-center justify-center">
+                           <button onclick="openImageModal('${item.after_image_url}')" class="text-xs bg-emerald-600/25 hover:bg-emerald-600 text-emerald-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพหลังแก้ไข">🖼️ ดู</button>
                        </div>`
                     : `<div class="flex items-center justify-center">
-                           <button onclick="openUploadModal(${item.id}, 'after')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพ">➕ เพิ่ม</button>
+                           <button onclick="openUploadModal(${item.id}, 'after')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพหลังแก้ไข">➕ เพิ่ม</button>
                        </div>`;
 
                 tbody.innerHTML += `
