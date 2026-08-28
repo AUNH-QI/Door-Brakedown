@@ -7,9 +7,8 @@
     <link rel="icon" type="image/png" href="https://rdatxagldckqsxkncvbu.supabase.co/storage/v1/object/public/logos/logo-2.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js & Chart.js DataLabels Plugin -->
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels@2.2.0/chartjs-plugin-datalabels.min.js"></script>
     <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- FontAwesome Icons -->
@@ -235,8 +234,6 @@
             fetchScrapData();
         });
 
-        Chart.register(ChartDataLabels);
-
         function initCharts() {
             // Trend Line Chart
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
@@ -259,15 +256,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: {
-                            color: '#cbd5e1',
-                            align: 'top',
-                            font: { family: 'Prompt', size: 10 },
-                            formatter: (value) => value > 0 ? value : ''
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
@@ -275,7 +264,7 @@
                 }
             });
 
-            // Top 5 Problems Bar Chart (ตัวเลขอยู่ด้านในตรงกลางแท่งกราฟ)
+            // Top 5 Problems Bar Chart (พร้อมตัวเลขโชว์กลางแท่งแบบเสถียร)
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
                 type: 'bar',
@@ -291,24 +280,35 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false },
-                        datalabels: {
-                            color: '#ffffff',
-                            anchor: 'center',
-                            align: 'center',
-                            font: { family: 'Prompt', weight: 'bold', size: 12 },
-                            formatter: (value) => value > 0 ? `${value} เคส` : ''
-                        }
-                    }, 
+                    plugins: { legend: { display: false } }, 
                     scales: { 
                         x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' }, maxRotation: 20 } }, 
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true } 
                     } 
-                }
+                },
+                plugins: [{
+                    id: 'barLabels',
+                    afterDatasetsDraw(chart) {
+                        const { ctx } = chart;
+                        chart.data.datasets.forEach((dataset, i) => {
+                            const meta = chart.getDatasetMeta(i);
+                            meta.data.forEach((bar, index) => {
+                                const value = dataset.data[index];
+                                if (value > 0) {
+                                    ctx.fillStyle = '#ffffff';
+                                    ctx.font = 'bold 12px Prompt';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'middle';
+                                    const position = bar.tooltipPosition();
+                                    ctx.fillText(value + ' เคส', position.x, position.y);
+                                }
+                            });
+                        });
+                    }
+                }]
             });
 
-            // Department Doughnut Chart (ตัวเลขและชื่ออยู่บนชิ้นโดนัท)
+            // Department Doughnut Chart (พร้อมตัวเลขโชว์บนชิ้นโดนัทแบบเสถียร)
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
@@ -324,23 +324,44 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false },
-                        datalabels: {
-                            color: '#ffffff',
-                            font: { family: 'Prompt', weight: 'bold', size: 11 },
-                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                            borderRadius: 4,
-                            padding: 4,
-                            formatter: (value, context) => {
-                                if (value === 0) return '';
-                                const label = context.chart.data.labels[context.dataIndex] || '';
-                                return `${label}\n${value} pcs`;
-                            },
-                            textAlign: 'center'
-                        }
-                    } 
-                }
+                    plugins: { legend: { display: false } } 
+                },
+                plugins: [{
+                    id: 'doughnutLabels',
+                    afterDatasetsDraw(chart) {
+                        const { ctx } = chart;
+                        const dataset = chart.data.datasets[0];
+                        const meta = chart.getDatasetMeta(0);
+                        
+                        meta.data.forEach((element, index) => {
+                            const value = dataset.data[index];
+                            if (value > 0) {
+                                const { x, y } = element.tooltipPosition();
+                                const label = chart.data.labels[index];
+                                
+                                ctx.save();
+                                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                                ctx.strokeStyle = '#334155';
+                                ctx.lineWidth = 1;
+                                
+                                const text = `${label}: ${value} pcs`;
+                                ctx.font = 'bold 10px Prompt';
+                                const textWidth = ctx.measureText(text).width;
+                                
+                                ctx.beginPath();
+                                ctx.roundRect(x - textWidth / 2 - 6, y - 10, textWidth + 12, 20, 4);
+                                ctx.fill();
+                                ctx.stroke();
+                                
+                                ctx.fillStyle = '#ffffff';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(text, x, y);
+                                ctx.restore();
+                            }
+                        });
+                    }
+                }]
             });
         }
 
