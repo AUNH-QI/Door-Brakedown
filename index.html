@@ -278,22 +278,36 @@
                 </div>
             </div>
             
-            <!-- ช่องอัปโหลดรูปภาพก่อน/หลังแก้ไข (รองรับ Drag & Drop และ Paste) -->
+            <!-- ช่องอัปโหลดรูปภาพก่อน/หลังแก้ไข (แก้ไขให้คลิกช่องเลือกไฟล์, ปุ่ม X, ลากวาง และ Ctrl+V ทำงานถูกต้องสมบูรณ์) -->
             <div class="col-span-2 md:col-span-2">
                 <label class="block text-gray-400 mb-1">รูปภาพก่อนแก้ไข (Before Image)</label>
                 <div id="dropZoneBefore" class="drop-zone bg-[#181c24] p-3 rounded-lg text-center cursor-pointer relative hover:border-orange-500">
-                    <input type="file" id="inputBeforeImageFile" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    <div id="beforePreviewContainer" class="flex flex-col items-center justify-center space-y-1">
-                        <span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
+                    <input type="file" id="inputBeforeImageFile" accept="image/*" class="hidden">
+                    <div id="beforeInitialPrompt" class="flex flex-col items-center justify-center space-y-1">
+                        <span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด <span class="text-yellow-500 font-semibold">Ctrl+V</span> เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
+                    </div>
+                    <div id="beforePreviewContainer" class="hidden flex items-center justify-between bg-[#2a303c] p-2 rounded">
+                        <div class="flex items-center space-x-2">
+                            <img id="beforePreviewImg" src="" alt="Before Image" class="w-10 h-10 object-cover rounded border border-gray-600">
+                            <span id="beforeFileName" class="text-xs text-emerald-400 truncate max-w-[150px]">Before Image</span>
+                        </div>
+                        <button type="button" id="beforeRemoveBtn" class="text-red-500 hover:text-red-400 font-bold px-2 py-1 text-sm">✕</button>
                     </div>
                 </div>
             </div>
             <div class="col-span-2 md:col-span-2">
                 <label class="block text-gray-400 mb-1">รูปภาพหลังแก้ไข (After Image)</label>
                 <div id="dropZoneAfter" class="drop-zone bg-[#181c24] p-3 rounded-lg text-center cursor-pointer relative hover:border-orange-500">
-                    <input type="file" id="inputAfterImageFile" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    <div id="afterPreviewContainer" class="flex flex-col items-center justify-center space-y-1">
-                        <span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
+                    <input type="file" id="inputAfterImageFile" accept="image/*" class="hidden">
+                    <div id="afterInitialPrompt" class="flex flex-col items-center justify-center space-y-1">
+                        <span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด <span class="text-yellow-500 font-semibold">Ctrl+V</span> เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
+                    </div>
+                    <div id="afterPreviewContainer" class="hidden flex items-center justify-between bg-[#2a303c] p-2 rounded">
+                        <div class="flex items-center space-x-2">
+                            <img id="afterPreviewImg" src="" alt="After Image" class="w-10 h-10 object-cover rounded border border-gray-600">
+                            <span id="afterFileName" class="text-xs text-emerald-400 truncate max-w-[150px]">After Image</span>
+                        </div>
+                        <button type="button" id="afterRemoveBtn" class="text-red-500 hover:text-red-400 font-bold px-2 py-1 text-sm">✕</button>
                     </div>
                 </div>
             </div>
@@ -398,15 +412,15 @@
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('inputDate').valueAsDate = new Date();
 
-            // เปิดใช้งาน Drag & Drop และ Paste สำหรับฟอร์มเพิ่มข้อมูล
-            initDragAndDropAndPaste();
+            // เปิดใช้งานระบบอัปโหลดรูปภาพ (คลิก, ลากวาง และกด Ctrl+V วาง)
+            initImageUploaderSystem();
         });
 
-        function initDragAndDropAndPaste() {
-            setupDropZone('dropZoneBefore', 'inputBeforeImageFile', 'beforePreviewContainer');
-            setupDropZone('dropZoneAfter', 'inputAfterImageFile', 'afterPreviewContainer');
+        function initImageUploaderSystem() {
+            setupImageComponent('before');
+            setupImageComponent('after');
 
-            // รองรับการกด Ctrl+V วางรูปภาพเมื่อโฟกัสหรือกรอกฟอร์มอยู่
+            // รองรับการกด Ctrl+V ทั่วทั้งฟอร์มเพิ่มข้อมูล เพื่อแปะรูปภาพอัตโนมัติ
             const formEl = document.getElementById('addLogForm');
             formEl.addEventListener('paste', (e) => {
                 const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -414,13 +428,18 @@
                     if (items[i].type.indexOf('image') !== -1) {
                         const blob = items[i].getAsFile();
                         if (blob) {
-                            // ค่าเริ่มต้นถ้าแปะในฟอร์ม จะให้ลงช่อง Before ก่อน ถ้าช่อง Before ว่าง หรือกำหนดให้เลือกช่องที่กำลัง Active
-                            const fileInput = document.getElementById('inputBeforeImageFile');
+                            const beforeInput = document.getElementById('inputBeforeImageFile');
+                            const afterInput = document.getElementById('inputAfterImageFile');
+                            
+                            // เช็คว่าช่อง Before ว่างอยู่หรือไม่ ถ้าว่างให้ใส่ Before ก่อน ไม่งั้นใส่ After
+                            const targetType = !beforeInput.files.length ? 'before' : 'after';
+                            const fileInput = targetType === 'before' ? beforeInput : afterInput;
+                            
                             const dataTransfer = new DataTransfer();
                             dataTransfer.items.add(blob);
                             fileInput.files = dataTransfer.files;
                             
-                            updatePreview('beforePreviewContainer', blob, 'Before Image');
+                            updateImagePreview(targetType, blob, blob.name || 'Pasted Image');
                             e.preventDefault();
                             break;
                         }
@@ -429,66 +448,75 @@
             });
         }
 
-        function setupDropZone(dropZoneId, fileInputId, previewContainerId) {
-            const dropZone = document.getElementById(dropZoneId);
-            const fileInput = document.getElementById(fileInputId);
+        function setupImageComponent(type) {
+            const dropZone = document.getElementById(`dropZone${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            const fileInput = document.getElementById(`input${type.charAt(0).toUpperCase() + type.slice(1)}ImageFile`);
+            const removeBtn = document.getElementById(`${type}RemoveBtn`);
 
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropZone.classList.add('dragover');
-                }, false);
+            // 1. คลิกที่ DropZone เพื่อเปิดหน้าต่างเลือกไฟล์ (แก้ปัญหาคลิกแล้วเด้งผิดที่)
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
             });
 
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropZone.classList.remove('dragover');
-                }, false);
+            // 2. เมื่อเลือกไฟล์ผ่าน Input ปกติ
+            fileInput.addEventListener('change', (e) => {
+                if (fileInput.files && fileInput.files[0]) {
+                    updateImagePreview(type, fileInput.files[0], fileInput.files[0].name);
+                }
+            });
+
+            // 3. รองรับ Drag & Drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
             });
 
             dropZone.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                if (files.length > 0) {
-                    fileInput.files = files;
-                    updatePreview(previewContainerId, files[0], files[0].name);
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
+                
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateImagePreview(type, e.dataTransfer.files[0], e.dataTransfer.files[0].name);
                 }
             });
 
-            fileInput.addEventListener('change', (e) => {
-                if (fileInput.files.length > 0) {
-                    updatePreview(previewContainerId, fileInput.files[0], fileInput.files[0].name);
-                }
+            // 4. ปุ่มลบรูป (X) - ใส่ stopPropagation() ป้องกันไม่ให้คลิกทะลุไปเปิดหน้าต่างเลือกไฟล์ซ้ำ
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.value = '';
+                
+                const initialPrompt = document.getElementById(`${type}InitialPrompt`);
+                const previewContainer = document.getElementById(`${type}PreviewContainer`);
+                
+                previewContainer.classList.add('hidden');
+                initialPrompt.classList.remove('hidden');
             });
         }
 
-        function updatePreview(containerId, file, labelText) {
-            const container = document.getElementById(containerId);
+        function updateImagePreview(type, file, fileName) {
+            const initialPrompt = document.getElementById(`${type}InitialPrompt`);
+            const previewContainer = document.getElementById(`${type}PreviewContainer`);
+            const previewImg = document.getElementById(`${type}PreviewImg`);
+            const fileNameSpan = document.getElementById(`${type}FileName`);
+
             const reader = new FileReader();
             reader.onload = function(e) {
-                container.innerHTML = `
-                    <div class="flex items-center justify-center gap-2">
-                        <img src="${e.target.result}" alt="Preview" class="w-10 h-10 object-cover rounded border border-gray-600">
-                        <span class="text-xs text-emerald-400 truncate max-w-[150px]">${labelText}</span>
-                        <button type="button" onclick="clearFileInput(event, '${containerId}')" class="text-xs text-red-400 hover:text-red-300 ml-2">✕</button>
-                    </div>
-                `;
+                previewImg.src = e.target.result;
+                fileNameSpan.innerText = fileName;
+                
+                initialPrompt.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
             }
             reader.readAsDataURL(file);
-        }
-
-        function clearFileInput(event, containerId) {
-            event.stopPropagation();
-            if (containerId === 'beforePreviewContainer') {
-                document.getElementById('inputBeforeImageFile').value = '';
-                document.getElementById(containerId).innerHTML = '<span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>';
-            } else {
-                document.getElementById('inputAfterImageFile').value = '';
-                document.getElementById(containerId).innerHTML = '<span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>';
-            }
         }
 
         async function fetchLogs() {
@@ -659,8 +687,14 @@
         function resetFormState() {
             document.getElementById('addLogForm').reset();
             document.getElementById('inputDate').valueAsDate = new Date();
-            document.getElementById('beforePreviewContainer').innerHTML = '<span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>';
-            document.getElementById('afterPreviewContainer').innerHTML = '<span class="text-xs text-gray-400">ลากรูปมาวางที่นี่, กด Ctrl+V เพื่อวาง, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>';
+            
+            // รีเซ็ตสถานะหน้าจออัปโหลดรูปภาพ
+            ['before', 'after'].forEach(type => {
+                document.getElementById(`${type}PreviewContainer`).classList.add('hidden');
+                document.getElementById(`${type}InitialPrompt`).classList.remove('hidden');
+                document.getElementById(`input${type.charAt(0).toUpperCase() + type.slice(1)}ImageFile`).value = '';
+            });
+
             const btn = document.getElementById('submitBtn');
             btn.innerText = 'บันทึกข้อมูล';
             btn.className = 'bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white';
@@ -1363,4 +1397,3 @@
     </script>
 </body>
 </html>
-```[cite: 2]
