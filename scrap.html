@@ -4,213 +4,234 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCRAP BY MACHINE</title>
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://rdatxagldckqsxkncvbu.supabase.co/storage/v1/object/public/logos/logo-2.png">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js & Chart.js DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels@2.2.0/chartjs-plugin-datalabels.min.js"></script>
-    <!-- Supabase JS Client CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font (Prompt) -->
+    <!-- Google Font: Prompt -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         body { font-family: 'Prompt', sans-serif; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
 
-    <!-- Main Container -->
-    <div class="flex flex-col h-screen overflow-hidden">
-        
-        <!-- Top Navbar / Filter Bar -->
-        <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="bg-white text-slate-900 hover:bg-slate-200 p-2.5 rounded-xl transition shadow flex items-center justify-center font-bold" title="ย้อนกลับไปหน้าแรก">
-                    <i class="fa-solid fa-arrow-left text-base"></i>
+    <!-- Header / Navbar -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="https://rdatxagldckqsxkncvbu.supabase.co/storage/v1/object/public/logos/logo-2.png" alt="Logo" class="w-9 h-9 object-contain">
+                <div>
+                    <h1 class="text-lg font-bold text-white tracking-wide">SCRAP DASHBOARD</h1>
+                    <p class="text-xs text-slate-400">ระบบติดตามและวิเคราะห์ของเสียการผลิต</p>
+                </div>
+            </div>
+            <div>
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center space-x-2">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>กลับหน้าหลัก (Index)</span>
                 </a>
-                <h1 class="text-xl font-bold text-white flex items-center gap-2">
-                    SCRAP BY MACHINE
-                </h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- Line Filter Buttons & Global Filters -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <span class="text-xs font-semibold text-slate-400 mr-2"><i class="fa-solid fa-filter mr-1"></i> เลือกไลน์ผลิต:</span>
+                <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow">ทั้งหมด</button>
+                <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">A-Door</button>
+                <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">B-Door</button>
+                <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">C-Door</button>
+                <button onclick="setLineFilter('DND')" id="btn-line-DND" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">DND</button>
             </div>
 
-            <!-- Filters Control -->
-            <div class="flex flex-wrap items-center gap-3">
-                <!-- Line Filter Group -->
-                <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
-                    <span class="text-xs text-slate-400 font-medium px-2">Line:</span>
-                    <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow">All</button>
-                    <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line A</button>
-                    <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line B</button>
-                    <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">Line C</button>
-                    <button onclick="setLineFilter('DND')" id="btn-line-DND" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">DND</button>
-                </div>
-
-                <!-- Quick Date Range Buttons -->
-                <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
-                    <button onclick="setDatePreset('all')" id="preset-all" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow">ทั้งหมด</button>
-                    <button onclick="setDatePreset('today')" id="preset-today" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">วันนี้</button>
-                    <button onclick="setDatePreset('week')" id="preset-week" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">สัปดาห์นี้</button>
-                    <button onclick="setDatePreset('month')" id="preset-month" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">เดือนนี้</button>
-                </div>
-
-                <!-- Custom Date Range -->
-                <div class="flex items-center bg-white rounded-xl px-3 py-1.5 border border-slate-300 shadow-sm">
-                    <span class="text-slate-500 mr-2 text-xs">ตั้งแต่</span>
-                    <input type="date" id="startDate" onchange="clearPresetActive(); applyFilters();" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
-                    <span class="text-slate-500 mx-2 text-xs">ถึง</span>
-                    <input type="date" id="endDate" onchange="clearPresetActive(); applyFilters();" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
-                </div>
-
-                <!-- Month Dropdown -->
-                <div class="flex flex-col">
-                    <select id="filterMonth" onchange="applyFilters()" class="bg-white text-xs text-slate-900 font-medium border border-slate-300 rounded-xl px-3 py-2 outline-none shadow-sm cursor-pointer">
-                        <option value="">ทุกเดือน (All)</option>
-                        <option value="1">มกราคม</option>
-                        <option value="2">กุมภาพันธ์</option>
-                        <option value="3">มีนาคม</option>
-                        <option value="4">เมษายน</option>
-                        <option value="5">พฤษภาคม</option>
-                        <option value="6">มิถุนายน</option>
-                        <option value="7">กรกฎาคม</option>
-                        <option value="8">สิงหาคม</option>
-                        <option value="9">กันยายน</option>
-                        <option value="10">ตุลาคม</option>
-                        <option value="11">พฤศจิกายน</option>
-                        <option value="12">ธันวาคม</option>
-                    </select>
-                </div>
+            <!-- Date & Month Filters -->
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                <select id="filterMonth" onchange="clearPresetActive(); applyFilters();" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-3 py-1.5 border border-slate-700 outline-none">
+                    <option value="">ทุกเดือน</option>
+                    <option value="1">มกราคม</option>
+                    <option value="2">กุมภาพันธ์</option>
+                    <option value="3">มีนาคม</option>
+                    <option value="4">เมษายน</option>
+                    <option value="5">พฤษภาคม</option>
+                    <option value="6">มิถุนายน</option>
+                    <option value="7">กรกฎาคม</option>
+                    <option value="8">สิงหาคม</option>
+                    <option value="9">กันยายน</option>
+                    <option value="10">ตุลาคม</option>
+                    <option value="11">พฤศจิกายน</option>
+                    <option value="12">ธันวาคม</option>
+                </select>
+                <input type="date" id="startDate" onchange="clearPresetActive(); applyFilters();" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 border border-slate-700 outline-none">
+                <span class="text-slate-500 text-xs">ถึง</span>
+                <input type="date" id="endDate" onchange="clearPresetActive(); applyFilters();" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 border border-slate-700 outline-none">
+                
+                <button onclick="setDatePreset('today')" id="preset-today" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">วันนี้</button>
+                <button onclick="setDatePreset('week')" id="preset-week" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">สัปดาห์นี้</button>
+                <button onclick="setDatePreset('month')" id="preset-month" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition">เดือนนี้</button>
             </div>
-        </header>
+        </div>
 
-        <!-- Main Dashboard Content -->
-        <main class="flex-1 overflow-y-auto p-6 space-y-6">
-            
-            <!-- KPI Top Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div id="card-adoor" class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
-                    <div class="text-slate-400 text-xs font-medium">Line: A-Door (ชิ้นงานเสีย)</div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">pcs</span></div>
-                </div>
-                <div id="card-bdoor" class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
-                    <div class="text-slate-400 text-xs font-medium">Line: B-Door (ชิ้นงานเสีย)</div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">pcs</span></div>
-                </div>
-                <div id="card-cdoor" class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
-                    <div class="text-slate-400 text-xs font-medium">Line: C-Door (ชิ้นงานเสีย)</div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">pcs</span></div>
-                </div>
-                <div id="card-dnd" class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
-                    <div class="text-slate-400 text-xs font-medium">Line: DND (ชิ้นงานเสีย)</div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">pcs</span></div>
-                </div>
-            </div>
-
-            <!-- Charts Section 1: Trend Line Chart (70%) & Department Doughnut Chart (30%) -->
-            <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
-                <!-- Trend Line Chart (7 Col / 70%) -->
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-7">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-line text-amber-500 mr-2"></i> แนวโน้มจำนวนชิ้นงานเสียแยกตามวัน (Daily Scrap Trend)</h2>
-                        <span class="text-xs text-slate-400">สถิติตามช่วงเวลา</span>
-                    </div>
-                    <div class="h-72 relative">
-                        <canvas id="trendChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Doughnut Chart: Department (3 Col / 30%) -->
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-3">
-                    <h2 class="text-sm font-bold text-white mb-2">Tickets By Department</h2>
-                    <div class="h-64 relative flex items-center justify-center">
-                        <canvas id="departmentChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Section 2: Top 5 Models (50%) & Top 5 Problems Bar Chart (50%) -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Top 5 Models Table (50%) -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <!-- KPI Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div id="card-adoor" class="bg-slate-900 border border-slate-800 rounded-xl p-4 transition duration-300">
+                <div class="flex justify-between items-start">
                     <div>
-                        <h2 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i> Top 5 อันดับ Model ที่เสียเยอะที่สุด</h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs text-slate-300">
-                                <thead class="bg-slate-800/70 text-slate-400 uppercase font-semibold">
-                                    <tr>
-                                        <th class="p-2.5 rounded-l-lg">An.</th>
-                                        <th class="p-2.5">Model</th>
-                                        <th class="p-2.5">Line</th>
-                                        <th class="p-2.5 rounded-r-lg text-right">จำนวน (Pcs)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="topModelsTableBody" class="divide-y divide-slate-800"></tbody>
-                            </table>
-                        </div>
+                        <p class="text-xs text-slate-400 font-medium">Line A-Door Scrap</p>
+                        <h3 id="kpi-adoor" class="text-2xl font-bold text-white mt-1">0 <span class="text-sm font-normal text-blue-300">pcs</span></h3>
                     </div>
+                    <div class="bg-blue-500/10 text-blue-400 p-2.5 rounded-lg"><i class="fa-solid fa-industry text-lg"></i></div>
                 </div>
+            </div>
+            <div id="card-bdoor" class="bg-slate-900 border border-slate-800 rounded-xl p-4 transition duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium">Line B-Door Scrap</p>
+                        <h3 id="kpi-bdoor" class="text-2xl font-bold text-white mt-1">0 <span class="text-sm font-normal text-purple-300">pcs</span></h3>
+                    </div>
+                    <div class="bg-purple-500/10 text-purple-400 p-2.5 rounded-lg"><i class="fa-solid fa-industry text-lg"></i></div>
+                </div>
+            </div>
+            <div id="card-cdoor" class="bg-slate-900 border border-slate-800 rounded-xl p-4 transition duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium">Line C-Door Scrap</p>
+                        <h3 id="kpi-cdoor" class="text-2xl font-bold text-white mt-1">0 <span class="text-sm font-normal text-emerald-300">pcs</span></h3>
+                    </div>
+                    <div class="bg-emerald-500/10 text-emerald-400 p-2.5 rounded-lg"><i class="fa-solid fa-industry text-lg"></i></div>
+                </div>
+            </div>
+            <div id="card-dnd" class="bg-slate-900 border border-slate-800 rounded-xl p-4 transition duration-300">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium">Line DND Scrap</p>
+                        <h3 id="kpi-dnd" class="text-2xl font-bold text-white mt-1">0 <span class="text-sm font-normal text-amber-300">pcs</span></h3>
+                    </div>
+                    <div class="bg-amber-500/10 text-amber-400 p-2.5 rounded-lg"><i class="fa-solid fa-industry text-lg"></i></div>
+                </div>
+            </div>
+        </div>
 
-                <!-- Top 5 Problems Bar Chart (50%) -->
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
-                        <span class="text-xs text-slate-400">สถิติสะสม</span>
-                    </div>
-                    <div class="h-64 relative">
-                        <canvas id="topProblemsChart"></canvas>
-                    </div>
+        <!-- Charts Section (Row 1: Trend & Doughnut) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 lg:col-span-2 flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-chart-line text-amber-500 mr-2"></i> แนวโน้มของเสียสะสมตามช่วงเวลา</h2>
+                </div>
+                <div class="relative flex-grow h-72">
+                    <canvas id="trendChart"></canvas>
                 </div>
             </div>
 
-            <!-- Log Table Section -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-                    <div class="flex items-center gap-3">
-                        <h2 class="text-base font-bold text-white"><i class="fa-solid fa-table-list text-blue-500 mr-2"></i> บันทึก Log ข้อมูล Scrap ล่าสุด</h2>
-                        <div class="flex items-center gap-2 text-xs text-slate-400">
-                            แสดงผล 
-                            <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-white text-slate-900 font-medium border border-slate-300 rounded px-2 py-1 outline-none shadow-sm cursor-pointer">
-                                <option value="10" selected>10</option>
-                                <option value="20">20</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                                <option value="all">ทั้งหมด</option>
-                            </select>
-                            บรรทัด
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input type="text" id="searchLog" placeholder="ค้นหา Model, Problem..." onkeyup="searchTable()" class="bg-white text-xs text-slate-900 font-medium border border-slate-300 rounded-lg px-3 py-2 outline-none w-60 shadow-sm placeholder:text-slate-400">
-                    </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-chart-pie text-cyan-500 mr-2"></i> สัดส่วนของเสียแยกตามแผนก</h2>
                 </div>
+                <div class="relative flex-grow h-72">
+                    <canvas id="departmentChart"></canvas>
+                </div>
+            </div>
+        </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs text-slate-300">
-                        <thead class="bg-slate-800/70 text-slate-400 uppercase font-semibold">
-                            <tr>
-                                <th class="p-3 rounded-l-lg">Date</th>
-                                <th class="p-3">Model</th>
-                                <th class="p-3">Quantity</th>
-                                <th class="p-3">Line</th>
-                                <th class="p-3">Problem</th>
-                                <th class="p-3">Cause</th>
-                                <th class="p-3">Solution</th>
-                                <th class="p-3 rounded-r-lg">Department</th>
+        <!-- Charts Section (Row 2: Top 5 & Top Models Table) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 lg:col-span-2 flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-chart-bar text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
+                    <span class="text-xs text-slate-400">สถิติสะสม</span>
+                </div>
+                <div class="relative flex-grow h-80">
+                    <canvas id="topProblemsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Models Table Container -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i> รุ่นสินค้า (Model) ที่มี Scrap สูงสุด</h2>
+                </div>
+                <div class="overflow-y-auto flex-grow h-80">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="p-2.5">#</th>
+                                <th class="p-2.5">Model</th>
+                                <th class="p-2.5">Line</th>
+                                <th class="p-2.5 text-right">จำนวน (Pcs)</th>
                             </tr>
                         </thead>
-                        <tbody id="scrapTableBody" class="divide-y divide-slate-800"></tbody>
+                        <tbody id="topModelsTableBody" class="divide-y divide-slate-800/50">
+                            <!-- Populated via JS -->
+                        </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
 
-                <div class="flex flex-wrap items-center justify-between mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400">
-                    <div id="paginationInfo">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
-                    <div id="paginationControls" class="flex items-center gap-1"></div>
+        <!-- Data Logs Table Section -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+                <h2 class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-table-list text-emerald-400 mr-2"></i> ประวัติรายการ Scrap ทั้งหมด</h2>
+                
+                <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+                    <div class="relative w-full md:w-64">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500"><i class="fa-solid fa-search"></i></span>
+                        <input type="text" id="searchLog" onkeyup="searchTable()" placeholder="ค้นหาข้อมูล..." class="bg-slate-800 text-slate-200 text-xs rounded-lg pl-9 pr-3 py-1.5 w-full border border-slate-700 outline-none">
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="text-xs text-slate-400">แสดง:</span>
+                        <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 border border-slate-700 outline-none">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="all">ทั้งหมด</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-        </main>
-    </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-800/60 text-slate-300 border-b border-slate-800">
+                            <th class="p-3">วันที่</th>
+                            <th class="p-3">Model</th>
+                            <th class="p-3">จำนวน</th>
+                            <th class="p-3">ไลน์ผลิต</th>
+                            <th class="p-3">ปัญหา</th>
+                            <th class="p-3">สาเหตุ</th>
+                            <th class="p-3">แนวทางแก้ไข</th>
+                            <th class="p-3">แผนก</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scrapTableBody" class="divide-y divide-slate-800/50">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="flex flex-col sm:flex-row justify-between items-center pt-2 gap-3 text-xs text-slate-400">
+                <div id="paginationInfo">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
+                <div id="paginationControls" class="flex items-center space-x-1"></div>
+            </div>
+        </div>
+
+    </main>
 
     <!-- Scripts -->
     <script>
@@ -229,8 +250,6 @@
             initCharts();
             fetchScrapData();
         });
-
-        Chart.register(ChartDataLabels);
 
         function initCharts() {
             // Trend Line Chart
@@ -257,20 +276,24 @@
                     plugins: {
                         legend: { display: false },
                         datalabels: {
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] > 0;
+                            },
                             color: '#cbd5e1',
                             align: 'top',
                             font: { family: 'Prompt', size: 10 },
-                            formatter: (value) => value > 0 ? value : ''
+                            formatter: (value) => value
                         }
                     },
                     scales: {
                         x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
 
-            // Top 5 Problems Bar Chart (ปรับ Label ให้อยู่ในกรอบสีดำชัดเจนเด่นชัดบนแท่งกราฟ)
+            // Top 5 Problems Bar Chart
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
                 type: 'bar',
@@ -289,26 +312,30 @@
                     plugins: { 
                         legend: { display: false },
                         datalabels: {
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] > 0;
+                            },
                             color: '#ffffff',
-                            anchor: 'center',  // ให้อยู่กึ่งกลางแท่งกราฟ
+                            anchor: 'center',
                             align: 'center',
                             font: { family: 'Prompt', weight: 'bold', size: 12 },
-                            backgroundColor: 'rgba(0, 0, 0, 0.75)', // ใส่พื้นหลังสีดำโปร่งแสงเพื่อให้ตัวหนังสือตัดกับสีแท่งกราฟ
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
                             borderColor: '#ffffff',
                             borderWidth: 1,
                             borderRadius: 4,
                             padding: 6,
-                            formatter: (value) => value > 0 ? `${value} เคส` : ''
+                            formatter: (value) => `${value} เคส`
                         }
                     }, 
                     scales: { 
                         x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' }, maxRotation: 20 } }, 
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true } 
                     } 
-                }
+                },
+                plugins: [ChartDataLabels]
             });
 
-            // Department Doughnut Chart (ตัด Legend ออก และบังคับโชว์ Label ชื่อพร้อมค่าบนชิ้นโดนัททันที)
+            // Department Doughnut Chart
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
@@ -325,22 +352,24 @@
                     responsive: true, 
                     maintainAspectRatio: false, 
                     plugins: { 
-                        legend: { display: false }, // ตัด Legend ด้านข้างออก
+                        legend: { display: false },
                         datalabels: {
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] > 0;
+                            },
                             color: '#ffffff',
                             font: { family: 'Prompt', weight: 'bold', size: 11 },
-                            backgroundColor: 'rgba(0, 0, 0, 0.75)', // ใส่พื้นหลังให้ตัวอักษรอ่านง่ายบนชิ้นโดนัท
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
                             borderRadius: 4,
                             padding: 4,
                             formatter: (value, context) => {
-                                if (value === 0) return '';
                                 const label = context.chart.data.labels[context.dataIndex] || '';
-                                return `${label}: ${value}`; // แสดงชื่อและค่าตัวเลขตรงกลางชิ้นโดนัท
-                            },
-                            textAlign: 'center'
+                                return `${label}: ${value}`;
+                            }
                         }
                     } 
-                }
+                },
+                plugins: [ChartDataLabels]
             });
         }
 
