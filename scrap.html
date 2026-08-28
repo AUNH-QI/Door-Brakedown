@@ -82,6 +82,11 @@
                         <option value="12">ธันวาคม</option>
                     </select>
                 </div>
+
+                <!-- Clear Filters Button -->
+                <button onclick="resetAllFilters()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium px-3.5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5" title="ล้างตัวกรองทั้งหมด">
+                    <i class="fa-solid fa-rotate-left"></i> ล้างตัวกรอง
+                </button>
             </div>
         </header>
 
@@ -270,7 +275,7 @@
                 }
             });
 
-            // Top 5 Problems Bar Chart (ปรับ Label ให้อยู่ในกรอบสีดำชัดเจนเด่นชัดบนแท่งกราฟ)
+            // Top 5 Problems Bar Chart
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
                 type: 'bar',
@@ -290,10 +295,10 @@
                         legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
-                            anchor: 'center',  // ให้อยู่กึ่งกลางแท่งกราฟ
+                            anchor: 'center',
                             align: 'center',
                             font: { family: 'Prompt', weight: 'bold', size: 12 },
-                            backgroundColor: 'rgba(0, 0, 0, 0.75)', // ใส่พื้นหลังสีดำโปร่งแสงเพื่อให้ตัวหนังสือตัดกับสีแท่งกราฟ
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
                             borderColor: '#ffffff',
                             borderWidth: 1,
                             borderRadius: 4,
@@ -308,7 +313,7 @@
                 }
             });
 
-            // Department Doughnut Chart (ตัด Legend ออก และบังคับโชว์ Label ชื่อพร้อมค่าบนชิ้นโดนัททันที)
+            // Department Doughnut Chart
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
@@ -325,17 +330,17 @@
                     responsive: true, 
                     maintainAspectRatio: false, 
                     plugins: { 
-                        legend: { display: false }, // ตัด Legend ด้านข้างออก
+                        legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
                             font: { family: 'Prompt', weight: 'bold', size: 11 },
-                            backgroundColor: 'rgba(0, 0, 0, 0.75)', // ใส่พื้นหลังให้ตัวอักษรอ่านง่ายบนชิ้นโดนัท
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
                             borderRadius: 4,
                             padding: 4,
                             formatter: (value, context) => {
                                 if (value === 0) return '';
                                 const label = context.chart.data.labels[context.dataIndex] || '';
-                                return `${label}: ${value}`; // แสดงชื่อและค่าตัวเลขตรงกลางชิ้นโดนัท
+                                return `${label}: ${value}`;
                             },
                             textAlign: 'center'
                         }
@@ -437,6 +442,24 @@
                     card.style.opacity = '0.4';
                 }
             });
+        }
+
+        // ฟังก์ชันล้างตัวกรองทั้งหมด (Reset Filters)
+        function resetAllFilters() {
+            currentLineFilter = '';
+            document.querySelectorAll('.line-btn').forEach(btn => {
+                btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
+            });
+            document.getElementById('btn-line-all').className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
+
+            setDatePreset('all');
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('searchLog').value = '';
+
+            highlightKpiCard('');
+            applyFilters();
         }
 
         function applyFilters() {
