@@ -334,19 +334,21 @@
     </div>
 
     <!-- Modal สำหรับอัปโหลดรูปภาพย้อนหลัง -->
-    <div id="uploadImageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-        <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">เพิ่มรูปภาพ Log ย้อนหลัง</h3>
-            <p class="text-xs text-gray-400 mb-4">เลือกไฟล์รูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้</p>
-            <form onsubmit="handleUploadExistingLog(event)">
-                <input type="file" id="existingImageFile" accept="image/*" required class="w-full bg-[#242b35] p-2 rounded border border-gray-600 text-white text-xs mb-4 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeUploadModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-1.5 rounded text-xs transition">ยกเลิก</button>
-                    <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded text-xs font-semibold transition">อัปโหลด</button>
-                </div>
-            </form>
-        </div>
+<div id="uploadImageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+        <h3 class="text-sm font-bold text-orange-500 mb-2">เพิ่มรูปภาพ Log ย้อนหลัง</h3>
+        <p class="text-xs text-gray-400 mb-4">เลือกไฟล์รูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้</p>
+        
+        <!-- 🔴 ตรวจสอบบรรทัดนี้ว่ามี onsubmit หรือไม่ -->
+        <form onsubmit="handleUploadExistingLog(event)">
+            <input type="file" id="existingImageFile" accept="image/*" required class="w-full bg-[#242b35] p-2 rounded border border-gray-600 text-white text-xs mb-4 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeUploadModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-1.5 rounded text-xs transition">ยกเลิก</button>
+                <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded text-xs font-semibold transition">อัปโหลด</button>
+            </div>
+        </form>
     </div>
+</div>
 
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
