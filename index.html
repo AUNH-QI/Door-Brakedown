@@ -269,10 +269,14 @@
                 </div>
             </div>
             
-            <!-- ช่องอัปโหลดรูปภาพ -->
-            <div class="col-span-2 md:col-span-4">
-                <label class="block text-gray-400 mb-1">แนบรูปภาพปัญหา (ถ้ามี)</label>
-                <input type="file" id="inputImageFile" accept="image/*" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+            <!-- ช่องอัปโหลดรูปภาพก่อน/หลังแก้ไข -->
+            <div class="col-span-2 md:col-span-2">
+                <label class="block text-gray-400 mb-1">รูปภาพก่อนแก้ไข (Before Image)</label>
+                <input type="file" id="inputBeforeImageFile" accept="image/*" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+            </div>
+            <div class="col-span-2 md:col-span-2">
+                <label class="block text-gray-400 mb-1">รูปภาพหลังแก้ไข (After Image)</label>
+                <input type="file" id="inputAfterImageFile" accept="image/*" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
             </div>
 
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
@@ -295,7 +299,8 @@
                         <th class="p-2.5 border-r border-gray-700">FIX</th>
                         <th class="p-2.5 border-r border-gray-700">TIME</th>
                         <th class="p-2.5 border-r border-gray-700 text-right">DOWNTIME (MIN)</th>
-                        <th class="p-2.5 border-r border-gray-700 text-center">รูปภาพ</th>
+                        <th class="p-2.5 border-r border-gray-700 text-center">รูปภาพก่อนแก้ไข</th>
+                        <th class="p-2.5 border-r border-gray-700 text-center">รูปภาพหลังแก้ไข</th>
                         <th class="p-2.5 text-center">⚙️</th>
                     </tr>
                 </thead>
@@ -333,16 +338,16 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับอัปโหลดรูปภาพย้อนหลัง -->
+    <!-- Modal สำหรับอัปโหลดรูปภาพย้อนหลัง (แยก Before / After) -->
     <div id="uploadImageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
         <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">เพิ่มรูปภาพ Log ย้อนหลัง</h3>
+            <h3 id="uploadModalTitle" class="text-sm font-bold text-orange-500 mb-2">เพิ่มรูปภาพ Log ย้อนหลัง</h3>
             <p class="text-xs text-gray-400 mb-4">เลือกไฟล์รูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้</p>
             <form onsubmit="handleUploadExistingLog(event)">
                 <input type="file" id="existingImageFile" accept="image/*" required class="w-full bg-[#242b35] p-2 rounded border border-gray-600 text-white text-xs mb-4 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="closeUploadModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-1.5 rounded text-xs transition">ยกเลิก</button>
-                    <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded text-xs font-semibold transition">อัปโหลด</button>
+                    <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-xs font-semibold transition">อัปโหลด</button>
                 </div>
             </form>
         </div>
@@ -361,6 +366,7 @@
         let currentPage = 1;
         let targetId = null;    
         let selectedLogIdForImage = null;
+        let selectedImageType = null; // 'before' หรือ 'after'
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
@@ -584,17 +590,21 @@
                 try {
                     const targetLog = logsData.find(item => item.id === id);
                     
-                    if (targetLog && targetLog.image_url) {
-                        const urlParts = targetLog.image_url.split('/');
-                        const fileName = urlParts[urlParts.length - 1];
-                        
-                        if (fileName) {
-                            const { error: storageError } = await supabaseClient.storage
-                                .from('issue-images')
-                                .remove([fileName]);
-                                
-                            if (storageError) {
-                                console.error("ไม่สามารถลบไฟล์รูปใน Storage ได้:", storageError.message);
+                    if (targetLog) {
+                        // ลบรูปภาพก่อนแก้ไข (ถ้ามี)
+                        if (targetLog.before_image_url) {
+                            const urlParts = targetLog.before_image_url.split('/');
+                            const fileName = urlParts[urlParts.length - 1];
+                            if (fileName) {
+                                await supabaseClient.storage.from('issue-images').remove([fileName]);
+                            }
+                        }
+                        // ลบรูปภาพหลังแก้ไข (ถ้ามี)
+                        if (targetLog.after_image_url) {
+                            const urlParts = targetLog.after_image_url.split('/');
+                            const fileName = urlParts[urlParts.length - 1];
+                            if (fileName) {
+                                await supabaseClient.storage.from('issue-images').remove([fileName]);
                             }
                         }
                     }
@@ -617,47 +627,65 @@
             btn.innerText = 'กำลังบันทึก...';
             btn.disabled = true;
 
-            const fileInput = document.getElementById('inputImageFile');
-            let imageUrl = '';
-
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-                const { error: uploadError } = await supabaseClient.storage
-                    .from('issue-images')
-                    .upload(fileName, file);
-
-                if (uploadError) {
-                    alert('อัปโหลดรูปภาพไม่สำเร็จ: ' + uploadError.message);
-                    btn.innerText = originalBtnText;
-                    btn.disabled = false;
-                    return;
-                }
-
-                const { data: publicURLData } = supabaseClient.storage
-                    .from('issue-images')
-                    .getPublicUrl(fileName);
-
-                imageUrl = publicURLData.publicUrl;
-            }
-
-            const logData = {
-                date: document.getElementById('inputDate').value,
-                time: document.getElementById('inputTime').value,
-                shift: document.getElementById('inputShift').value,
-                line: document.getElementById('inputLine').value,
-                machine: document.getElementById('inputMachine').value,
-                station: document.getElementById('inputStation').value || '-',
-                issue: document.getElementById('inputIssue').value,
-                cause: document.getElementById('inputCause').value || '-',
-                fix: document.getElementById('inputFix').value || '-',
-                downtime: Number(document.getElementById('inputDowntime').value),
-                image_url: imageUrl
-            };
+            const beforeFileInput = document.getElementById('inputBeforeImageFile');
+            const afterFileInput = document.getElementById('inputAfterImageFile');
+            let beforeImageUrl = '';
+            let afterImageUrl = '';
 
             try {
+                // อัปโหลด Before Image
+                if (beforeFileInput.files.length > 0) {
+                    const file = beforeFileInput.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `before_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from('issue-images')
+                        .upload(fileName, file);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: publicURLData } = supabaseClient.storage
+                        .from('issue-images')
+                        .getPublicUrl(fileName);
+
+                    beforeImageUrl = publicURLData.publicUrl;
+                }
+
+                // อัปโหลด After Image
+                if (afterFileInput.files.length > 0) {
+                    const file = afterFileInput.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `after_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from('issue-images')
+                        .upload(fileName, file);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: publicURLData } = supabaseClient.storage
+                        .from('issue-images')
+                        .getPublicUrl(fileName);
+
+                    afterImageUrl = publicURLData.publicUrl;
+                }
+
+                const logData = {
+                    date: document.getElementById('inputDate').value,
+                    time: document.getElementById('inputTime').value,
+                    shift: document.getElementById('inputShift').value,
+                    line: document.getElementById('inputLine').value,
+                    machine: document.getElementById('inputMachine').value,
+                    station: document.getElementById('inputStation').value || '-',
+                    issue: document.getElementById('inputIssue').value,
+                    cause: document.getElementById('inputCause').value || '-',
+                    fix: document.getElementById('inputFix').value || '-',
+                    downtime: Number(document.getElementById('inputDowntime').value),
+                    before_image_url: beforeImageUrl,
+                    after_image_url: afterImageUrl
+                };
+
                 const { error } = await supabaseClient
                     .from('breakdown_logs')
                     .insert([logData]);
@@ -677,8 +705,17 @@
             }
         }
 
-        function openUploadModal(id) {
-            selectedLogIdForImage = id; // กำหนดค่า ID ให้ถูกต้องที่นี่
+        function openUploadModal(id, type) {
+            selectedLogIdForImage = id;
+            selectedImageType = type; // 'before' หรือ 'after'
+            
+            const titleEl = document.getElementById('uploadModalTitle');
+            if (type === 'before') {
+                titleEl.innerText = 'เพิ่มรูปภาพก่อนแก้ไข (Before Image)';
+            } else {
+                titleEl.innerText = 'เพิ่มรูปภาพหลังแก้ไข (After Image)';
+            }
+
             document.getElementById('existingImageFile').value = '';
             document.getElementById('uploadImageModal').classList.remove('hidden');
         }
@@ -686,67 +723,60 @@
         function closeUploadModal() {
             document.getElementById('uploadImageModal').classList.add('hidden');
             selectedLogIdForImage = null;
+            selectedImageType = null;
         }
 
         async function handleUploadExistingLog(event) {
-    event.preventDefault();
-    if (!selectedLogIdForImage) {
-        alert('ไม่พบ ID ของ Log ที่ต้องการอัปโหลดรูป');
-        return;
-    }
+            event.preventDefault();
+            if (!selectedLogIdForImage || !selectedImageType) {
+                alert('ข้อมูลระบุรูปภาพไม่ถูกต้อง');
+                return;
+            }
 
-    const fileInput = document.getElementById('existingImageFile');
-    if (fileInput.files.length === 0) return;
+            const fileInput = document.getElementById('existingImageFile');
+            if (fileInput.files.length === 0) return;
 
-    const btn = document.getElementById('uploadSubmitBtn');
-    btn.innerText = 'กำลังอัปโหลด...';
-    btn.disabled = true;
+            const btn = document.getElementById('uploadSubmitBtn');
+            btn.innerText = 'กำลังอัปโหลด...';
+            btn.disabled = true;
 
-    try {
-        const file = fileInput.files[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+            try {
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${selectedImageType}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-        console.log("กำลังอัปโหลดไฟล์ไป Storage:", fileName);
-        const { error: uploadError } = await supabaseClient.storage
-            .from('issue-images')
-            .upload(fileName, file);
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('issue-images')
+                    .upload(fileName, file);
 
-        if (uploadError) throw uploadError;
+                if (uploadError) throw uploadError;
 
-        const { data: publicURLData } = supabaseClient.storage
-            .from('issue-images')
-            .getPublicUrl(fileName);
+                const { data: publicURLData } = supabaseClient.storage
+                    .from('issue-images')
+                    .getPublicUrl(fileName);
 
-        const imageUrl = publicURLData.publicUrl;
-        console.log("ได้ Public URL แล้ว:", imageUrl);
-        console.log("กำลังอัปเดตตาราง Breakdown Logs สำหรับ ID:", selectedLogIdForImage);
+                const imageUrl = publicURLData.publicUrl;
+                
+                const updateField = selectedImageType === 'before' ? { before_image_url: imageUrl } : { after_image_url: imageUrl };
 
-        const { data, error: updateError, status } = await supabaseClient
-            .from('breakdown_logs')
-            .update({ image_url: imageUrl })
-            .eq('id', selectedLogIdForImage)
-            .select();
+                const { data, error: updateError } = await supabaseClient
+                    .from('breakdown_logs')
+                    .update(updateField)
+                    .eq('id', selectedLogIdForImage)
+                    .select();
 
-        console.log("ผลลัพธ์การ Update:", { data, updateError, status });
+                if (updateError) throw updateError;
 
-        if (updateError) throw updateError;
-
-        if (!data || data.length === 0) {
-            alert('อัปโหลดสำเร็จ แต่ไม่พบแถวข้อมูลที่ถูกอัปเดต (ตรวจสอบ RLS Policies ของตาราง breakdown_logs ว่าอนุญาตให้ UPDATE หรือไม่)');
-            return;
+                closeUploadModal();
+                await fetchLogs();
+            } catch (err) {
+                console.error("Error uploading image:", err);
+                alert("อัปโหลดรูปไม่สำเร็จ: " + (err.message || JSON.stringify(err)));
+            } finally {
+                btn.innerText = 'อัปโหลด';
+                btn.disabled = false;
+            }
         }
-
-        closeUploadModal();
-        await fetchLogs();
-    } catch (err) {
-        console.error("Error uploading image:", err);
-        alert("อัปโหลดรูปไม่สำเร็จ: " + (err.message || JSON.stringify(err)));
-    } finally {
-        btn.innerText = 'อัปโหลด';
-        btn.disabled = false;
-    }
-}
 
         function setLineFilter(lineName) {
             document.getElementById('lineFilter').value = lineName;
@@ -939,7 +969,7 @@
             const rowsPerPageVal = document.getElementById('rowsPerPageSelect').value;
             
             if (totalRows === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาหรือเงื่อนไขที่เลือก</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาหรือเงื่อนไขที่เลือก</td></tr>';
                 document.getElementById('paginationInfo').innerText = 'แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ';
                 document.getElementById('paginationControls').innerHTML = '';
                 return;
@@ -962,12 +992,22 @@
             }
 
             paginatedData.forEach(item => {
-                const imageButton = item.image_url 
+                // ปุ่มรูปภาพก่อนแก้ไข (Before)
+                const beforeImageButton = item.before_image_url 
                     ? `<div class="flex items-center justify-center">
-                           <button onclick="openImageModal('${item.image_url}')" class="text-xs bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพ">🖼️</button>
+                           <button onclick="openImageModal('${item.before_image_url}')" class="text-xs bg-blue-600/25 hover:bg-blue-600 text-blue-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพก่อนแก้ไข">🖼️ ดู</button>
                        </div>`
                     : `<div class="flex items-center justify-center">
-                           <button onclick="openUploadModal(${item.id})" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพ">➕</button>
+                           <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพก่อนแก้ไข">➕ เพิ่ม</button>
+                       </div>`;
+
+                // ปุ่มรูปภาพหลังแก้ไข (After)
+                const afterImageButton = item.after_image_url 
+                    ? `<div class="flex items-center justify-center">
+                           <button onclick="openImageModal('${item.after_image_url}')" class="text-xs bg-emerald-600/25 hover:bg-emerald-600 text-emerald-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพหลังแก้ไข">🖼️ ดู</button>
+                       </div>`
+                    : `<div class="flex items-center justify-center">
+                           <button onclick="openUploadModal(${item.id}, 'after')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพหลังแก้ไข">➕ เพิ่ม</button>
                        </div>`;
 
                 tbody.innerHTML += `
@@ -982,7 +1022,8 @@
                         <td class="p-2.5 border-r border-gray-800">${item.fix || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 font-mono text-gray-300">${item.time || '-'}</td>
                         <td class="p-2.5 border-r border-gray-800 text-right font-bold ${item.downtime > 60 ? 'text-red-400' : 'text-emerald-400'}">${Number(item.downtime).toLocaleString()}</td>
-                        <td class="p-2.5 border-r border-gray-800 text-center">${imageButton}</td>
+                        <td class="p-2.5 border-r border-gray-800 text-center">${beforeImageButton}</td>
+                        <td class="p-2.5 border-r border-gray-800 text-center">${afterImageButton}</td>
                         <td class="p-2.5 text-center">
                             <button onclick="deleteLog(${item.id})" class="text-xs bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white px-2.5 py-1 rounded transition" title="Delete">🗑️</button>
                         </td>
