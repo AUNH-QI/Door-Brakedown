@@ -371,16 +371,30 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับอัปโหลดรูปภาพย้อนหลัง (แยก Before / After) -->
+    <!-- Modal สำหรับอัปโหลดหรือแก้ไขรูปภาพย้อนหลัง (รองรับ Drag & Drop / Ctrl+V / คลิกเลือกไฟล์) -->
     <div id="uploadImageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
         <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h3 id="uploadModalTitle" class="text-sm font-bold text-orange-500 mb-2">เพิ่มรูปภาพ Log ย้อนหลัง</h3>
-            <p class="text-xs text-gray-400 mb-4">เลือกไฟล์รูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้</p>
+            <h3 id="uploadModalTitle" class="text-sm font-bold text-orange-500 mb-2">จัดการรูปภาพ Log ย้อนหลัง</h3>
+            <p class="text-xs text-gray-400 mb-4">ลากรูปมาวาง, กด Ctrl+V หรือคลิกเพื่อเลือกไฟล์รูปภาพ</p>
+            
             <form onsubmit="handleUploadExistingLog(event)">
-                <input type="file" id="existingImageFile" accept="image/*" required class="w-full bg-[#242b35] p-2 rounded border border-gray-600 text-white text-xs mb-4 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                <div id="modalDropZone" class="drop-zone bg-[#242b35] p-5 rounded-lg text-center cursor-pointer relative hover:border-orange-500 mb-4">
+                    <input type="file" id="existingImageFile" accept="image/*" class="hidden">
+                    <div id="modalInitialPrompt" class="flex flex-col items-center justify-center space-y-1">
+                        <span class="text-xs text-gray-300">ลากรูปมาวางที่นี่, กด <span class="text-yellow-500 font-semibold">Ctrl+V</span>, หรือ <span class="text-orange-400 underline">คลิกเพื่อเลือกไฟล์</span></span>
+                    </div>
+                    <div id="modalPreviewContainer" class="hidden flex items-center justify-between bg-[#181c24] p-2 rounded border border-gray-700">
+                        <div class="flex items-center space-x-2">
+                            <img id="modalPreviewImg" src="" alt="Preview Image" class="w-12 h-12 object-cover rounded border border-gray-600">
+                            <span id="modalFileName" class="text-xs text-emerald-400 truncate max-w-[200px]">Selected Image</span>
+                        </div>
+                        <button type="button" id="modalRemoveBtn" class="text-red-500 hover:text-red-400 font-bold px-2 py-1 text-sm">✕</button>
+                    </div>
+                </div>
+
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="closeUploadModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-1.5 rounded text-xs transition">ยกเลิก</button>
-                    <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-xs font-semibold transition">อัปโหลด</button>
+                    <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-xs font-semibold transition" disabled>อัปโหลด/บันทึก</button>
                 </div>
             </form>
         </div>
@@ -414,13 +428,13 @@
 
             // เปิดใช้งานระบบอัปโหลดรูปภาพ (คลิก, ลากวาง และกด Ctrl+V วาง)
             initImageUploaderSystem();
+            initModalImageUploaderSystem();
         });
 
         function initImageUploaderSystem() {
             setupImageComponent('before');
             setupImageComponent('after');
 
-            // รองรับการกด Ctrl+V ทั่วทั้งฟอร์มเพิ่มข้อมูล เพื่อแปะรูปภาพอัตโนมัติ
             const formEl = document.getElementById('addLogForm');
             formEl.addEventListener('paste', (e) => {
                 const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -431,7 +445,6 @@
                             const beforeInput = document.getElementById('inputBeforeImageFile');
                             const afterInput = document.getElementById('inputAfterImageFile');
                             
-                            // เช็คว่าช่อง Before ว่างอยู่หรือไม่ ถ้าว่างให้ใส่ Before ก่อน ไม่งั้นใส่ After
                             const targetType = !beforeInput.files.length ? 'before' : 'after';
                             const fileInput = targetType === 'before' ? beforeInput : afterInput;
                             
@@ -453,52 +466,31 @@
             const fileInput = document.getElementById(`input${type.charAt(0).toUpperCase() + type.slice(1)}ImageFile`);
             const removeBtn = document.getElementById(`${type}RemoveBtn`);
 
-            // 1. คลิกที่ DropZone เพื่อเปิดหน้าต่างเลือกไฟล์ (แก้ปัญหาคลิกแล้วเด้งผิดที่)
-            dropZone.addEventListener('click', () => {
-                fileInput.click();
-            });
+            dropZone.addEventListener('click', () => { fileInput.click(); });
 
-            // 2. เมื่อเลือกไฟล์ผ่าน Input ปกติ
-            fileInput.addEventListener('change', (e) => {
+            fileInput.addEventListener('change', () => {
                 if (fileInput.files && fileInput.files[0]) {
                     updateImagePreview(type, fileInput.files[0], fileInput.files[0].name);
                 }
             });
 
-            // 3. รองรับ Drag & Drop
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.add('dragover');
-            });
-
-            dropZone.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.remove('dragover');
-            });
-
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); });
             dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 dropZone.classList.remove('dragover');
-                
                 if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                     fileInput.files = e.dataTransfer.files;
                     updateImagePreview(type, e.dataTransfer.files[0], e.dataTransfer.files[0].name);
                 }
             });
 
-            // 4. ปุ่มลบรูป (X) - ใส่ stopPropagation() ป้องกันไม่ให้คลิกทะลุไปเปิดหน้าต่างเลือกไฟล์ซ้ำ
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 fileInput.value = '';
-                
-                const initialPrompt = document.getElementById(`${type}InitialPrompt`);
-                const previewContainer = document.getElementById(`${type}PreviewContainer`);
-                
-                previewContainer.classList.add('hidden');
-                initialPrompt.classList.remove('hidden');
+                document.getElementById(`${type}PreviewContainer`).classList.add('hidden');
+                document.getElementById(`${type}InitialPrompt`).classList.remove('hidden');
             });
         }
 
@@ -512,9 +504,80 @@
             reader.onload = function(e) {
                 previewImg.src = e.target.result;
                 fileNameSpan.innerText = fileName;
-                
                 initialPrompt.classList.add('hidden');
                 previewContainer.classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // ระบบอัปโหลด/แก้ไขรูปใน Modal รองรับ Drag & Drop / Ctrl+V
+        function initModalImageUploaderSystem() {
+            const dropZone = document.getElementById('modalDropZone');
+            const fileInput = document.getElementById('existingImageFile');
+            const removeBtn = document.getElementById('modalRemoveBtn');
+
+            dropZone.addEventListener('click', () => { fileInput.click(); });
+
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files && fileInput.files[0]) {
+                    updateModalImagePreview(fileInput.files[0], fileInput.files[0].name);
+                }
+            });
+
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateModalImagePreview(e.dataTransfer.files[0], e.dataTransfer.files[0].name);
+                }
+            });
+
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.value = '';
+                document.getElementById('modalPreviewContainer').classList.add('hidden');
+                document.getElementById('modalInitialPrompt').classList.remove('hidden');
+                document.getElementById('uploadSubmitBtn').disabled = true;
+            });
+
+            // รองรับ Ctrl+V ใน Modal สำหรับวางรูป
+            const modalEl = document.getElementById('uploadImageModal');
+            modalEl.addEventListener('paste', (e) => {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        const blob = items[i].getAsFile();
+                        if (blob) {
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(blob);
+                            fileInput.files = dataTransfer.files;
+                            updateModalImagePreview(blob, blob.name || 'Pasted Image');
+                            e.preventDefault();
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateModalImagePreview(file, fileName) {
+            const initialPrompt = document.getElementById('modalInitialPrompt');
+            const previewContainer = document.getElementById('modalPreviewContainer');
+            const previewImg = document.getElementById('modalPreviewImg');
+            const fileNameSpan = document.getElementById('modalFileName');
+            const submitBtn = document.getElementById('uploadSubmitBtn');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                fileNameSpan.innerText = fileName;
+                initialPrompt.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+                submitBtn.disabled = false;
             }
             reader.readAsDataURL(file);
         }
@@ -548,9 +611,7 @@
             const stationCounts = {};
             logsData.forEach(item => {
                 const st = item.station;
-                if (st && st !== '-') {
-                    stationCounts[st] = (stationCounts[st] || 0) + 1;
-                }
+                if (st && st !== '-') { stationCounts[st] = (stationCounts[st] || 0) + 1; }
             });
             const sortedStations = Object.keys(stationCounts).sort((a, b) => stationCounts[b] - stationCounts[a]);
             const allStationsSet = [...new Set(logsData.map(item => item.station))].filter(Boolean);
@@ -576,9 +637,7 @@
             const issueCounts = {};
             logsData.forEach(item => {
                 const issue = item.issue;
-                if (issue) {
-                    issueCounts[issue] = (issueCounts[issue] || 0) + 1;
-                }
+                if (issue) { issueCounts[issue] = (issueCounts[issue] || 0) + 1; }
             });
             const sortedIssues = Object.keys(issueCounts).sort((a, b) => issueCounts[b] - issueCounts[a]);
             const allIssuesSet = [...new Set(logsData.map(item => item.issue))].filter(Boolean);
@@ -605,9 +664,7 @@
             const currentMonth = monthFilter.value;
             const monthsSet = new Set();
             logsData.forEach(item => {
-                if (item.date && item.date.length >= 7) {
-                    monthsSet.add(item.date.substring(0, 7));
-                }
+                if (item.date && item.date.length >= 7) { monthsSet.add(item.date.substring(0, 7)); }
             });
             const sortedMonths = [...monthsSet].sort().reverse();
 
@@ -629,66 +686,47 @@
 
         function applyQuickPreset() {
             resetFormState();
-
             document.getElementById('inputLine').value = 'C-Door';
             document.getElementById('inputMachine').value = 'เครื่องฉีดโฟม';
             
             const stationEl = document.getElementById('inputStation');
             let foundStation = false;
             for (let opt of stationEl.options) {
-                if (opt.value === 'Robot') {
-                    stationEl.value = 'Robot';
-                    foundStation = true;
-                    break;
-                }
+                if (opt.value === 'Robot') { stationEl.value = 'Robot'; foundStation = true; break; }
             }
             if (!foundStation) {
                 const opt = document.createElement('option');
-                opt.value = 'Robot';
-                opt.text = 'Robot';
-                stationEl.add(opt);
-                stationEl.value = 'Robot';
+                opt.value = 'Robot'; opt.text = 'Robot';
+                stationEl.add(opt); stationEl.value = 'Robot';
             }
 
             const issueEl = document.getElementById('inputIssue');
             let foundIssue = false;
             for (let opt of issueEl.options) {
-                if (opt.value === 'จับฝาแล้วร่วงตก') {
-                    issueEl.value = 'จับฝาแล้วร่วงตก';
-                    foundIssue = true;
-                    break;
-                }
+                if (opt.value === 'จับฝาแล้วร่วงตก') { issueEl.value = 'จับฝาแล้วร่วงตก'; foundIssue = true; break; }
             }
             if (!foundIssue) {
                 const opt = document.createElement('option');
-                opt.value = 'จับฝาแล้วร่วงตก';
-                opt.text = 'จับฝาแล้วร่วงตก';
-                issueEl.add(opt);
-                issueEl.value = 'จับฝาแล้วร่วงตก';
+                opt.value = 'จับฝาแล้วร่วงตก'; opt.text = 'จับฝาแล้วร่วงตก';
+                issueEl.add(opt); issueEl.value = 'จับฝาแล้วร่วงตก';
             }
 
             document.getElementById('inputDowntime').value = 2;
-
             const formEl = document.getElementById('addLogForm');
-            if (formEl.classList.contains('hidden')) {
-                formEl.classList.remove('hidden');
-            }
+            if (formEl.classList.contains('hidden')) { formEl.classList.remove('hidden'); }
             window.scrollTo({ top: formEl.offsetTop - 50, behavior: 'smooth' });
         }
 
         function toggleForm() {
             const formEl = document.getElementById('addLogForm');
             formEl.classList.toggle('hidden');
-            if (formEl.classList.contains('hidden')) {
-                resetFormState();
-            }
+            if (formEl.classList.contains('hidden')) { resetFormState(); }
         }
 
         function resetFormState() {
             document.getElementById('addLogForm').reset();
             document.getElementById('inputDate').valueAsDate = new Date();
             
-            // รีเซ็ตสถานะหน้าจออัปโหลดรูปภาพ
             ['before', 'after'].forEach(type => {
                 document.getElementById(`${type}PreviewContainer`).classList.add('hidden');
                 document.getElementById(`${type}InitialPrompt`).classList.remove('hidden');
@@ -736,27 +774,21 @@
             if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
                 try {
                     const targetLog = logsData.find(item => item.id === id);
-                    
                     if (targetLog) {
                         if (targetLog.before_image_url) {
                             const urlParts = targetLog.before_image_url.split('/');
                             const fileName = urlParts[urlParts.length - 1];
-                            if (fileName) {
-                                await supabaseClient.storage.from('issue-images').remove([fileName]);
-                            }
+                            if (fileName) { await supabaseClient.storage.from('issue-images').remove([fileName]); }
                         }
                         if (targetLog.after_image_url) {
                             const urlParts = targetLog.after_image_url.split('/');
                             const fileName = urlParts[urlParts.length - 1];
-                            if (fileName) {
-                                await supabaseClient.storage.from('issue-images').remove([fileName]);
-                            }
+                            if (fileName) { await supabaseClient.storage.from('issue-images').remove([fileName]); }
                         }
                     }
 
                     const { error } = await supabaseClient.from('breakdown_logs').delete().eq('id', id);
                     if (error) throw error;
-                    
                     await fetchLogs();
                 } catch (err) {
                     console.error("Error deleting log:", err);
@@ -783,16 +815,10 @@
                     const fileExt = file.name.split('.').pop();
                     const fileName = `before_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-                    const { error: uploadError } = await supabaseClient.storage
-                        .from('issue-images')
-                        .upload(fileName, file);
-
+                    const { error: uploadError } = await supabaseClient.storage.from('issue-images').upload(fileName, file);
                     if (uploadError) throw uploadError;
 
-                    const { data: publicURLData } = supabaseClient.storage
-                        .from('issue-images')
-                        .getPublicUrl(fileName);
-
+                    const { data: publicURLData } = supabaseClient.storage.from('issue-images').getPublicUrl(fileName);
                     beforeImageUrl = publicURLData.publicUrl;
                 }
 
@@ -801,16 +827,10 @@
                     const fileExt = file.name.split('.').pop();
                     const fileName = `after_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-                    const { error: uploadError } = await supabaseClient.storage
-                        .from('issue-images')
-                        .upload(fileName, file);
-
+                    const { error: uploadError } = await supabaseClient.storage.from('issue-images').upload(fileName, file);
                     if (uploadError) throw uploadError;
 
-                    const { data: publicURLData } = supabaseClient.storage
-                        .from('issue-images')
-                        .getPublicUrl(fileName);
-
+                    const { data: publicURLData } = supabaseClient.storage.from('issue-images').getPublicUrl(fileName);
                     afterImageUrl = publicURLData.publicUrl;
                 }
 
@@ -829,10 +849,7 @@
                     after_image_url: afterImageUrl
                 };
 
-                const { error } = await supabaseClient
-                    .from('breakdown_logs')
-                    .insert([logData]);
-
+                const { error } = await supabaseClient.from('breakdown_logs').insert([logData]);
                 if (error) throw error;
 
                 toggleForm();
@@ -854,12 +871,15 @@
             
             const titleEl = document.getElementById('uploadModalTitle');
             if (type === 'before') {
-                titleEl.innerText = 'เพิ่มรูปภาพก่อนแก้ไข (Before Image)';
+                titleEl.innerText = 'จัดการรูปภาพก่อนแก้ไข (Before Image)';
             } else {
-                titleEl.innerText = 'เพิ่มรูปภาพหลังแก้ไข (After Image)';
+                titleEl.innerText = 'จัดการรูปภาพหลังแก้ไข (After Image)';
             }
 
             document.getElementById('existingImageFile').value = '';
+            document.getElementById('modalPreviewContainer').classList.add('hidden');
+            document.getElementById('modalInitialPrompt').classList.remove('hidden');
+            document.getElementById('uploadSubmitBtn').disabled = true;
             document.getElementById('uploadImageModal').classList.remove('hidden');
         }
 
@@ -880,33 +900,36 @@
             if (fileInput.files.length === 0) return;
 
             const btn = document.getElementById('uploadSubmitBtn');
-            btn.innerText = 'กำลังอัปโหลด...';
+            btn.innerText = 'กำลังบันทึก...';
             btn.disabled = true;
 
             try {
+                const targetLog = logsData.find(item => item.id === selectedLogIdForImage);
+                if (targetLog) {
+                    const oldUrl = selectedImageType === 'before' ? targetLog.before_image_url : targetLog.after_image_url;
+                    if (oldUrl) {
+                        const urlParts = oldUrl.split('/');
+                        const fileName = urlParts[urlParts.length - 1];
+                        if (fileName) { await supabaseClient.storage.from('issue-images').remove([fileName]); }
+                    }
+                }
+
                 const file = fileInput.files[0];
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${selectedImageType}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-                const { error: uploadError } = await supabaseClient.storage
-                    .from('issue-images')
-                    .upload(fileName, file);
-
+                const { error: uploadError } = await supabaseClient.storage.from('issue-images').upload(fileName, file);
                 if (uploadError) throw uploadError;
 
-                const { data: publicURLData } = supabaseClient.storage
-                    .from('issue-images')
-                    .getPublicUrl(fileName);
-
+                const { data: publicURLData } = supabaseClient.storage.from('issue-images').getPublicUrl(fileName);
                 const imageUrl = publicURLData.publicUrl;
                 
                 const updateField = selectedImageType === 'before' ? { before_image_url: imageUrl } : { after_image_url: imageUrl };
 
-                const { data, error: updateError } = await supabaseClient
+                const { error: updateError } = await supabaseClient
                     .from('breakdown_logs')
                     .update(updateField)
-                    .eq('id', selectedLogIdForImage)
-                    .select();
+                    .eq('id', selectedLogIdForImage);
 
                 if (updateError) throw updateError;
 
@@ -916,7 +939,7 @@
                 console.error("Error uploading image:", err);
                 alert("อัปโหลดรูปไม่สำเร็จ: " + (err.message || JSON.stringify(err)));
             } finally {
-                btn.innerText = 'อัปโหลด';
+                btn.innerText = 'อัปโหลด/บันทึก';
                 btn.disabled = false;
             }
         }
@@ -926,22 +949,15 @@
             const lines = ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
             lines.forEach(l => {
                 const btn = document.getElementById(`btn-line-${l}`);
-                if (l === lineName) {
-                    btn.className = "px-2 py-1 rounded bg-orange-600 text-white font-medium transition";
-                } else {
-                    btn.className = "px-2 py-1 rounded text-gray-300 hover:text-white transition";
-                }
+                btn.className = (l === lineName) ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2 py-1 rounded text-gray-300 hover:text-white transition";
             });
 
             const kpiLines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
             kpiLines.forEach(l => {
                 const card = document.getElementById(`card-${l}`);
                 if (card) {
-                    if (lineName !== 'All' && lineName === l) {
-                        card.classList.add('kpi-card-highlight');
-                    } else {
-                        card.classList.remove('kpi-card-highlight');
-                    }
+                    if (lineName !== 'All' && lineName === l) { card.classList.add('kpi-card-highlight'); }
+                    else { card.classList.remove('kpi-card-highlight'); }
                 }
             });
 
@@ -954,11 +970,7 @@
             const shifts = ['All', 'Day', 'Night'];
             shifts.forEach(s => {
                 const btn = document.getElementById(`btn-shift-${s}`);
-                if (s === shiftName) {
-                    btn.className = "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition";
-                } else {
-                    btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
-                }
+                btn.className = (s === shiftName) ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
             });
             currentPage = 1;
             updateDashboard();
@@ -972,21 +984,13 @@
             setTimeout(() => {
                 ['all', 'today', 'week', 'month'].forEach(type => {
                     const btn = document.getElementById(`btn-date-${type}`);
-                    if (btn) {
-                        btn.className = type === 'all' 
-                            ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"
-                            : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
-                    }
+                    if (btn) { btn.className = type === 'all' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
                 });
 
                 document.getElementById('lineFilter').value = 'All';
                 ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
                     const btn = document.getElementById(`btn-line-${l}`);
-                    if (btn) {
-                        btn.className = l === 'All'
-                            ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition"
-                            : "px-2 py-1 rounded text-gray-300 hover:text-white transition";
-                    }
+                    if (btn) { btn.className = l === 'All' ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2 py-1 rounded text-gray-300 hover:text-white transition"; }
                 });
 
                 ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
@@ -997,11 +1001,7 @@
                 document.getElementById('shiftFilter').value = 'All';
                 ['All', 'Day', 'Night'].forEach(s => {
                     const btn = document.getElementById(`btn-shift-${s}`);
-                    if (btn) {
-                        btn.className = s === 'All'
-                            ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"
-                            : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
-                    }
+                    if (btn) { btn.className = s === 'All' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
                 });
 
                 document.getElementById('stationFilter').value = 'All';
@@ -1019,9 +1019,7 @@
         function setQuickDate(type) {
             clearActiveQuickDateBtn();
             const targetBtn = document.getElementById(`btn-date-${type}`);
-            if (targetBtn) {
-                targetBtn.className = "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition";
-            }
+            if (targetBtn) { targetBtn.className = "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"; }
 
             document.getElementById('startDateFilter').value = '';
             document.getElementById('endDateFilter').value = '';
@@ -1044,11 +1042,7 @@
                 const monthSelect = document.getElementById('monthFilter');
                 let found = false;
                 for (let opt of monthSelect.options) {
-                    if (opt.value === currentYm) {
-                        monthSelect.value = currentYm;
-                        found = true;
-                        break;
-                    }
+                    if (opt.value === currentYm) { monthSelect.value = currentYm; found = true; break; }
                 }
                 if (!found) monthSelect.value = 'All';
             }
@@ -1060,9 +1054,7 @@
         function clearActiveQuickDateBtn() {
             ['all', 'today', 'week', 'month'].forEach(type => {
                 const btn = document.getElementById(`btn-date-${type}`);
-                if (btn) {
-                    btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
-                }
+                if (btn) { btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
             });
         }
 
@@ -1077,19 +1069,15 @@
 
             return logsData.filter(item => {
                 const itemDate = item.date;
-                
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
                 if (stationVal !== 'All' && item.station !== stationVal) return false;
                 if (issueVal !== 'All' && item.issue !== issueVal) return false;
-
                 if (monthVal && monthVal !== 'All') {
                     if (!itemDate || !itemDate.startsWith(monthVal)) return false;
                 }
-
                 if (startDate && itemDate < startDate) return false;
                 if (endDate && itemDate > endDate) return false;
-
                 return true;
             });
         }
@@ -1135,20 +1123,24 @@
             }
 
             paginatedData.forEach(item => {
+                // ส่วนของช่อง ก่อนแก้ไข (มีปุ่มดู และปุ่มแก้ไข/เพิ่ม)
                 const beforeImageButton = item.before_image_url 
-                    ? `<div class="flex items-center justify-center">
-                           <button onclick="openImageModal('${item.before_image_url}')" class="text-xs bg-blue-600/25 hover:bg-blue-600 text-blue-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพก่อนแก้ไข">🖼️ ดู</button>
+                    ? `<div class="flex items-center justify-center gap-1">
+                           <button onclick="openImageModal('${item.before_image_url}')" class="text-xs bg-blue-600/25 hover:bg-blue-600 text-blue-400 hover:text-white p-1 rounded transition" title="ดูรูปภาพ">🖼️ ดู</button>
+                           <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-amber-600/25 hover:bg-amber-600 text-amber-400 hover:text-white p-1 rounded transition" title="เปลี่ยนรูปภาพ">✏️ แก้ไข</button>
                        </div>`
                     : `<div class="flex items-center justify-center">
-                           <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพก่อนแก้ไข">➕ เพิ่ม</button>
+                           <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white px-2 py-1 rounded transition border border-gray-700" title="เพิ่มรูปภาพ">➕ เพิ่ม</button>
                        </div>`;
 
+                // ส่วนของช่อง หลังแก้ไข (มีปุ่มดู และปุ่มแก้ไข/เพิ่ม)
                 const afterImageButton = item.after_image_url 
-                    ? `<div class="flex items-center justify-center">
-                           <button onclick="openImageModal('${item.after_image_url}')" class="text-xs bg-emerald-600/25 hover:bg-emerald-600 text-emerald-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพหลังแก้ไข">🖼️ ดู</button>
+                    ? `<div class="flex items-center justify-center gap-1">
+                           <button onclick="openImageModal('${item.after_image_url}')" class="text-xs bg-emerald-600/25 hover:bg-emerald-600 text-emerald-400 hover:text-white p-1 rounded transition" title="ดูรูปภาพ">🖼️ ดู</button>
+                           <button onclick="openUploadModal(${item.id}, 'after')" class="text-xs bg-amber-600/25 hover:bg-amber-600 text-amber-400 hover:text-white p-1 rounded transition" title="เปลี่ยนรูปภาพ">✏️ แก้ไข</button>
                        </div>`
                     : `<div class="flex items-center justify-center">
-                           <button onclick="openUploadModal(${item.id}, 'after')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพหลังแก้ไข">➕ เพิ่ม</button>
+                           <button onclick="openUploadModal(${item.id}, 'after')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white px-2 py-1 rounded transition border border-gray-700" title="เพิ่มรูปภาพ">➕ เพิ่ม</button>
                        </div>`;
 
                 tbody.innerHTML += `
@@ -1243,9 +1235,7 @@
                     maintainAspectRatio: false,
                     tension: 0.3,
                     spanGaps: true,
-                    plugins: {
-                        legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } }
-                    },
+                    plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } } },
                     scales: {
                         x: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' } },
                         y: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' }, title: { display: true, text: 'Downtime (นาที)', color: '#6b7280' } }
@@ -1287,35 +1277,19 @@
                                 label: function(context) {
                                     let sum = context.dataset.data.reduce((a, b) => a + b, 0);
                                     let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
-                                    
                                     if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
                                         let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
-                                        hiddenIssuesDetail.forEach(item => {
-                                            details.push(` - ${item.issue}: ${item.count} ครั้ง`);
-                                        });
+                                        hiddenIssuesDetail.forEach(item => { details.push(` - ${item.issue}: ${item.count} ครั้ง`); });
                                         return details;
                                     }
-
                                     return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
                                 }
                             }
                         }
                     },
                     scales: {
-                        x: { 
-                            ticks: { 
-                                color: '#9ca3af', 
-                                font: { size: 12 }, 
-                                maxRotation: 25, 
-                                minRotation: 0 
-                            }, 
-                            grid: { display: false } 
-                        },
-                        y: { 
-                            beginAtZero: true, 
-                            ticks: { color: '#9ca3af', precision: 0 }, 
-                            grid: { color: '#242b35' } 
-                        }
+                        x: { ticks: { color: '#9ca3af', font: { size: 12 }, maxRotation: 25, minRotation: 0 }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { color: '#9ca3af', precision: 0 }, grid: { color: '#242b35' } }
                     }
                 },
                 plugins: [ChartDataLabels]
@@ -1332,7 +1306,6 @@
                     const totalMins = data
                         .filter(item => item.date === d && item.line === lineName)
                         .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
-                    
                     return totalMins === 0 ? null : totalMins;
                 });
 
@@ -1360,7 +1333,6 @@
             });
 
             let sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
-
             let finalLabels = [];
             let finalCounts = [];
             hiddenIssuesDetail = [];
@@ -1375,7 +1347,6 @@
                     finalLabels.push(sortedIssues[i][0]);
                     finalCounts.push(sortedIssues[i][1]);
                 }
-                
                 let othersSum = 0;
                 for (let i = 4; i < sortedIssues.length; i++) {
                     othersSum += sortedIssues[i][1];
