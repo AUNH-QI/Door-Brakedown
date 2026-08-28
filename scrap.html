@@ -35,7 +35,7 @@
                 </h1>
             </div>
 
-            <!-- Filters Control (Matching index.html style) -->
+            <!-- Filters Control -->
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Quick Date Range Buttons -->
                 <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
@@ -75,7 +75,7 @@
             </div>
         </header>
 
-        <!-- Line Filter Buttons Bar (Matching index.html style) -->
+        <!-- Line Filter Buttons Bar -->
         <div class="bg-slate-900/60 border-b border-slate-800 px-6 py-3 flex flex-wrap items-center gap-2">
             <span class="text-xs text-slate-400 font-medium mr-2">เลือก Line</span>
             <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
@@ -90,7 +90,7 @@
         <!-- Main Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
             
-            <!-- KPI Top Cards with Dynamic Highlight -->
+            <!-- KPI Top Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div id="card-adoor" class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: A-Door (ชิ้นงานเสีย)</div>
@@ -110,30 +110,22 @@
                 </div>
             </div>
 
-            <!-- Charts Section 1 -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Bar Chart: Top 5 Problems with DataLabels -->
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+            <!-- Charts Section 1: Trend Line Chart (แทนที่ตำแหน่งเดิมของ Top 5 ปัญหา) -->
+            <div class="grid grid-cols-1 gap-6">
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
-                        <span class="text-xs text-slate-400">สถิติสะสม</span>
+                        <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-line text-amber-500 mr-2"></i> แนวโน้มจำนวนชิ้นงานเสียแยกตามวัน (Daily Scrap Trend)</h2>
+                        <span class="text-xs text-slate-400">สถิติตามช่วงเวลา</span>
                     </div>
                     <div class="h-72 relative">
-                        <canvas id="topProblemsChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Doughnut Chart: Department -->
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-                    <h2 class="text-sm font-bold text-white mb-2">Tickets By Department (จำนวนสะสมตามแผนก)</h2>
-                    <div class="h-64 relative flex items-center justify-center">
-                        <canvas id="departmentChart"></canvas>
+                        <canvas id="trendChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Top 5 Models Table -->
-            <div class="grid grid-cols-1 gap-6">
+            <!-- Charts Section 2: Top 5 Models (50%) & Top 5 Problems Bar Chart (50%) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Top 5 Models Table (50%) -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
                     <div>
                         <h2 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i> Top 5 อันดับ Model ที่เสียเยอะที่สุด</h2>
@@ -149,6 +141,47 @@
                                 </thead>
                                 <tbody id="topModelsTableBody" class="divide-y divide-slate-800"></tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top 5 Problems Bar Chart (50% - ย้ายมาอยู่ข้างๆ) -->
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
+                        <span class="text-xs text-slate-400">สถิติสะสม</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="topProblemsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Doughnut Chart & Additional Info Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Doughnut Chart: Department (1 Col) -->
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
+                    <h2 class="text-sm font-bold text-white mb-2">Tickets By Department (จำนวนสะสมตามแผนก)</h2>
+                    <div class="h-60 relative flex items-center justify-center">
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Quick Summary or Stats Box (2 Cols) -->
+                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-2">
+                    <h2 class="text-sm font-bold text-white mb-2"><i class="fa-solid fa-circle-info text-cyan-400 mr-2"></i> ข้อมูลสรุปภาพรวมระบบ</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-auto">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                            <div class="text-slate-400 text-xs">รายการ Log ทั้งหมด</div>
+                            <div class="text-xl font-bold text-white mt-1" id="stat-total-logs">0</div>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                            <div class="text-slate-400 text-xs">จำนวนชิ้นงานเสียรวม</div>
+                            <div class="text-xl font-bold text-rose-400 mt-1" id="stat-total-qty">0 Pcs</div>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                            <div class="text-slate-400 text-xs">Model ที่พบปัญหามากที่สุด</div>
+                            <div class="text-sm font-bold text-amber-400 mt-1 truncate" id="stat-top-model">-</div>
                         </div>
                     </div>
                 </div>
@@ -209,7 +242,7 @@
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let topProblemsChart, deptChart;
+        let topProblemsChart, deptChart, trendChart;
         let allData = [];
         let currentLineFilter = '';
         let currentPage = 1;
@@ -220,10 +253,47 @@
             fetchScrapData();
         });
 
-        // ลงทะเบียน plugin datalabels ให้ Chart.js
         Chart.register(ChartDataLabels);
 
         function initCharts() {
+            // Trend Line Chart (กราฟเส้นแสดงแนวโน้มรายวัน)
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'จำนวนชิ้นงานเสีย (Pcs)',
+                        data: [],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#f59e0b',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#cbd5e1',
+                            align: 'top',
+                            font: { family: 'Prompt', size: 10 },
+                            formatter: (value) => value > 0 ? value : ''
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
+                    }
+                }
+            });
+
+            // Top Problems Bar Chart
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
                 type: 'bar',
@@ -245,17 +315,18 @@
                             color: '#ffffff',
                             anchor: 'end',
                             align: 'top',
-                            font: { family: 'Prompt', weight: 'bold', size: 11 },
+                            font: { family: 'Prompt', weight: 'bold', size: 10 },
                             formatter: (value) => value
                         }
                     }, 
                     scales: { 
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } }, 
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' }, maxRotation: 20 } }, 
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true } 
                     } 
                 }
             });
 
+            // Department Doughnut Chart
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
@@ -271,7 +342,7 @@
                     responsive: true, 
                     maintainAspectRatio: false, 
                     plugins: { 
-                        legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt' } } },
+                        legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Prompt', size: 10 } } },
                         datalabels: { display: false }
                     } 
                 }
@@ -295,7 +366,6 @@
             }
         }
 
-        // จัดการปุ่มช่วงเวลาด่วน (Preset)
         function setDatePreset(type) {
             document.querySelectorAll('.preset-btn').forEach(btn => {
                 btn.className = "preset-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
@@ -304,7 +374,6 @@
 
             const today = new Date();
             let startStr = '', endStr = '';
-
             const formatDate = (d) => d.toISOString().split('T')[0];
 
             if (type === 'today') {
@@ -335,7 +404,6 @@
             });
         }
 
-        // ตั้งค่า Line Filter พร้อมไฮไลต์ KPI Cards
         function setLineFilter(lineValue) {
             currentLineFilter = lineValue;
             
@@ -353,7 +421,6 @@
             applyFilters();
         }
 
-        // ระบบไฮไลต์ KPI Card ตาม Line ที่เลือก
         function highlightKpiCard(line) {
             const cards = {
                 'A-Door': document.getElementById('card-adoor'),
@@ -365,15 +432,12 @@
             Object.keys(cards).forEach(key => {
                 const card = cards[key];
                 if (!line || line === '') {
-                    // คืนค่าปกติทั้งหมดเมื่อเลือก All
                     card.classList.remove('ring-2', 'ring-orange-500', 'scale-105', 'shadow-2xl');
                     card.style.opacity = '1';
                 } else if (key === line || (line === 'DND' && key === 'DND')) {
-                    // ไฮไลต์การ์ดที่เลือก
                     card.classList.add('ring-2', 'ring-orange-500', 'scale-105', 'shadow-2xl');
                     card.style.opacity = '1';
                 } else {
-                    // หรี่การ์ดอื่นลงเล็กน้อยเพื่อให้เด่นชัด
                     card.classList.remove('ring-2', 'ring-orange-500', 'scale-105', 'shadow-2xl');
                     card.style.opacity = '0.4';
                 }
@@ -422,6 +486,33 @@
             updateTopModelsTable(data);
             updateChartsData(data);
             renderTableWithPagination(data);
+            updateExtraStats(data);
+        }
+
+        function updateExtraStats(data) {
+            const totalLogs = data.length;
+            let totalQty = 0;
+            const modelMap = {};
+
+            data.forEach(item => {
+                const qty = parseInt(item.quantity) || 0;
+                totalQty += qty;
+                const m = item.model || 'Unknown';
+                modelMap[m] = (modelMap[m] || 0) + qty;
+            });
+
+            let topModel = '-';
+            let maxQty = -1;
+            for (const [m, q] of Object.entries(modelMap)) {
+                if (q > maxQty) {
+                    maxQty = q;
+                    topModel = m;
+                }
+            }
+
+            document.getElementById('stat-total-logs').innerText = totalLogs.toLocaleString() + ' รายการ';
+            document.getElementById('stat-total-qty').innerText = totalQty.toLocaleString() + ' Pcs';
+            document.getElementById('stat-top-model').innerText = topModel;
         }
 
         function renderTableWithPagination(data) {
@@ -564,6 +655,21 @@
         }
 
         function updateChartsData(data) {
+            // 1. Trend Line Chart (จำนวนเสียแยกตามวัน)
+            const dateMap = {};
+            data.forEach(item => {
+                if (!item.date) return;
+                const d = item.date;
+                const qty = parseInt(item.quantity) || 0;
+                dateMap[d] = (dateMap[d] || 0) + qty;
+            });
+
+            const sortedDates = Object.keys(dateMap).sort();
+            trendChart.data.labels = sortedDates;
+            trendChart.data.datasets[0].data = sortedDates.map(d => dateMap[d]);
+            trendChart.update();
+
+            // 2. Top Problems Bar Chart
             const problemCounts = {};
             data.forEach(item => {
                 const prob = item.problem || 'อื่นๆ';
@@ -577,6 +683,7 @@
             topProblemsChart.data.datasets[0].data = sortedProbs.map(x => x.count);
             topProblemsChart.update();
 
+            // 3. Department Doughnut Chart
             const deptQtyMap = {};
             data.forEach(item => {
                 const dept = item.department || 'Unassigned';
