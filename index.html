@@ -904,32 +904,32 @@
 
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
-                type: 'pie', // เปลี่ยนจาก bar เป็น pie ตามสัดส่วน 30%
+                type: 'bar',
                 data: { 
                     labels: [], 
                     datasets: [{ 
+                        label: 'จำนวนครั้ง',
                         data: [], 
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#64748b'], 
-                        borderWidth: 1,
-                        borderColor: '#181c24'
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], 
+                        borderRadius: 4
                     }] 
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { 
-                            position: 'right', 
-                            labels: { color: '#9ca3af', font: { size: 10 }, boxWidth: 12 } 
-                        },
+                        legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
                             font: { size: 11, weight: 'bold' },
-                            formatter: (value, context) => {
-                                let sum = context.dataset.data.reduce((a, b) => a + b, 0);
-                                let percentage = sum > 0 ? ((value * 100) / sum).toFixed(1) + '%' : '0%';
-                                return value > 0 ? percentage : '';
-                            }
+                            anchor: 'center',
+                            align: 'center',
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            borderColor: '#000000',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            padding: 4,
+                            formatter: (value) => value > 0 ? value.toLocaleString() + ' ครั้ง' : ''
                         },
                         tooltip: {
                             callbacks: {
@@ -948,6 +948,22 @@
                                     return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
                                 }
                             }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            ticks: { 
+                                color: '#9ca3af', 
+                                font: { size: 12 }, 
+                                maxRotation: 25, 
+                                minRotation: 0 
+                            }, 
+                            grid: { display: false } 
+                        },
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { color: '#9ca3af', precision: 0 }, 
+                            grid: { color: '#242b35' } 
                         }
                     }
                 },
@@ -1030,4 +1046,3 @@
     </script>
 </body>
 </html>
-```[cite: 3]
