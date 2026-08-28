@@ -258,14 +258,16 @@
                 <label class="block text-gray-400 mb-1">cause</label>
                 <input type="text" id="inputCause" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
-            <div class="col-span-2">
-    <label class="block text-gray-400 mb-1">downtime (min)</label>
-    <input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-</div>
-<div class="col-span-2">
-    <label class="block text-gray-400 mb-1">fix</label>
-    <input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-</div>
+            <div class="col-span-2 md:col-span-4 flex gap-3">
+            <div class="w-[30%]">
+                <label class="block text-gray-400 mb-1">downtime (min)</label>
+                <input type="number" id="inputDowntime" min="0" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            <div class="w-[70%]">
+                <label class="block text-gray-400 mb-1">fix</label>
+                <input type="text" id="inputFix" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+            </div>
+            </div>
             <div class="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
                 <button type="button" onclick="toggleForm()" class="bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded text-white">ยกเลิก</button>
                 <button type="submit" id="submitBtn" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white">บันทึกข้อมูล</button>
