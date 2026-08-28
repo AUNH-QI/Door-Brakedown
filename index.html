@@ -564,17 +564,39 @@
         }
 
         async function executeDelete(id) {
-            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-                try {
-                    const { error } = await supabaseClient.from('breakdown_logs').delete().eq('id', id);
-                    if (error) throw error;
-                    await fetchLogs();
-                } catch (err) {
-                    console.error("Error deleting log:", err);
-                    alert("ลบข้อมูลไม่สำเร็จ: " + err.message);
+    if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+        try {
+            // 1. ค้นหาข้อมูลแถวที่จะลบก่อน เพื่อดึง URL ของรูปภาพ
+            const targetLog = logsData.find(item => item.id === id);
+            
+            // 2. ถ้ามีรูปภาพแนบมาด้วย ให้ทำการลบออกจาก Supabase Storage ก่อน
+            if (targetLog && targetLog.image_url) {
+                // ตัดเอาเฉพาะชื่อไฟล์จาก Public URL
+                const urlParts = targetLog.image_url.split('/');
+                const fileName = urlParts[urlParts.length - 1];
+                
+                if (fileName) {
+                    const { error: storageError } = await supabaseClient.storage
+                        .from('issue-images')
+                        .remove([fileName]);
+                        
+                    if (storageError) {
+                        console.error("ไม่สามารถลบไฟล์รูปใน Storage ได้:", storageError.message);
+                    }
                 }
             }
+
+            // 3. ลบข้อมูลแถวออกจากตาราง breakdown_logs ตามปกติ
+            const { error } = await supabaseClient.from('breakdown_logs').delete().eq('id', id);
+            if (error) throw error;
+            
+            await fetchLogs();
+        } catch (err) {
+            console.error("Error deleting log:", err);
+            alert("ลบข้อมูลไม่สำเร็จ: " + err.message);
         }
+    }
+}
 
         async function addNewLog(event) {
             event.preventDefault();
