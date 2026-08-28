@@ -275,7 +275,7 @@
                 }
             });
 
-            // Top 5 Problems Bar Chart
+            // Top 5 Problems Bar Chart (ตัวเลขอยู่ด้านในตรงกลางแท่งกราฟ)
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
                 type: 'bar',
@@ -298,11 +298,6 @@
                             anchor: 'center',
                             align: 'center',
                             font: { family: 'Prompt', weight: 'bold', size: 12 },
-                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                            borderColor: '#ffffff',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            padding: 6,
                             formatter: (value) => value > 0 ? `${value} เคส` : ''
                         }
                     }, 
@@ -313,7 +308,7 @@
                 }
             });
 
-            // Department Doughnut Chart
+            // Department Doughnut Chart (ตัวเลขและชื่ออยู่บนชิ้นโดนัท)
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
@@ -334,13 +329,13 @@
                         datalabels: {
                             color: '#ffffff',
                             font: { family: 'Prompt', weight: 'bold', size: 11 },
-                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
                             borderRadius: 4,
                             padding: 4,
                             formatter: (value, context) => {
                                 if (value === 0) return '';
                                 const label = context.chart.data.labels[context.dataIndex] || '';
-                                return `${label}: ${value}`;
+                                return `${label}\n${value} pcs`;
                             },
                             textAlign: 'center'
                         }
@@ -444,7 +439,6 @@
             });
         }
 
-        // ฟังก์ชันล้างตัวกรองทั้งหมด (Reset Filters)
         function resetAllFilters() {
             currentLineFilter = '';
             document.querySelectorAll('.line-btn').forEach(btn => {
