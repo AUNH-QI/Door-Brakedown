@@ -269,7 +269,7 @@
                 </div>
             </div>
             
-            <!-- เพิ่มช่องอัปโหลดรูปภาพ -->
+            <!-- ช่องอัปโหลดรูปภาพ -->
             <div class="col-span-2 md:col-span-4">
                 <label class="block text-gray-400 mb-1">แนบรูปภาพปัญหา (ถ้ามี)</label>
                 <input type="file" id="inputImageFile" accept="image/*" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
@@ -333,6 +333,21 @@
         </div>
     </div>
 
+    <!-- Modal สำหรับอัปโหลดรูปภาพย้อนหลัง -->
+    <div id="uploadImageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-sm font-bold text-orange-500 mb-2">เพิ่มรูปภาพ Log ย้อนหลัง</h3>
+            <p class="text-xs text-gray-400 mb-4">เลือกไฟล์รูปภาพที่ต้องการอัปโหลดสำหรับรายการนี้</p>
+            <form onsubmit="handleUploadExistingLog(event)">
+                <input type="file" id="existingImageFile" accept="image/*" required class="w-full bg-[#242b35] p-2 rounded border border-gray-600 text-white text-xs mb-4 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeUploadModal()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-1.5 rounded text-xs transition">ยกเลิก</button>
+                    <button type="submit" id="uploadSubmitBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded text-xs font-semibold transition">อัปโหลด</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
@@ -345,6 +360,7 @@
         let hiddenIssuesDetail = []; 
         let currentPage = 1;
         let targetId = null;    
+        let selectedLogIdForImage = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             initCharts();
@@ -564,39 +580,35 @@
         }
 
         async function executeDelete(id) {
-    if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-        try {
-            // 1. ค้นหาข้อมูลแถวที่จะลบก่อน เพื่อดึง URL ของรูปภาพ
-            const targetLog = logsData.find(item => item.id === id);
-            
-            // 2. ถ้ามีรูปภาพแนบมาด้วย ให้ทำการลบออกจาก Supabase Storage ก่อน
-            if (targetLog && targetLog.image_url) {
-                // ตัดเอาเฉพาะชื่อไฟล์จาก Public URL
-                const urlParts = targetLog.image_url.split('/');
-                const fileName = urlParts[urlParts.length - 1];
-                
-                if (fileName) {
-                    const { error: storageError } = await supabaseClient.storage
-                        .from('issue-images')
-                        .remove([fileName]);
+            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                try {
+                    const targetLog = logsData.find(item => item.id === id);
+                    
+                    if (targetLog && targetLog.image_url) {
+                        const urlParts = targetLog.image_url.split('/');
+                        const fileName = urlParts[urlParts.length - 1];
                         
-                    if (storageError) {
-                        console.error("ไม่สามารถลบไฟล์รูปใน Storage ได้:", storageError.message);
+                        if (fileName) {
+                            const { error: storageError } = await supabaseClient.storage
+                                .from('issue-images')
+                                .remove([fileName]);
+                                
+                            if (storageError) {
+                                console.error("ไม่สามารถลบไฟล์รูปใน Storage ได้:", storageError.message);
+                            }
+                        }
                     }
+
+                    const { error } = await supabaseClient.from('breakdown_logs').delete().eq('id', id);
+                    if (error) throw error;
+                    
+                    await fetchLogs();
+                } catch (err) {
+                    console.error("Error deleting log:", err);
+                    alert("ลบข้อมูลไม่สำเร็จ: " + err.message);
                 }
             }
-
-            // 3. ลบข้อมูลแถวออกจากตาราง breakdown_logs ตามปกติ
-            const { error } = await supabaseClient.from('breakdown_logs').delete().eq('id', id);
-            if (error) throw error;
-            
-            await fetchLogs();
-        } catch (err) {
-            console.error("Error deleting log:", err);
-            alert("ลบข้อมูลไม่สำเร็จ: " + err.message);
         }
-    }
-}
 
         async function addNewLog(event) {
             event.preventDefault();
@@ -608,13 +620,12 @@
             const fileInput = document.getElementById('inputImageFile');
             let imageUrl = '';
 
-            // อัปโหลดรูปภาพไปที่ Supabase Storage (ถ้ามีการเลือกไฟล์)
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-                const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                const { error: uploadError } = await supabaseClient.storage
                     .from('issue-images')
                     .upload(fileName, file);
 
@@ -662,6 +673,63 @@
                 alert("บันทึกข้อมูลไม่สำเร็จ: " + err.message);
             } finally {
                 btn.innerText = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        function openUploadModal(id) {
+            selectedLogIdForImage = id;
+            document.getElementById('existingImageFile').value = '';
+            document.getElementById('uploadImageModal').classList.remove('hidden');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadImageModal').classList.add('hidden');
+            selectedLogIdForImage = null;
+        }
+
+        async function handleUploadExistingLog(event) {
+            event.preventDefault();
+            if (!selectedLogIdForImage) return;
+
+            const fileInput = document.getElementById('existingImageFile');
+            if (fileInput.files.length === 0) return;
+
+            const btn = document.getElementById('uploadSubmitBtn');
+            btn.innerText = 'กำลังอัปโหลด...';
+            btn.disabled = true;
+
+            try {
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('issue-images')
+                    .upload(fileName, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: publicURLData } = supabaseClient.storage
+                    .from('issue-images')
+                    .getPublicUrl(fileName);
+
+                const imageUrl = publicURLData.publicUrl;
+
+                const { error: updateError } = await supabaseClient
+                    .from('breakdown_logs')
+                    .update({ image_url: imageUrl })
+                    .eq('id', selectedLogIdForImage);
+
+                if (updateError) throw updateError;
+
+                closeUploadModal();
+                await fetchLogs();
+            } catch (err) {
+                console.error("Error uploading image:", err);
+                alert("อัปโหลดรูปไม่สำเร็จ: " + err.message);
+            } finally {
+                btn.innerText = 'อัปโหลด';
                 btn.disabled = false;
             }
         }
@@ -881,8 +949,12 @@
 
             paginatedData.forEach(item => {
                 const imageButton = item.image_url 
-                    ? `<button onclick="openImageModal('${item.image_url}')" class="text-xs bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white px-2.5 py-1 rounded transition" title="View Image">🖼️ ดูรูป</button>`
-                    : '<span class="text-gray-600">-</span>';
+                    ? `<div class="flex items-center justify-center">
+                           <button onclick="openImageModal('${item.image_url}')" class="text-xs bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white p-1.5 rounded transition" title="ดูรูปภาพ">🖼️</button>
+                       </div>`
+                    : `<div class="flex items-center justify-center">
+                           <button onclick="openUploadModal(${item.id})" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white p-1.5 rounded transition border border-gray-700" title="เพิ่มรูปภาพ">➕</button>
+                       </div>`;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
