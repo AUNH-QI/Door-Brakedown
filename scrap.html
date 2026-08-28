@@ -35,7 +35,7 @@
                 </h1>
             </div>
 
-            <!-- Filters Control (รวมปุ่มกรอง Line และตัวกรองเวลามาไว้ด้วยกัน) -->
+            <!-- Filters Control -->
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Line Filter Group -->
                 <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
@@ -269,7 +269,7 @@
                 }
             });
 
-            // Top Problems Bar Chart
+            // Top Problems Bar Chart (ปรับ Label ให้อยู่ข้างในแท่งกราฟ มองเห็นชัดเจน)
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
                 type: 'bar',
@@ -289,10 +289,10 @@
                         legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
-                            anchor: 'end',
-                            align: 'top',
-                            font: { family: 'Prompt', weight: 'bold', size: 10 },
-                            formatter: (value) => value
+                            anchor: 'center', // ให้อยู่กึ่งกลางหรือในแท่งกราฟ
+                            align: 'center',  // จัดกึ่งกลางแนวตั้ง/แนวนอน
+                            font: { family: 'Prompt', weight: 'bold', size: 11 },
+                            formatter: (value) => value > 0 ? value : ''
                         }
                     }, 
                     scales: { 
@@ -302,7 +302,7 @@
                 }
             });
 
-            // Department Doughnut Chart
+            // Department Doughnut Chart (ตัด Legend ออก และแสดง Label ชื่อพร้อมค่าในตัวโดนัท)
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
@@ -311,15 +311,25 @@
                     datasets: [{ 
                         data: [], 
                         backgroundColor: ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'], 
-                        borderWidth: 0 
+                        borderWidth: 2,
+                        borderColor: '#0f172a'
                     }] 
                 },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
                     plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 12, color: '#94a3b8', font: { family: 'Prompt', size: 10 } } },
-                        datalabels: { display: false }
+                        legend: { display: false }, // ตัด Legend ออกตามต้องการ
+                        datalabels: {
+                            color: '#ffffff',
+                            font: { family: 'Prompt', weight: 'bold', size: 11 },
+                            formatter: (value, context) => {
+                                if (value === 0) return '';
+                                const label = context.chart.data.labels[context.dataIndex] || '';
+                                return `${label}\n(${value})`; // แสดงทั้งชื่อย่อหมวดหมู่และตัวเลขในวงเล็บ
+                            },
+                            textAlign: 'center'
+                        }
                     } 
                 }
             });
