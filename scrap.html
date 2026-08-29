@@ -63,22 +63,10 @@
                     <input type="date" id="endDate" onchange="clearPresetActive(); applyFilters();" class="bg-transparent text-xs text-slate-900 outline-none cursor-pointer">
                 </div>
 
-                <!-- Month Dropdown -->
+                <!-- Month Dropdown (Dynamic) -->
                 <div class="flex flex-col">
                     <select id="filterMonth" onchange="applyFilters()" class="bg-white text-xs text-slate-900 font-medium border border-slate-300 rounded-xl px-3 py-2 outline-none shadow-sm cursor-pointer">
                         <option value="">ทุกเดือน (All)</option>
-                        <option value="1">มกราคม</option>
-                        <option value="2">กุมภาพันธ์</option>
-                        <option value="3">มีนาคม</option>
-                        <option value="4">เมษายน</option>
-                        <option value="5">พฤษภาคม</option>
-                        <option value="6">มิถุนายน</option>
-                        <option value="7">กรกฎาคม</option>
-                        <option value="8">สิงหาคม</option>
-                        <option value="9">กันยายน</option>
-                        <option value="10">ตุลาคม</option>
-                        <option value="11">พฤศจิกายน</option>
-                        <option value="12">ธันวาคม</option>
                     </select>
                 </div>
 
@@ -264,7 +252,7 @@
                 }
             });
 
-            // Top 5 Problems Bar Chart (ตัวเลขอิสระอยู่ด้านในแท่ง + พื้นหลังสีดำ)
+            // Top 5 Problems Bar Chart
             const ctxTop = document.getElementById('topProblemsChart').getContext('2d');
             topProblemsChart = new Chart(ctxTop, {
                 type: 'bar',
@@ -299,12 +287,10 @@
                                     ctx.font = 'bold 11px Prompt';
                                     const textWidth = ctx.measureText(text).width;
                                     
-                                    // คำนวณตำแหน่งให้อยู่ด้านในแท่ง (ถัดจากขอบบนลงมาเล็กน้อย)
                                     const x = bar.x;
                                     const y = bar.y + 16; 
                                     
                                     ctx.save();
-                                    // วาดพื้นหลังกล่องสีดำทึบ
                                     ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
                                     ctx.strokeStyle = '#334155';
                                     ctx.lineWidth = 1;
@@ -314,7 +300,6 @@
                                     ctx.fill();
                                     ctx.stroke();
                                     
-                                    // วาดข้อความสีขาว
                                     ctx.fillStyle = '#ffffff';
                                     ctx.textAlign = 'center';
                                     ctx.textBaseline = 'middle';
@@ -327,7 +312,7 @@
                 }]
             });
 
-            // Department Doughnut Chart (พร้อมตัวเลขโชว์บนชิ้นโดนัทแบบเสถียร)
+            // Department Doughnut Chart
             const ctxDept = document.getElementById('departmentChart').getContext('2d');
             deptChart = new Chart(ctxDept, {
                 type: 'doughnut',
@@ -397,8 +382,47 @@
 
             if (data) {
                 allData = data;
+                populateMonthDropdown(); // เติมข้อมูลเดือนเฉพาะที่มีจริง
                 applyFilters();
             }
+        }
+
+        // ฟังก์ชันสร้างตัวเลือกเดือน-ปี เป็นชื่อเดือนภาษาไทย + ค.ศ. (เช่น สิงหาคม 2026)
+        function populateMonthDropdown() {
+            const monthSelect = document.getElementById('filterMonth');
+            const currentValue = monthSelect.value;
+            
+            monthSelect.innerHTML = '<option value="">ทุกเดือน (All)</option>';
+
+            const monthNames = [
+                "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+                "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+            ];
+
+            const availableMonths = new Set();
+            allData.forEach(item => {
+                if (!item.date) return;
+                const d = new Date(item.date);
+                const year = d.getFullYear();
+                const month = d.getMonth() + 1;
+                availableMonths.add(`${year}-${String(month).padStart(2, '0')}`);
+            });
+
+            // เรียงลำดับจากเก่าไปใหม่
+            const sortedMonths = Array.from(availableMonths).sort((a, b) => new Date(a) - new Date(b));
+
+            sortedMonths.forEach(ym => {
+                const [year, month] = ym.split('-');
+                const option = document.createElement('option');
+                option.value = ym; // ค่า value ยังคงเป็น "YYYY-MM" เพื่อใช้กรองข้อมูลได้อย่างถูกต้อง
+                
+                // แสดงผลเป็นชื่อเดือนภาษาไทยตามด้วยปี ค.ศ. (เช่น สิงหาคม 2026)
+                option.text = `${monthNames[parseInt(month) - 1]} ${year}`;
+                
+                monthSelect.appendChild(option);
+            });
+
+            monthSelect.value = currentValue;
         }
 
         function setDatePreset(type) {
@@ -499,7 +523,7 @@
         function applyFilters() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            const month = document.getElementById('filterMonth').value;
+            const monthYM = document.getElementById('filterMonth').value; // รับค่าเป็น "YYYY-MM"
             
             let filtered = allData;
 
@@ -513,11 +537,12 @@
                 });
             }
 
-            if (month) {
+            if (monthYM) {
                 filtered = filtered.filter(item => {
                     if (!item.date) return false;
-                    const itemMonth = new Date(item.date).getMonth() + 1;
-                    return itemMonth === parseInt(month);
+                    const d = new Date(item.date);
+                    const itemYM = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    return itemYM === monthYM;
                 });
             }
 
@@ -728,7 +753,7 @@
             const input = document.getElementById('searchLog').value.toLowerCase();
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            const month = document.getElementById('filterMonth').value;
+            const monthYM = document.getElementById('filterMonth').value;
             
             let filtered = allData;
 
@@ -739,10 +764,12 @@
                     return l === currentLineFilter;
                 });
             }
-            if (month) {
+            if (monthYM) {
                 filtered = filtered.filter(item => {
                     if (!item.date) return false;
-                    return (new Date(item.date).getMonth() + 1) === parseInt(month);
+                    const d = new Date(item.date);
+                    const itemYM = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    return itemYM === monthYM;
                 });
             }
             if (startDate) filtered = filtered.filter(item => item.date >= startDate);
