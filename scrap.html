@@ -84,19 +84,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div id="card-adoor" class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: A-Door (ชิ้นงานเสีย)</div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">pcs</span></div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">ฝา</span></div>
                 </div>
                 <div id="card-bdoor" class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: B-Door (ชิ้นงานเสีย)</div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">pcs</span></div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">ฝา</span></div>
                 </div>
                 <div id="card-cdoor" class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: C-Door (ชิ้นงานเสีย)</div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">pcs</span></div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">ฝา</span></div>
                 </div>
                 <div id="card-dnd" class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden transition-all">
                     <div class="text-slate-400 text-xs font-medium">Line: DND (ชิ้นงานเสีย)</div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">pcs</span></div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">ฝา</span></div>
                 </div>
             </div>
 
@@ -135,7 +135,7 @@
                                         <th class="p-2.5 rounded-l-lg">An.</th>
                                         <th class="p-2.5">Model</th>
                                         <th class="p-2.5">Line</th>
-                                        <th class="p-2.5 rounded-r-lg text-right">จำนวน (Pcs)</th>
+                                        <th class="p-2.5 rounded-r-lg text-right">จำนวน (ฝา)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="topModelsTableBody" class="divide-y divide-slate-800"></tbody>
@@ -230,7 +230,7 @@
                 data: {
                     labels: [],
                     datasets: [{
-                        label: 'จำนวนชิ้นงานเสีย (Pcs)',
+                        label: 'จำนวนชิ้นงานเสีย (ฝา)',
                         data: [],
                         borderColor: '#f59e0b',
                         backgroundColor: 'rgba(245, 158, 11, 0.1)',
@@ -348,7 +348,7 @@
                                 ctx.strokeStyle = '#334155';
                                 ctx.lineWidth = 1;
                                 
-                                const text = `${label}: ${value} pcs`;
+                                const text = `${label}: ${value} ฝา`;
                                 ctx.font = 'bold 10px Prompt';
                                 const textWidth = ctx.measureText(text).width;
                                 
@@ -382,12 +382,11 @@
 
             if (data) {
                 allData = data;
-                populateMonthDropdown(); // เติมข้อมูลเดือนเฉพาะที่มีจริง
+                populateMonthDropdown();
                 applyFilters();
             }
         }
 
-        // ฟังก์ชันสร้างตัวเลือกเดือน-ปี เป็นชื่อเดือนภาษาไทย + ค.ศ. (เช่น สิงหาคม 2026)
         function populateMonthDropdown() {
             const monthSelect = document.getElementById('filterMonth');
             const currentValue = monthSelect.value;
@@ -408,17 +407,13 @@
                 availableMonths.add(`${year}-${String(month).padStart(2, '0')}`);
             });
 
-            // เรียงลำดับจากเก่าไปใหม่
             const sortedMonths = Array.from(availableMonths).sort((a, b) => new Date(a) - new Date(b));
 
             sortedMonths.forEach(ym => {
                 const [year, month] = ym.split('-');
                 const option = document.createElement('option');
-                option.value = ym; // ค่า value ยังคงเป็น "YYYY-MM" เพื่อใช้กรองข้อมูลได้อย่างถูกต้อง
-                
-                // แสดงผลเป็นชื่อเดือนภาษาไทยตามด้วยปี ค.ศ. (เช่น สิงหาคม 2026)
+                option.value = ym;
                 option.text = `${monthNames[parseInt(month) - 1]} ${year}`;
-                
                 monthSelect.appendChild(option);
             });
 
@@ -523,7 +518,7 @@
         function applyFilters() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            const monthYM = document.getElementById('filterMonth').value; // รับค่าเป็น "YYYY-MM"
+            const monthYM = document.getElementById('filterMonth').value;
             
             let filtered = allData;
 
@@ -663,10 +658,11 @@
                 else if (lineName === 'DND' || lineName === 'DND Door') lineDND += qty;
             });
 
-            document.getElementById('kpi-adoor').innerHTML = `${lineA} <span class="text-sm font-normal text-blue-300">pcs</span>`;
-            document.getElementById('kpi-bdoor').innerHTML = `${lineB} <span class="text-sm font-normal text-purple-300">pcs</span>`;
-            document.getElementById('kpi-cdoor').innerHTML = `${lineC} <span class="text-sm font-normal text-emerald-300">pcs</span>`;
-            document.getElementById('kpi-dnd').innerHTML = `${lineDND} <span class="text-sm font-normal text-amber-300">pcs</span>`;
+            // เปลี่ยนหน่วย pcs เป็น ฝา ในการแสดงผลการ์ด KPI ด้านบน
+            document.getElementById('kpi-adoor').innerHTML = `${lineA} <span class="text-sm font-normal text-blue-300">ฝา</span>`;
+            document.getElementById('kpi-bdoor').innerHTML = `${lineB} <span class="text-sm font-normal text-purple-300">ฝา</span>`;
+            document.getElementById('kpi-cdoor').innerHTML = `${lineC} <span class="text-sm font-normal text-emerald-300">ฝา</span>`;
+            document.getElementById('kpi-dnd').innerHTML = `${lineDND} <span class="text-sm font-normal text-amber-300">ฝา</span>`;
         }
 
         function updateTopModelsTable(data) {
