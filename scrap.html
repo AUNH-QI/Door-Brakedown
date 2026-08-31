@@ -80,30 +80,30 @@
         <!-- Main Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
             
-            <!-- KPI Top Cards (Added onclick and cursor-pointer for multi-select filter) -->
+            <!-- KPI Top Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div id="card-adoor" onclick="toggleCardFilter('A-Door')" class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-blue-400">
+                <div id="card-adoor" onclick="toggleLineFilter('A-Door')" class="bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-blue-400">
                     <div class="text-slate-400 text-xs font-medium flex items-center justify-between">
                         <span>Line: A-Door (ชิ้นงานเสีย)</span>
                         <i class="fa-solid fa-filter text-[10px] text-blue-400 opacity-60"></i>
                     </div>
                     <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">ฝา</span></div>
                 </div>
-                <div id="card-bdoor" onclick="toggleCardFilter('B-Door')" class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-purple-400">
+                <div id="card-bdoor" onclick="toggleLineFilter('B-Door')" class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-purple-400">
                     <div class="text-slate-400 text-xs font-medium flex items-center justify-between">
                         <span>Line: B-Door (ชิ้นงานเสีย)</span>
                         <i class="fa-solid fa-filter text-[10px] text-purple-400 opacity-60"></i>
                     </div>
                     <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">ฝา</span></div>
                 </div>
-                <div id="card-cdoor" onclick="toggleCardFilter('C-Door')" class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-emerald-400">
+                <div id="card-cdoor" onclick="toggleLineFilter('C-Door')" class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-emerald-400">
                     <div class="text-slate-400 text-xs font-medium flex items-center justify-between">
                         <span>Line: C-Door (ชิ้นงานเสีย)</span>
                         <i class="fa-solid fa-filter text-[10px] text-emerald-400 opacity-60"></i>
                     </div>
                     <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">ฝา</span></div>
                 </div>
-                <div id="card-dnd" onclick="toggleCardFilter('DND')" class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-amber-400">
+                <div id="card-dnd" onclick="toggleLineFilter('DND')" class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-amber-400">
                     <div class="text-slate-400 text-xs font-medium flex items-center justify-between">
                         <span>Line: DND (ชิ้นงานเสีย)</span>
                         <i class="fa-solid fa-filter text-[10px] text-amber-400 opacity-60"></i>
@@ -112,9 +112,9 @@
                 </div>
             </div>
 
-            <!-- Charts Section 1: Trend Line Chart (70%) & Department Doughnut Chart (30%) -->
+            <!-- Charts Section 1 -->
             <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
-                <!-- Trend Line Chart (7 Col / 70%) -->
+                <!-- Trend Line Chart -->
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-7">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-line text-amber-500 mr-2"></i> แนวโน้มจำนวนชิ้นงานเสียแยกตามวัน (Daily Scrap Trend)</h2>
@@ -125,7 +125,7 @@
                     </div>
                 </div>
 
-                <!-- Doughnut Chart: Department (3 Col / 30%) -->
+                <!-- Doughnut Chart: Department -->
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-3">
                     <h2 class="text-sm font-bold text-white mb-2">Tickets By Department</h2>
                     <div class="h-64 relative flex items-center justify-center">
@@ -134,9 +134,9 @@
                 </div>
             </div>
 
-            <!-- Charts Section 2: Top 5 Models (50%) & Top 5 Problems Bar Chart (50%) -->
+            <!-- Charts Section 2 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Top 5 Models Table (50%) -->
+                <!-- Top 5 Models Table -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
                     <div>
                         <h2 class="text-base font-bold text-white mb-4"><i class="fa-solid fa-trophy text-amber-400 mr-2"></i> Top 5 อันดับ Model ที่เสียเยอะที่สุด</h2>
@@ -156,7 +156,7 @@
                     </div>
                 </div>
 
-                <!-- Top 5 Problems Bar Chart (50%) -->
+                <!-- Top 5 Problems Bar Chart -->
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-column text-blue-500 mr-2"></i> Top 5 ปัญหา Scrap ที่เกิดขึ้นบ่อยที่สุด</h2>
@@ -225,7 +225,7 @@
 
         let topProblemsChart, deptChart, trendChart;
         let allData = [];
-        let selectedLineFilters = []; // เปลี่ยนจาก string เดียว เป็น Array เพื่อรองรับการเลือกหลาย Line พร้อมกัน
+        let selectedLineFilters = []; // รองรับการเลือกหลาย Line พร้อมกัน
         let currentPage = 1;
         let rowsPerPage = 10;
 
@@ -470,48 +470,45 @@
             });
         }
 
-        // ฟังก์ชันกดปุ่ม Line ที่ Header (คลิกเปลี่ยนเพื่อดูเดี่ยว หรือกด All เพื่อล้าง)
+        // ฟังก์ชันจัดการการคลิกเลือก Line รองรับ Multi-select ทั้งจากปุ่มด้านบนและ KPI Cards ด้านล่าง
         function toggleLineFilter(lineValue) {
             if (lineValue === '') {
                 selectedLineFilters = [];
             } else {
-                selectedLineFilters = [lineValue];
-            }
-            updateLineUIState();
-            applyFilters();
-        }
-
-        // ฟังก์ชันคลิกที่ KPI Card เพื่อเพิ่ม/ลด Line ในการกรองแบบ Multi-select
-        function toggleCardFilter(lineValue) {
-            const index = selectedLineFilters.indexOf(lineValue);
-            if (index > -1) {
-                // ถ้ามีอยู่แล้ว ให้เอาออก (ยกเลิกการเลือก)
-                selectedLineFilters.splice(index, 1);
-            } else {
-                // ถ้ายังไม่มี ให้เพิ่มเข้าไปในรายการกรอง
-                selectedLineFilters.push(lineValue);
-            }
-            updateLineUIState();
-            applyFilters();
-        }
-
-        // อัปเดตการแสดงผลปุ่มที่ Header และกรอบสว่าง/จางที่ KPI Cards ตามค่า selectedLineFilters ปัจจุบัน
-        function updateLineUIState() {
-            // จัดการปุ่มที่ Header
-            document.querySelectorAll('.line-btn').forEach(btn => {
-                btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
-            });
-
-            if (selectedLineFilters.length === 0) {
-                document.getElementById('btn-line-all').className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
-            } else if (selectedLineFilters.length === 1) {
-                const targetBtn = document.getElementById(`btn-line-${selectedLineFilters[0]}`);
-                if (targetBtn) {
-                    targetBtn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
+                const index = selectedLineFilters.indexOf(lineValue);
+                if (index > -1) {
+                    selectedLineFilters.splice(index, 1); // ถ้ามีอยู่แล้วเอาออก
+                } else {
+                    selectedLineFilters.push(lineValue); // ถ้ายังไม่มีเพิ่มเข้าไป
                 }
             }
+            updateLineUIState();
+            applyFilters();
+        }
 
-            // จัดการไฮไลต์ที่ KPI Cards
+        // อัปเดตสถานะหน้าตาปุ่มด้านบนและ KPI Cards ให้สอดคล้องกัน
+        function updateLineUIState() {
+            // อัปเดตปุ่ม All ด้านบน
+            const btnAll = document.getElementById('btn-line-all');
+            if (selectedLineFilters.length === 0) {
+                btnAll.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
+            } else {
+                btnAll.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
+            }
+
+            // อัปเดตปุ่ม Line แต่ละตัวด้านบน
+            ['A-Door', 'B-Door', 'C-Door', 'DND'].forEach(line => {
+                const btn = document.getElementById(`btn-line-${line}`);
+                if (btn) {
+                    if (selectedLineFilters.includes(line)) {
+                        btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
+                    } else {
+                        btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
+                    }
+                }
+            });
+
+            // อัปเดตไฮไลต์ที่ KPI Cards ด้านล่าง
             const cards = {
                 'A-Door': document.getElementById('card-adoor'),
                 'B-Door': document.getElementById('card-bdoor'),
@@ -521,18 +518,16 @@
 
             Object.keys(cards).forEach(key => {
                 const card = cards[key];
+                if (!card) return;
                 const isSelected = selectedLineFilters.includes(key);
 
                 if (selectedLineFilters.length === 0) {
-                    // ถ้าไม่ได้เลือกอะไรเลย แสดงปกติทั้งหมด
                     card.classList.remove('ring-2', 'ring-orange-500', 'scale-[1.02]', 'shadow-2xl');
                     card.style.opacity = '1';
                 } else if (isSelected) {
-                    // ถ้า Card นี้ถูกเลือก ไฮไลต์ให้เด่นขึ้น
                     card.classList.add('ring-2', 'ring-orange-500', 'scale-[1.02]', 'shadow-2xl');
                     card.style.opacity = '1';
                 } else {
-                    // ถ้าไม่ได้เลือก หรี่แสงลง
                     card.classList.remove('ring-2', 'ring-orange-500', 'scale-[1.02]', 'shadow-2xl');
                     card.style.opacity = '0.4';
                 }
@@ -559,7 +554,6 @@
             
             let filtered = allData;
 
-            // กรองข้อมูลตาม Line ที่ถูกเลือก (รองรับทั้งแบบเลือกอันเดียวและหลายอันพร้อมกัน)
             if (selectedLineFilters.length > 0) {
                 filtered = filtered.filter(item => {
                     const l = (item.line || '').trim();
