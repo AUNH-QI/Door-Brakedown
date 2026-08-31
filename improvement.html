@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- ChartDataLabels Plugin CDN สำหรับแสดงตัวเลขบนกราฟ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
     <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- FontAwesome Icons -->
@@ -147,7 +149,7 @@
                         <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5">
                             <i class="fa-solid fa-plus"></i> เพิ่มข้อมูล
                         </button>
-                        <!-- เลือกจำนวนแถวการแสดงผล (Default 5 ตามที่ต้องการ) -->
+                        <!-- เลือกจำนวนแถวการแสดงผล -->
                         <div class="flex items-center gap-2 text-xs text-blue-300">
                             <span>แสดง:</span>
                             <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-[#131c31] text-xs text-white font-medium border border-blue-900/50 rounded-lg px-2.5 py-1.5 outline-none cursor-pointer">
@@ -296,7 +298,7 @@
         let selectedLineFilter = ''; 
         let selectedKpiLines = [];   
         let currentPage = 1;
-        let rowsPerPage = 5; // ตั้งค่าเริ่มต้นเป็น 5 รายการตามต้องการ
+        let rowsPerPage = 5;
 
         let newLogImages = {
             problem: [],
@@ -309,6 +311,9 @@
         });
 
         function initCharts() {
+            // ลงทะเบียน Plugin datalabels ทั่วโลก
+            Chart.register(ChartDataLabels);
+
             const ctxCategory = document.getElementById('categoryDoughnutChart').getContext('2d');
             categoryChart = new Chart(ctxCategory, {
                 type: 'doughnut',
@@ -324,7 +329,20 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Prompt', size: 10 } } } }
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Prompt', size: 10 } } },
+                        // ตั้งค่าการแสดงตัวเลขบนโดนัท พร้อมไฮไลท์พื้นหลัง
+                        datalabels: {
+                            color: '#ffffff',
+                            font: { family: 'Prompt', weight: 'bold', size: 12 },
+                            backgroundColor: '#0f172a',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            padding: 4,
+                            formatter: (value) => value > 0 ? value : ''
+                        }
+                    }
                 }
             });
 
@@ -343,7 +361,22 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        // ตั้งค่าการแสดงตัวเลขบนแท่งกราฟ พร้อมไฮไลท์พื้นหลัง
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#ffffff',
+                            font: { family: 'Prompt', weight: 'bold', size: 12 },
+                            backgroundColor: '#0f172a',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            padding: 4,
+                            formatter: (value) => value > 0 ? value : ''
+                        }
+                    },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
@@ -635,7 +668,6 @@
             }
         }
 
-        // ฟังก์ชันเรนเดอร์รูปภาพ (คลิกแล้วเปิด Lightbox Modal ในหน้า Dashboard แทนการเปิดแท็บใหม่)
         function renderImageThumbnails(images, rowId, type) {
             if (!images || images.length === 0) return `<span class="text-[10px] text-slate-500 px-1">ลากรูปมาวาง / กด Ctrl+V</span>`;
             return images.map((url, idx) => `
@@ -646,7 +678,6 @@
             `).join('');
         }
 
-        // ฟังก์ชันเปิด-ปิด Lightbox Modal
         function openLightbox(url) {
             const modal = document.getElementById('imageLightboxModal');
             const img = document.getElementById('lightboxImg');
@@ -906,8 +937,8 @@
         }
 
         function renderModalThumbnails(type) {
-            const container = document.getElementById(type === 'problem' ? 'add-prob-thumbs' : 'add-imp-thumbs');
-            const btnEl = document.getElementById(type === 'problem' ? 'add-prob-btn' : 'add-imp-btn');
+            let container = document.getElementById(type === 'problem' ? 'add-prob-thumbs' : 'add-imp-thumbs');
+            let btnEl = document.getElementById(type === 'problem' ? 'add-prob-btn' : 'add-imp-btn');
             
             container.innerHTML = newLogImages[type].map((url, idx) => `
                 <div class="relative group">
