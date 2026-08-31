@@ -177,7 +177,7 @@
     <!-- Script สำหรับจัดการ Dashboard และ Supabase Storage Upload (Drag & Drop / Ctrl+V) -->
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
+        const SUPABASE_KEY = 'sb_publishable_JSk7IBVoiTyRyY5M7Nj7iQ_jxD_d9JE';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let categoryChart, lineBarChart;
@@ -413,7 +413,6 @@
             lineBarChart.update();
         }
 
-        // Render ตาราง พร้อมฟังก์ชันจัดการอัปโหลด/แสดงผลรูปภาพจาก Supabase Bucket 'improvement-image' (รองรับสูงสุด 2 รูป, Drag & Drop, Ctrl+V)
         function renderTable(data) {
             const tbody = document.getElementById('improvementTableBody');
             tbody.innerHTML = '';
@@ -422,7 +421,6 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-950/30 transition";
 
-                // จัดการแปลงข้อมูลรูปภาพ (รองรับทั้งแบบ Array หรือ String เดี่ยว)
                 let probImages = [];
                 if (Array.isArray(row.picture_of_the_problem)) probImages = row.picture_of_the_problem;
                 else if (row.picture_of_the_problem) probImages = [row.picture_of_the_problem];
@@ -499,7 +497,6 @@
             }
         }
 
-        // ฟังก์ชันอัปโหลดรูปขึ้น Supabase Storage Bucket "improvement-image" และบันทึกลง Database
         async function uploadAndSaveImage(file, rowId, type) {
             const row = allData.find(r => r.id === rowId);
             if (!row) return;
@@ -531,7 +528,6 @@
             const publicUrl = publicURLData.publicUrl;
             currentImgs.push(publicUrl);
 
-            // อัปเดตข้อมูลลง Supabase Table
             const { error: updateError } = await supabaseClient
                 .from('improvement_logs')
                 .update({ [fieldName]: currentImgs })
