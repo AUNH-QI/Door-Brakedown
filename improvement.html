@@ -147,12 +147,12 @@
                         <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5">
                             <i class="fa-solid fa-plus"></i> เพิ่มข้อมูล
                         </button>
-                        <!-- เลือกจำนวนแถวการแสดงผล (ปรับเป็น 5, 10, 20, ทั้งหมด) -->
+                        <!-- เลือกจำนวนแถวการแสดงผล (Default 5 ตามที่ต้องการ) -->
                         <div class="flex items-center gap-2 text-xs text-blue-300">
                             <span>แสดง:</span>
                             <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-[#131c31] text-xs text-white font-medium border border-blue-900/50 rounded-lg px-2.5 py-1.5 outline-none cursor-pointer">
-                                <option value="5">5</option>
-                                <option value="10" selected>10</option>
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
                                 <option value="20">20</option>
                                 <option value="all">ทั้งหมด</option>
                             </select>
@@ -164,7 +164,6 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <!-- ปรับเพิ่ม padding ระหว่างคอลัมน์และบรรทัด (p-4 แทน p-3) -->
                     <table class="w-full text-left text-xs text-slate-300 border-separate border-spacing-y-2">
                         <thead class="bg-[#131c31] text-blue-300 uppercase font-semibold">
                             <tr>
@@ -192,7 +191,7 @@
         </main>
     </div>
 
-    <!-- Modal เพิ่มข้อมูล (ADD Modal) พร้อมรองรับลากวาง/Paste รูป -->
+    <!-- Modal เพิ่มข้อมูล (ADD Modal) -->
     <div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-[#0f172a] border border-blue-900/60 rounded-2xl w-full max-w-xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div class="flex items-center justify-between mb-4 pb-2 border-b border-blue-900/40">
@@ -224,7 +223,6 @@
                     <textarea id="addTheRisk" rows="2" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"></textarea>
                 </div>
 
-                <!-- ช่องเพิ่มรูป Picture of the Problem ใน Modal -->
                 <div>
                     <label class="block text-blue-300 font-medium mb-1">Picture of the Problem (สูงสุด 2 รูป)</label>
                     <div id="add-prob-container" class="flex items-center gap-2 flex-wrap min-h-[45px] p-2 bg-[#131c31] border border-dashed border-blue-900/60 rounded-xl"
@@ -251,7 +249,6 @@
                     <textarea id="addCauseOfRisk" rows="2" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"></textarea>
                 </div>
 
-                <!-- ช่องเพิ่มรูป Picture of the Improvement ใน Modal -->
                 <div>
                     <label class="block text-blue-300 font-medium mb-1">Picture of the Improvement (สูงสุด 2 รูป)</label>
                     <div id="add-imp-container" class="flex items-center gap-2 flex-wrap min-h-[45px] p-2 bg-[#131c31] border border-dashed border-blue-900/60 rounded-xl"
@@ -277,6 +274,16 @@
         </div>
     </div>
 
+    <!-- Modal สำหรับแสดงรูปภาพขนาดใหญ่ในหน้า Dashboard (Lightbox Modal) -->
+    <div id="imageLightboxModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeLightbox()">
+        <div class="relative max-w-4xl max-h-[90vh] flex items-center justify-center" onclick="event.stopPropagation()">
+            <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-slate-300 hover:text-white text-2xl font-bold bg-slate-800/80 hover:bg-rose-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <img id="lightboxImg" src="" class="max-w-full max-h-[85vh] object-contain rounded-2xl border border-blue-500/40 shadow-2xl" alt="Zoomed Image">
+        </div>
+    </div>
+
     <!-- Script หลักของระบบ -->
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
@@ -289,9 +296,8 @@
         let selectedLineFilter = ''; 
         let selectedKpiLines = [];   
         let currentPage = 1;
-        let rowsPerPage = 10;
+        let rowsPerPage = 5; // ตั้งค่าเริ่มต้นเป็น 5 รายการตามต้องการ
 
-        // ตัวแปรเก็บรูปภาพชั่วคราวตอนเพิ่มข้อมูลใหม่
         let newLogImages = {
             problem: [],
             improvement: []
@@ -629,20 +635,30 @@
             }
         }
 
-        // ฟังก์ชันเรนเดอร์รูปขนาดใหญ่ขึ้น (w-16 h-16 / 64x64px) พร้อมปุ่มลบ
+        // ฟังก์ชันเรนเดอร์รูปภาพ (คลิกแล้วเปิด Lightbox Modal ในหน้า Dashboard แทนการเปิดแท็บใหม่)
         function renderImageThumbnails(images, rowId, type) {
             if (!images || images.length === 0) return `<span class="text-[10px] text-slate-500 px-1">ลากรูปมาวาง / กด Ctrl+V</span>`;
             return images.map((url, idx) => `
                 <div class="relative group">
-                    <a href="${url}" target="_blank">
-                        <img src="${url}" class="w-16 h-16 object-cover rounded-xl border-2 border-blue-500/40 hover:scale-105 transition shadow-md" alt="img">
-                    </a>
+                    <img src="${url}" onclick="openLightbox('${url}')" class="w-16 h-16 object-cover rounded-xl border-2 border-blue-500/40 hover:scale-105 transition shadow-md cursor-pointer" alt="img">
                     <button onclick="removeImage(${rowId}, '${type}', ${idx})" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg" title="ลบรูป">×</button>
                 </div>
             `).join('');
         }
 
-        // ฟังก์ชันบีบอัดรูปภาพก่อนอัปโหลดให้อัตโนมัติ (Resize ด้านที่ยาวที่สุดไม่เกิน 1024px และปรับ Quality 0.8)
+        // ฟังก์ชันเปิด-ปิด Lightbox Modal
+        function openLightbox(url) {
+            const modal = document.getElementById('imageLightboxModal');
+            const img = document.getElementById('lightboxImg');
+            img.src = url;
+            modal.classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            const modal = document.getElementById('imageLightboxModal');
+            modal.classList.add('hidden');
+        }
+
         function compressImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.8) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -677,7 +693,6 @@
                                 reject(new Error('Canvas to Blob failed'));
                                 return;
                             }
-                            // สร้างไฟล์ใหม่จาก Blob ที่ถูกบีบอัดแล้ว
                             const compressedFile = new File([blob], file.name, {
                                 type: 'image/jpeg',
                                 lastModified: Date.now()
@@ -731,9 +746,7 @@
             }
 
             try {
-                // ทำการบีบอัดรูปก่อนอัปโหลด
                 const compressedFile = await compressImage(file);
-
                 const fileName = `log_${rowId}_${type}_${Date.now()}.jpg`;
                 const { error: uploadError } = await supabaseClient.storage
                     .from('improvement-image')
@@ -768,7 +781,6 @@
             }
         }
 
-        // ฟังก์ชันลบรูปทั้งบนตาราง log และลบไฟล์ออกจาก Supabase Storage โดยอัตโนมัติ
         async function removeImage(rowId, type, index) {
             if (!confirm('ต้องการลบรูปนี้ใช่หรือไม่? (รูปจะถูกลบออกจาก Storage ทันที)')) return;
             const row = allData.find(r => r.id === rowId);
@@ -780,7 +792,6 @@
             
             const targetUrl = currentImgs[index];
             
-            // ดึงชื่อไฟล์ (file path) จาก Public URL เพื่อลบออกจาก Supabase Storage
             if (targetUrl) {
                 try {
                     const urlObj = new URL(targetUrl);
@@ -822,7 +833,6 @@
             updateDashboard(filteredData);
         }
 
-        // --- ฟังก์ชันจัดการ Modal เพิ่มข้อมูล พร้อมบีบอัดรูปล่วงหน้า ---
         function openAddModal() {
             document.getElementById('addForm').reset();
             document.getElementById('addStartDate').value = new Date().toISOString().split('T')[0];
@@ -901,9 +911,7 @@
             
             container.innerHTML = newLogImages[type].map((url, idx) => `
                 <div class="relative group">
-                    <a href="${url}" target="_blank">
-                        <img src="${url}" class="w-16 h-16 object-cover rounded-xl border-2 border-blue-500/40 hover:scale-105 transition shadow-md" alt="img">
-                    </a>
+                    <img src="${url}" onclick="openLightbox('${url}')" class="w-16 h-16 object-cover rounded-xl border-2 border-blue-500/40 hover:scale-105 transition shadow-md cursor-pointer" alt="img">
                     <button type="button" onclick="removeModalImage('${type}', ${idx})" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-5 h-5 text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg" title="ลบรูป">×</button>
                 </div>
             `).join('');
