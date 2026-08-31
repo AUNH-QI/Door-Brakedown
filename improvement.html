@@ -51,7 +51,7 @@
                     </select>
                 </div>
 
-                <!-- Line Filter Group -->
+                <!-- Line Filter Group (Single-Select) -->
                 <div class="flex items-center bg-[#131c31] p-1 rounded-xl border border-blue-900/50 gap-1 flex-wrap">
                     <span class="text-xs text-blue-300 font-medium px-2">Line:</span>
                     <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow">All</button>
@@ -73,42 +73,48 @@
         <!-- Main Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
             
-            <!-- Top KPI Cards (จำนวนโปรเจคแยกตาม Line) -->
+            <!-- Top KPI Cards (Interactive Multi-Select / Clickable with Custom Colors & Highlights) -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line A-Door</div>
-                    <div class="mt-2 text-lg font-bold text-white">
-                        <span id="kpi-adoor-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
+                <!-- Line A-Door (ฟ้า) -->
+                <div id="card-adoor" onclick="toggleKpiLine('A-Door')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
+                    <div class="text-blue-300 text-xs font-medium">Line A-Door</div>
+                    <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
+                        <span id="kpi-adoor-proj" class="text-3xl text-sky-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line B-Door</div>
-                    <div class="mt-2 text-lg font-bold text-white">
-                        <span id="kpi-bdoor-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
+                <!-- Line B-Door (เหลือง) -->
+                <div id="card-bdoor" onclick="toggleKpiLine('B-Door')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
+                    <div class="text-amber-300 text-xs font-medium">Line B-Door</div>
+                    <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
+                        <span id="kpi-bdoor-proj" class="text-3xl text-amber-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line C-Door</div>
-                    <div class="mt-2 text-lg font-bold text-white">
-                        <span id="kpi-cdoor-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
+                <!-- Line C-Door (แดง) -->
+                <div id="card-cdoor" onclick="toggleKpiLine('C-Door')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
+                    <div class="text-rose-300 text-xs font-medium">Line C-Door</div>
+                    <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
+                        <span id="kpi-cdoor-proj" class="text-3xl text-rose-500 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line Bottom</div>
-                    <div class="mt-2 text-lg font-bold text-white">
-                        <span id="kpi-bottom-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
+                <!-- Line Bottom (ม่วง) -->
+                <div id="card-bottom" onclick="toggleKpiLine('Bottom')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
+                    <div class="text-purple-300 text-xs font-medium">Line Bottom</div>
+                    <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
+                        <span id="kpi-bottom-proj" class="text-3xl text-purple-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line DND</div>
-                    <div class="mt-2 text-lg font-bold text-white">
-                        <span id="kpi-dnd-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
+                <!-- Line DND (เขียว) -->
+                <div id="card-dnd" onclick="toggleKpiLine('DND')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
+                    <div class="text-emerald-300 text-xs font-medium">Line DND</div>
+                    <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
+                        <span id="kpi-dnd-proj" class="text-3xl text-emerald-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Press machine</div>
-                    <div class="mt-2 text-lg font-bold text-white">
-                        <span id="kpi-press-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
+                <!-- Press machine (ส้ม) -->
+                <div id="card-press" onclick="toggleKpiLine('Press machine')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
+                    <div class="text-orange-300 text-xs font-medium">Press machine</div>
+                    <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
+                        <span id="kpi-press-proj" class="text-3xl text-orange-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
             </div>
@@ -178,7 +184,7 @@
         </main>
     </div>
 
-    <!-- Script สำหรับเชื่อมต่อ Supabase และจัดการ Dashboard -->
+    <!-- Script สำหรับจัดการ Dashboard และระบบกรองข้อมูล -->
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
@@ -186,7 +192,8 @@
 
         let categoryChart, lineBarChart;
         let allData = [];
-        let selectedLineFilter = '';
+        let selectedLineFilter = ''; // Single-select สำหรับปุ่มด้านบน
+        let selectedKpiLines = [];   // Multi-select สำหรับคลิก KPI Cards ด้านบนสุด
 
         document.addEventListener("DOMContentLoaded", () => {
             initCharts();
@@ -223,7 +230,7 @@
                     datasets: [{
                         label: 'จำนวนหัวข้อ',
                         data: [0, 0, 0, 0, 0, 0],
-                        backgroundColor: '#3b82f6',
+                        backgroundColor: ['#38bdf8', '#facc15', '#f43f5e', '#c084fc', '#34d399', '#fb923c'],
                         borderRadius: 6
                     }]
                 },
@@ -280,8 +287,13 @@
             });
         }
 
+        // Single-select สำหรับปุ่มกรองด้านบน
         function setLineFilter(lineValue) {
             selectedLineFilter = lineValue;
+            // ล้างการเลือกจาก KPI Cards เพื่อป้องกันการทับซ้อนกัน
+            selectedKpiLines = [];
+            updateKpiCardStyles();
+
             document.querySelectorAll('.line-btn').forEach(btn => {
                 btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition";
             });
@@ -294,8 +306,51 @@
             applyFilters();
         }
 
+        // Multi-select สำหรับคลิกที่ KPI Cards
+        function toggleKpiLine(lineName) {
+            // เมื่อคลิก KPI ให้รีเซ็ตปุ่มด้านบนเป็น All เพื่อโฟกัสที่การ์ด
+            selectedLineFilter = '';
+            document.querySelectorAll('.line-btn').forEach(btn => {
+                btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition";
+            });
+            document.getElementById('btn-line-all').className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow";
+
+            const index = selectedKpiLines.indexOf(lineName);
+            if (index > -1) {
+                selectedKpiLines.splice(index, 1); // เอาออกถ้าเลือกซ้ำ
+            } else {
+                selectedKpiLines.push(lineName); // เพิ่มเข้าไปถ้ายังไม่เลือก
+            }
+
+            updateKpiCardStyles();
+            applyFilters();
+        }
+
+        function updateKpiCardStyles() {
+            const mapping = {
+                'A-Door': 'card-adoor',
+                'B-Door': 'card-bdoor',
+                'C-Door': 'card-cdoor',
+                'Bottom': 'card-bottom',
+                'DND': 'card-dnd',
+                'Press machine': 'card-press'
+            };
+
+            for (let line in mapping) {
+                const el = document.getElementById(mapping[line]);
+                if (selectedKpiLines.includes(line)) {
+                    el.className = "kpi-card bg-gradient-to-br from-blue-900/80 to-[#111c38] border-2 border-blue-400 p-4 rounded-2xl shadow-2xl cursor-pointer transition transform scale-[1.02] ring-2 ring-blue-500/50";
+                } else {
+                    el.className = "kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]";
+                }
+            }
+        }
+
         function resetAllFilters() {
             selectedLineFilter = '';
+            selectedKpiLines = [];
+            updateKpiCardStyles();
+
             document.querySelectorAll('.line-btn').forEach(btn => {
                 btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition";
             });
@@ -314,9 +369,19 @@
 
             let filtered = allData;
 
+            // กรองด้วยปุ่ม Single-select ด้านบน
             if (selectedLineFilter !== '') {
                 filtered = filtered.filter(item => (item.line || '').toLowerCase().includes(selectedLineFilter.toLowerCase()));
             }
+
+            // กรองด้วย Multi-select จาก KPI Cards ด้านบนสุด
+            if (selectedKpiLines.length > 0) {
+                filtered = filtered.filter(item => {
+                    const l = (item.line || '').toLowerCase();
+                    return selectedKpiLines.some(kpiLine => l.includes(kpiLine.toLowerCase()));
+                });
+            }
+
             if (monthYM) {
                 filtered = filtered.filter(item => {
                     const dVal = item.start_date || item.date;
