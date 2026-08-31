@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improvement Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Prompt) -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen">
+
+    <!-- Main Container -->
+    <div class="flex flex-col h-screen overflow-hidden">
+        
+        <!-- Top Navbar & Filter Bar -->
+        <header class="bg-[#0f172a] border-b border-blue-900/40 p-4 sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="bg-blue-600 hover:bg-blue-500 text-white p-2.5 rounded-xl transition shadow flex items-center justify-center font-bold" title="ย้อนกลับไปหน้าแรก">
+                    <i class="fa-solid fa-arrow-left text-base"></i>
+                </a>
+                <h1 class="text-xl font-bold text-white tracking-wide flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-blue-400"></i> Improvement Dashboard
+                </h1>
+            </div>
+
+            <!-- UI การกรองข้อมูล (Filters) -->
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- ช่วงวันที่ (Start - End Date) -->
+                <div class="flex items-center bg-[#131c31] rounded-xl px-3 py-1.5 border border-blue-900/50 shadow-inner">
+                    <span class="text-blue-300 mr-2 text-xs">ตั้งแต่</span>
+                    <input type="date" id="startDate" onchange="applyFilters()" class="bg-transparent text-xs text-white outline-none cursor-pointer">
+                    <span class="text-blue-300 mx-2 text-xs">ถึง</span>
+                    <input type="date" id="endDate" onchange="applyFilters()" class="bg-transparent text-xs text-white outline-none cursor-pointer">
+                </div>
+
+                <!-- เลือกเดือน -->
+                <div class="flex flex-col">
+                    <select id="filterMonth" onchange="applyFilters()" class="bg-[#131c31] text-xs text-white font-medium border border-blue-900/50 rounded-xl px-3 py-2 outline-none shadow-inner cursor-pointer">
+                        <option value="">ทุกเดือน (All Months)</option>
+                    </select>
+                </div>
+
+                <!-- Line Filter Group -->
+                <div class="flex items-center bg-[#131c31] p-1 rounded-xl border border-blue-900/50 gap-1 flex-wrap">
+                    <span class="text-xs text-blue-300 font-medium px-2">Line:</span>
+                    <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow">All</button>
+                    <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition">A-Door</button>
+                    <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition">B-Door</button>
+                    <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition">C-Door</button>
+                    <button onclick="setLineFilter('Bottom')" id="btn-line-Bottom" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition">Bottom</button>
+                    <button onclick="setLineFilter('DND')" id="btn-line-DND" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition">DND</button>
+                    <button onclick="setLineFilter('Press machine')" id="btn-line-Press" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition">Press machine</button>
+                </div>
+
+                <!-- ปุ่มล้างตัวกรอง -->
+                <button onclick="resetAllFilters()" class="bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-medium px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5" title="ล้างตัวกรองทั้งหมด">
+                    <i class="fa-solid fa-rotate-left"></i> ล้าง
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content -->
+        <main class="flex-1 overflow-y-auto p-6 space-y-6">
+            
+            <!-- Top KPI Cards (Downtime & Count) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
+                    <div class="text-blue-300 text-[11px] font-medium">Line A-Door (Downtime รวม)</div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span class="text-2xl font-bold text-white" id="kpi-adoor-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
+                        <span class="text-sm font-semibold text-emerald-400" id="kpi-adoor-count">0 ครั้ง</span>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
+                    <div class="text-blue-300 text-[11px] font-medium">Line B-Door (Downtime รวม)</div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span class="text-2xl font-bold text-white" id="kpi-bdoor-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
+                        <span class="text-sm font-semibold text-amber-400" id="kpi-bdoor-count">0 ครั้ง</span>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
+                    <div class="text-blue-300 text-[11px] font-medium">Line C-Door (Downtime รวม)</div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span class="text-2xl font-bold text-white" id="kpi-cdoor-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
+                        <span class="text-sm font-semibold text-rose-400" id="kpi-cdoor-count">0 ครั้ง</span>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
+                    <div class="text-blue-300 text-[11px] font-medium">Line Bottom (Downtime รวม)</div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span class="text-2xl font-bold text-white" id="kpi-bottom-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
+                        <span class="text-sm font-semibold text-purple-400" id="kpi-bottom-count">0 ครั้ง</span>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl col-span-2 sm:col-span-1">
+                    <div class="text-blue-300 text-[11px] font-medium">Line DND (Downtime รวม)</div>
+                    <div class="flex items-baseline justify-between mt-2">
+                        <span class="text-2xl font-bold text-white" id="kpi-dnd-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
+                        <span class="text-sm font-semibold text-cyan-400" id="kpi-dnd-count">0 ครั้ง</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section: โดนัท (Category) และ กราฟแท่ง (Line) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- กราฟโดนัท: แสดงจำนวนหัวข้อของ category -->
+                <div class="bg-[#0f172a] border border-blue-900/50 p-5 rounded-2xl shadow-xl lg:col-span-4 flex flex-col justify-between">
+                    <h2 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-blue-400"></i> กราฟโดนัท "Project Improve" (Category)
+                    </h2>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="categoryDoughnutChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- กราฟแท่ง: แกน X คือ Line, แกน Y คือ จำนวนหัวข้อของ line ในตาราง log -->
+                <div class="bg-[#0f172a] border border-blue-900/50 p-5 rounded-2xl shadow-xl lg:col-span-8 flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-blue-400"></i> สถิติหัวข้อ Improvement แยกตาม Line
+                        </h2>
+                        <span class="text-xs text-blue-300">แกน X: Line | แกน Y: จำนวนหัวข้อ</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="lineBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log Table Section (ตรงตามฟอร์มในภาพร่างของคุณ) -->
+            <div class="bg-[#0f172a] border border-blue-900/50 rounded-2xl p-5 shadow-xl">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-table-list text-blue-400"></i> ตารางบันทึกข้อมูล Improvement Logs
+                    </h2>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="searchLog" placeholder="ค้นหา category, line, the risk..." onkeyup="searchTable()" class="bg-[#131c31] text-xs text-white font-medium border border-blue-900/50 rounded-lg px-3 py-2 outline-none w-64 shadow-inner placeholder:text-slate-500">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-[#131c31] text-blue-300 uppercase font-semibold">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">No</th>
+                                <th class="p-3">Category</th>
+                                <th class="p-3">Line</th>
+                                <th class="p-3">The Risk</th>
+                                <th class="p-3">Picture of the Problem</th>
+                                <th class="p-3">Responsible</th>
+                                <th class="p-3">Cause of Risk</th>
+                                <th class="p-3">Picture of the Improvement</th>
+                                <th class="p-3">Detail</th>
+                                <th class="p-3 rounded-r-lg">Start Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="improvementTableBody" class="divide-y divide-blue-900/20"></tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination info -->
+                <div class="flex items-center justify-between mt-4 pt-3 border-t border-blue-900/30 text-xs text-blue-300">
+                    <div id="paginationInfo">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script สำหรับเชื่อมต่อ Supabase และจัดการ Dashboard -->
+    <script>
+        // กำหนดค่าการเชื่อมต่อ Supabase ของคุณ
+        const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let categoryChart, lineBarChart;
+        let allData = [];
+        let selectedLineFilter = '';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initCharts();
+            fetchImprovementData();
+        });
+
+        function initCharts() {
+            // กราฟโดนัท Category
+            const ctxCategory = document.getElementById('categoryDoughnutChart').getContext('2d');
+            categoryChart = new Chart(ctxCategory, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#3b82f6', '#06b6d4', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'],
+                        borderWidth: 2,
+                        borderColor: '#0f172a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Prompt', size: 10 } } } 
+                    }
+                }
+            });
+
+            // กราฟแท่ง Line
+            const ctxLine = document.getElementById('lineBarChart').getContext('2d');
+            lineBarChart = new Chart(ctxLine, {
+                type: 'bar',
+                data: {
+                    labels: ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND', 'Press machine'],
+                    datasets: [{
+                        label: 'จำนวนหัวข้อ',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        async function fetchImprovementData() {
+            // ดึงข้อมูลจาก Table ใน Supabase (สมมติชื่อ table ว่า improvement_logs หรือปรับเปลี่ยนตามตารางจริงของคุณ)
+            const { data, error } = await supabaseClient
+                .from('improvement_logs')
+                .select('*')
+                .order('start_date', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching data:', error);
+                // ข้อมูลจำลองกรณีที่ยังไม่ได้สร้างตาราง เพื่อให้หน้าเว็บแสดงผลตัวอย่างได้ทันที
+                allData = [
+                    { id: 1, category: 'safety', line: 'press machine', the_risk: 'เครื่องหนีบมือ', picture_of_the_problem: '-', responsible: 'John', cause_of_risk: 'ไม่มี Sensor ป้องกัน', picture_of_the_improvement: '-', detail: 'ติดตั้ง Light Curtain', start_date: '2026-08-01', downtime: 45, count_down: 2 },
+                    { id: 2, category: 'machine', line: 'c-door', the_risk: 'มอเตอร์ไหม้', picture_of_the_problem: '-', responsible: 'Smith', cause_of_risk: 'กระแสไฟเกิน', picture_of_the_improvement: '-', detail: 'เปลี่ยน Overload Relay', start_date: '2026-08-05', downtime: 120, count_down: 5 }
+                ];
+            } else {
+                allData = data || [];
+            }
+
+            populateMonthDropdown();
+            applyFilters();
+        }
+
+        function populateMonthDropdown() {
+            const monthSelect = document.getElementById('filterMonth');
+            const availableMonths = new Set();
+            
+            allData.forEach(item => {
+                const dateVal = item.start_date || item.date;
+                if (!dateVal) return;
+                const d = new Date(dateVal);
+                availableMonths.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+            });
+
+            const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+            Array.from(availableMonths).sort().forEach(ym => {
+                const [year, month] = ym.split('-');
+                const option = document.createElement('option');
+                option.value = ym;
+                option.text = `${monthNames[parseInt(month) - 1]}${year}`;
+                monthSelect.appendChild(option);
+            });
+        }
+
+        function setLineFilter(lineValue) {
+            selectedLineFilter = lineValue;
+            document.querySelectorAll('.line-btn').forEach(btn => {
+                btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition";
+            });
+            if (lineValue === '') {
+                document.getElementById('btn-line-all').className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow";
+            } else {
+                const activeId = event.target.id;
+                document.getElementById(activeId).className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow";
+            }
+            applyFilters();
+        }
+
+        function resetAllFilters() {
+            selectedLineFilter = '';
+            document.querySelectorAll('.line-btn').forEach(btn => {
+                btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition";
+            });
+            document.getElementById('btn-line-all').className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow";
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('searchLog').value = '';
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const monthYM = document.getElementById('filterMonth').value;
+
+            let filtered = allData;
+
+            if (selectedLineFilter !== '') {
+                filtered = filtered.filter(item => (item.line || '').toLowerCase().includes(selectedLineFilter.toLowerCase()));
+            }
+            if (monthYM) {
+                filtered = filtered.filter(item => {
+                    const dVal = item.start_date || item.date;
+                    if (!dVal) return false;
+                    const d = new Date(dVal);
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === monthYM;
+                });
+            }
+            if (startDate) filtered = filtered.filter(item => (item.start_date || item.date) >= startDate);
+            if (endDate) filtered = filtered.filter(item => (item.start_date || item.date) <= endDate);
+
+            updateDashboard(filtered);
+        }
+
+        function updateDashboard(data) {
+            updateKPIs(data);
+            updateCharts(data);
+            renderTable(data);
+        }
+
+        function updateKPIs(data) {
+            let stats = {
+                'a-door': { time: 0, count: 0 },
+                'b-door': { time: 0, count: 0 },
+                'c-door': { time: 0, count: 0 },
+                'bottom': { time: 0, count: 0 },
+                'dnd': { time: 0, count: 0 }
+            };
+
+            data.forEach(item => {
+                const l = (item.line || '').toLowerCase();
+                const t = parseInt(item.downtime || item.time || 0);
+                const c = parseInt(item.count_down || item.count || 1);
+
+                for (let key in stats) {
+                    if (l.includes(key)) {
+                        stats[key].time += t;
+                        stats[key].count += c;
+                    }
+                }
+            });
+
+            document.getElementById('kpi-adoor-time').innerHTML = `${stats['a-door'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
+            document.getElementById('kpi-adoor-count').innerText = `${stats['a-door'].count} ครั้ง`;
+            
+            document.getElementById('kpi-bdoor-time').innerHTML = `${stats['b-door'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
+            document.getElementById('kpi-bdoor-count').innerText = `${stats['b-door'].count} ครั้ง`;
+
+            document.getElementById('kpi-cdoor-time').innerHTML = `${stats['c-door'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
+            document.getElementById('kpi-cdoor-count').innerText = `${stats['c-door'].count} ครั้ง`;
+
+            document.getElementById('kpi-bottom-time').innerHTML = `${stats['bottom'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
+            document.getElementById('kpi-bottom-count').innerText = `${stats['bottom'].count} ครั้ง`;
+
+            document.getElementById('kpi-dnd-time').innerHTML = `${stats['dnd'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
+            document.getElementById('kpi-dnd-count').innerText = `${stats['dnd'].count}ครั้ง`;
+        }
+
+        function updateCharts(data) {
+            // Category Doughnut
+            const catMap = {};
+            data.forEach(item => {
+                const cat = item.category || 'General';
+                catMap[cat] = (catMap[cat] || 0) + 1;
+            });
+            categoryChart.data.labels = Object.keys(catMap);
+            categoryChart.data.datasets[0].data = Object.values(catMap);
+            categoryChart.update();
+
+            // Line Bar Chart (แกน X: Line, แกน Y: จำนวนหัวข้อในตาราง)
+            const lineKeys = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND', 'Press machine'];
+            const lineCounts = lineKeys.map(lk => {
+                return data.filter(item => (item.line || '').toLowerCase().includes(lk.toLowerCase())).length;
+            });
+            lineBarChart.data.datasets[0].data = lineCounts;
+            lineBarChart.update();
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('improvementTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-950/30 transition";
+                tr.innerHTML = `
+                    <td class="p-3 text-blue-300 font-bold">${index + 1}</td>
+                    <td class="p-3 font-medium text-white"><span class="bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">${row.category || '-'}</span></td>
+                    <td class="p-3">${row.line || '-'}</td>
+                    <td class="p-3 text-slate-200">${row.the_risk || '-'}</td>
+                    <td class="p-3">${row.picture_of_the_problem ? `<a href="${row.picture_of_the_problem}" target="_blank" class="text-blue-400 underline">ดูรูป</a>` : '-'}</td>
+                    <td class="p-3">${row.responsible || '-'}</td>
+                    <td class="p-3">${row.cause_of_risk || '-'}</td>
+                    <td class="p-3">${row.picture_of_the_improvement ? `<a href="${row.picture_of_the_improvement}" target="_blank" class="text-blue-400 underline">ดูรูป</a>` : '-'}</td>
+                    <td class="p-3">${row.detail || '-'}</td>
+                    <td class="p-3 text-blue-300">${row.start_date || row.date || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('paginationInfo').innerText = `แสดงทั้งหมด ${data.length} รายการ`;
+        }
+
+        function searchTable() {
+            const input = document.getElementById('searchLog').value.toLowerCase();
+            if (!input) {
+                applyFilters();
+                return;
+            }
+            const filtered = allData.filter(row => Object.values(row).join(' ').toLowerCase().includes(input));
+            updateDashboard(filtered);
+        }
+    </script>
+</body>
+</html>
