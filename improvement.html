@@ -36,11 +36,6 @@
 
             <!-- UI การกรองข้อมูล (Filters) -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- ปุ่มเพิ่มข้อมูล (ADD) -->
-                <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5">
-                    <i class="fa-solid fa-plus"></i> เพิ่มข้อมูล
-                </button>
-
                 <!-- ช่วงวันที่ (Start - End Date) -->
                 <div class="flex items-center bg-white rounded-xl px-3 py-1.5 border border-slate-300 shadow-md">
                     <span class="text-slate-700 mr-2 text-xs font-semibold">ตั้งแต่</span>
@@ -148,6 +143,10 @@
                         <i class="fa-solid fa-table-list text-blue-400"></i> ตารางบันทึกข้อมูล Improvement Logs
                     </h2>
                     <div class="flex flex-wrap items-center gap-3">
+                        <!-- ปุ่มเพิ่มข้อมูล (ADD) -->
+                        <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> เพิ่มข้อมูล
+                        </button>
                         <!-- เลือกจำนวนแถวการแสดงผล -->
                         <div class="flex items-center gap-2 text-xs text-blue-300">
                             <span>แสดง:</span>
@@ -193,7 +192,7 @@
         </main>
     </div>
 
-    <!-- Modal เพิ่มข้อมูล (ADD Modal) -->
+    <!-- Modal เพิ่มข้อมูล (ADD Modal) พร้อมรองรับลากวาง/Paste รูป -->
     <div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-[#0f172a] border border-blue-900/60 rounded-2xl w-full max-w-xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div class="flex items-center justify-between mb-4 pb-2 border-b border-blue-900/40">
@@ -224,6 +223,19 @@
                     <label class="block text-blue-300 font-medium mb-1">The Risk</label>
                     <textarea id="addTheRisk" rows="2" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"></textarea>
                 </div>
+
+                <!-- ช่องเพิ่มรูป Picture of the Problem ใน Modal -->
+                <div>
+                    <label class="block text-blue-300 font-medium mb-1">Picture of the Problem (สูงสุด 2 รูป)</label>
+                    <div id="add-prob-container" class="flex items-center gap-2 flex-wrap min-h-[45px] p-2 bg-[#131c31] border border-dashed border-blue-900/60 rounded-xl"
+                         ondragover="event.preventDefault()" ondrop="handleModalDrop(event, 'problem')" tabindex="0" onpaste="handleModalPaste(event, 'problem')">
+                        <div id="add-prob-thumbs" class="flex items-center gap-2 flex-wrap"></div>
+                        <label id="add-prob-btn" class="cursor-pointer text-[10px] text-blue-400 bg-blue-950/80 px-2 py-1 rounded border border-blue-800 hover:bg-blue-900 transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> เพิ่มรูป<input type="file" accept="image/*" class="hidden" onchange="handleModalFileSelect(event, 'problem')">
+                        </label>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-blue-300 font-medium mb-1">Responsible</label>
@@ -238,6 +250,19 @@
                     <label class="block text-blue-300 font-medium mb-1">Cause of Risk</label>
                     <textarea id="addCauseOfRisk" rows="2" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"></textarea>
                 </div>
+
+                <!-- ช่องเพิ่มรูป Picture of the Improvement ใน Modal -->
+                <div>
+                    <label class="block text-blue-300 font-medium mb-1">Picture of the Improvement (สูงสุด 2 รูป)</label>
+                    <div id="add-imp-container" class="flex items-center gap-2 flex-wrap min-h-[45px] p-2 bg-[#131c31] border border-dashed border-blue-900/60 rounded-xl"
+                         ondragover="event.preventDefault()" ondrop="handleModalDrop(event, 'improvement')" tabindex="0" onpaste="handleModalPaste(event, 'improvement')">
+                        <div id="add-imp-thumbs" class="flex items-center gap-2 flex-wrap"></div>
+                        <label id="add-imp-btn" class="cursor-pointer text-[10px] text-emerald-400 bg-emerald-950/80 px-2 py-1 rounded border border-emerald-800 hover:bg-emerald-900 transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> เพิ่มรูป<input type="file" accept="image/*" class="hidden" onchange="handleModalFileSelect(event, 'improvement')">
+                        </label>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-blue-300 font-medium mb-1">Detail</label>
                     <textarea id="addDetail" rows="2" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"></textarea>
@@ -265,6 +290,12 @@
         let selectedKpiLines = [];   
         let currentPage = 1;
         let rowsPerPage = 10;
+
+        // ตัวแปรเก็บรูปภาพชั่วคราวตอนเพิ่มข้อมูลใหม่
+        let newLogImages = {
+            problem: [],
+            improvement: []
+        };
 
         document.addEventListener("DOMContentLoaded", () => {
             initCharts();
@@ -318,8 +349,7 @@
         async function fetchImprovementData() {
             const { data, error } = await supabaseClient
                 .from('improvement_logs')
-                .select('*')
-                .order('start_date', { ascending: false });
+                .select('*');
 
             if (error) {
                 console.error('Error fetching data from Supabase:', error);
@@ -334,13 +364,19 @@
 
         function populateMonthDropdown() {
             const monthSelect = document.getElementById('filterMonth');
+            // คงค่าเดิมที่เคยเลือกไว้ (ถ้ามี)
+            const currentVal = monthSelect.value;
+            monthSelect.innerHTML = '<option value="">ทุกเดือน (All Months)</option>';
+            
             const availableMonths = new Set();
             
             allData.forEach(item => {
-                const dateVal = item.start_date || item.date;
+                const dateVal = item.start_date || item["star date"] || item.date;
                 if (!dateVal) return;
                 const d = new Date(dateVal);
-                availableMonths.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+                if (!isNaN(d.getTime())) {
+                    availableMonths.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+                }
             });
 
             const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -351,6 +387,7 @@
                 option.text = `${monthNames[parseInt(month) - 1]} ${year}`;
                 monthSelect.appendChild(option);
             });
+            monthSelect.value = currentVal;
         }
 
         function setLineFilter(lineValue) {
@@ -443,14 +480,25 @@
 
             if (monthYM) {
                 filteredData = filteredData.filter(item => {
-                    const dVal = item.start_date || item.date;
+                    const dVal = item.start_date || item["star date"] || item.date;
                     if (!dVal) return false;
                     const d = new Date(dVal);
+                    if (isNaN(d.getTime())) return false;
                     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === monthYM;
                 });
             }
-            if (startDate) filteredData = filteredData.filter(item => (item.start_date || item.date) >= startDate);
-            if (endDate) filteredData = filteredData.filter(item => (item.start_date || item.date) <= endDate);
+            if (startDate) {
+                filteredData = filteredData.filter(item => {
+                    const dVal = item.start_date || item["star date"] || item.date;
+                    return dVal && dVal >= startDate;
+                });
+            }
+            if (endDate) {
+                filteredData = filteredData.filter(item => {
+                    const dVal = item.start_date || item["star date"] || item.date;
+                    return dVal && dVal <= endDate;
+                });
+            }
 
             currentPage = 1;
             updateDashboard(filteredData);
@@ -519,11 +567,10 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-950/30 transition";
 
-                let probImages = [];
-                // รองรับชื่อคอลัมน์ทั้งแบบมีเว้นวรรคและไม่มีเว้นวรรค
                 let probData = row.picture_of_the_problem || row["picture of the problem"];
                 let impData = row.picture_of_the_improvement || row["picture of the improvement "];
 
+                let probImages = [];
                 if (Array.isArray(probData)) probImages = probData;
                 else if (probData) probImages = [probData];
 
@@ -635,7 +682,7 @@
             }
 
             const fileName = `log_${rowId}_${type}_${Date.now()}.png`;
-            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            const { error: uploadError } = await supabaseClient.storage
                 .from('improvement-image')
                 .upload(fileName, file);
 
@@ -699,15 +746,91 @@
             updateDashboard(filteredData);
         }
 
-        // ฟังก์ชันจัดการ Modal เพิ่มข้อมูล
+        // --- ฟังก์ชันจัดการ Modal เพิ่มข้อมูล พร้อมอัปโหลดรูป (ลากวาง / Ctrl+V) ---
         function openAddModal() {
             document.getElementById('addForm').reset();
             document.getElementById('addStartDate').value = new Date().toISOString().split('T')[0];
+            newLogImages = { problem: [], improvement: [] };
+            renderModalThumbnails('problem');
+            renderModalThumbnails('improvement');
             document.getElementById('addModal').classList.remove('hidden');
         }
 
         function closeAddModal() {
             document.getElementById('addModal').classList.add('hidden');
+        }
+
+        async function handleModalFileSelect(event, type) {
+            const file = event.target.files[0];
+            if (file) await uploadModalImage(file, type);
+        }
+
+        async function handleModalDrop(event, type) {
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                await uploadModalImage(file, type);
+            }
+        }
+
+        async function handleModalPaste(event, type) {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (let item of items) {
+                if (item.type.indexOf("image") === 0) {
+                    const file = item.getAsFile();
+                    if (file) await uploadModalImage(file, type);
+                    break;
+                }
+            }
+        }
+
+        async function uploadModalImage(file, type) {
+            if (newLogImages[type].length >= 2) {
+                alert('สามารถใส่รูปได้สูงสุด 2 รูปเท่านั้นครับ');
+                return;
+            }
+
+            const fileName = `temp_${type}_${Date.now()}.png`;
+            const { error: uploadError } = await supabaseClient.storage
+                .from('improvement-image')
+                .upload(fileName, file);
+
+            if (uploadError) {
+                alert('เกิดข้อผิดพลาดในการอัปโหลดรูป: ' + uploadError.message);
+                return;
+            }
+
+            const { data: publicURLData } = supabaseClient.storage
+                .from('improvement-image')
+                .getPublicUrl(fileName);
+
+            newLogImages[type].push(publicURLData.publicUrl);
+            renderModalThumbnails(type);
+        }
+
+        function removeModalImage(type, index) {
+            newLogImages[type].splice(index, 1);
+            renderModalThumbnails(type);
+        }
+
+        function renderModalThumbnails(type) {
+            const container = document.getElementById(type === 'problem' ? 'add-prob-thumbs' : 'add-imp-thumbs');
+            const btnEl = document.getElementById(type === 'problem' ? 'add-prob-btn' : 'add-imp-btn');
+            
+            container.innerHTML = newLogImages[type].map((url, idx) => `
+                <div class="relative group">
+                    <a href="${url}" target="_blank">
+                        <img src="${url}" class="w-10 h-10 object-cover rounded-lg border border-blue-500/40 hover:scale-105 transition" alt="img">
+                    </a>
+                    <button type="button" onclick="removeModalImage('${type}', ${idx})" class="absolute -top-1.5 -right-1.5 bg-rose-600 text-white rounded-full w-4 h-4 text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow" title="ลบรูป">×</button>
+                </div>
+            `).join('');
+
+            if (newLogImages[type].length >= 2) {
+                btnEl.style.display = 'none';
+            } else {
+                btnEl.style.display = 'flex';
+            }
         }
 
         async function submitNewData(event) {
@@ -720,7 +843,7 @@
             const causeOfRisk = document.getElementById('addCauseOfRisk').value;
             const detail = document.getElementById('addDetail').value;
 
-            // ตรวจสอบชื่อคอลัมน์จริงในตารางเพื่อบันทึกให้ถูกต้อง
+            // บันทึกข้อมูลพร้อมรองรับชื่อคอลัมน์ในฐานข้อมูล
             const newRecord = {
                 category: category,
                 line: line,
@@ -728,13 +851,14 @@
                 detail: detail,
                 start_date: startDate,
                 the_risk: theRisk,
-                cause_of_risk: causeOfRisk
+                cause_of_risk: causeOfRisk,
+                picture_of_the_problem: newLogImages.problem.length > 0 ? newLogImages.problem : null,
+                picture_of_the_improvement: newLogImages.improvement.length > 0 ? newLogImages.improvement : null
             };
 
-            const { data, error } = await supabaseClient
+            const { error } = await supabaseClient
                 .from('improvement_logs')
-                .insert([newRecord])
-                .select();
+                .insert([newRecord]);
 
             if (error) {
                 alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message);
