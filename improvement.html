@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Improvement Dashboard</title>
-    <link rel="icon" type="image/png" href="https://rdatxagldckqsxkncvbu.supabase.co/storage/v1/object/public/logos/logo-3.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -74,41 +73,42 @@
         <!-- Main Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
             
-            <!-- Top KPI Cards (Downtime & Count) -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- Top KPI Cards (จำนวนโปรเจคแยกตาม Line) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line A-Door (Downtime รวม)</div>
-                    <div class="flex items-baseline justify-between mt-2">
-                        <span class="text-2xl font-bold text-white" id="kpi-adoor-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
-                        <span class="text-sm font-semibold text-emerald-400" id="kpi-adoor-count">0 ครั้ง</span>
+                    <div class="text-blue-300 text-[11px] font-medium">Line A-Door</div>
+                    <div class="mt-2 text-lg font-bold text-white">
+                        <span id="kpi-adoor-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
                 <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line B-Door (Downtime รวม)</div>
-                    <div class="flex items-baseline justify-between mt-2">
-                        <span class="text-2xl font-bold text-white" id="kpi-bdoor-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
-                        <span class="text-sm font-semibold text-amber-400" id="kpi-bdoor-count">0 ครั้ง</span>
+                    <div class="text-blue-300 text-[11px] font-medium">Line B-Door</div>
+                    <div class="mt-2 text-lg font-bold text-white">
+                        <span id="kpi-bdoor-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
                 <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line C-Door (Downtime รวม)</div>
-                    <div class="flex items-baseline justify-between mt-2">
-                        <span class="text-2xl font-bold text-white" id="kpi-cdoor-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
-                        <span class="text-sm font-semibold text-rose-400" id="kpi-cdoor-count">0 ครั้ง</span>
+                    <div class="text-blue-300 text-[11px] font-medium">Line C-Door</div>
+                    <div class="mt-2 text-lg font-bold text-white">
+                        <span id="kpi-cdoor-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
                 <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
-                    <div class="text-blue-300 text-[11px] font-medium">Line Bottom (Downtime รวม)</div>
-                    <div class="flex items-baseline justify-between mt-2">
-                        <span class="text-2xl font-bold text-white" id="kpi-bottom-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
-                        <span class="text-sm font-semibold text-purple-400" id="kpi-bottom-count">0 ครั้ง</span>
+                    <div class="text-blue-300 text-[11px] font-medium">Line Bottom</div>
+                    <div class="mt-2 text-lg font-bold text-white">
+                        <span id="kpi-bottom-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl col-span-2 sm:col-span-1">
-                    <div class="text-blue-300 text-[11px] font-medium">Line DND (Downtime รวม)</div>
-                    <div class="flex items-baseline justify-between mt-2">
-                        <span class="text-2xl font-bold text-white" id="kpi-dnd-time">0 <span class="text-xs font-normal text-blue-400">นาที</span></span>
-                        <span class="text-sm font-semibold text-cyan-400" id="kpi-dnd-count">0 ครั้ง</span>
+                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
+                    <div class="text-blue-300 text-[11px] font-medium">Line DND</div>
+                    <div class="mt-2 text-lg font-bold text-white">
+                        <span id="kpi-dnd-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl">
+                    <div class="text-blue-300 text-[11px] font-medium">Press machine</div>
+                    <div class="mt-2 text-lg font-bold text-white">
+                        <span id="kpi-press-proj" class="text-2xl text-blue-400">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
             </div>
@@ -139,7 +139,7 @@
                 </div>
             </div>
 
-            <!-- Log Table Section (ตรงตามฟอร์มในภาพร่างของคุณ) -->
+            <!-- Log Table Section -->
             <div class="bg-[#0f172a] border border-blue-900/50 rounded-2xl p-5 shadow-xl">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                     <h2 class="text-base font-bold text-white flex items-center gap-2">
@@ -180,7 +180,6 @@
 
     <!-- Script สำหรับเชื่อมต่อ Supabase และจัดการ Dashboard -->
     <script>
-        // กำหนดค่าการเชื่อมต่อ Supabase ของคุณ
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -195,7 +194,6 @@
         });
 
         function initCharts() {
-            // กราฟโดนัท Category
             const ctxCategory = document.getElementById('categoryDoughnutChart').getContext('2d');
             categoryChart = new Chart(ctxCategory, {
                 type: 'doughnut',
@@ -217,7 +215,6 @@
                 }
             });
 
-            // กราฟแท่ง Line
             const ctxLine = document.getElementById('lineBarChart').getContext('2d');
             lineBarChart = new Chart(ctxLine, {
                 type: 'bar',
@@ -243,7 +240,6 @@
         }
 
         async function fetchImprovementData() {
-            // ดึงข้อมูลจาก Table ใน Supabase (สมมติชื่อ table ว่า improvement_logs หรือปรับเปลี่ยนตามตารางจริงของคุณ)
             const { data, error } = await supabaseClient
                 .from('improvement_logs')
                 .select('*')
@@ -251,10 +247,9 @@
 
             if (error) {
                 console.error('Error fetching data:', error);
-                // ข้อมูลจำลองกรณีที่ยังไม่ได้สร้างตาราง เพื่อให้หน้าเว็บแสดงผลตัวอย่างได้ทันที
                 allData = [
-                    { id: 1, category: 'safety', line: 'press machine', the_risk: 'เครื่องหนีบมือ', picture_of_the_problem: '-', responsible: 'John', cause_of_risk: 'ไม่มี Sensor ป้องกัน', picture_of_the_improvement: '-', detail: 'ติดตั้ง Light Curtain', start_date: '2026-08-01', downtime: 45, count_down: 2 },
-                    { id: 2, category: 'machine', line: 'c-door', the_risk: 'มอเตอร์ไหม้', picture_of_the_problem: '-', responsible: 'Smith', cause_of_risk: 'กระแสไฟเกิน', picture_of_the_improvement: '-', detail: 'เปลี่ยน Overload Relay', start_date: '2026-08-05', downtime: 120, count_down: 5 }
+                    { id: 1, category: 'safety', line: 'press machine', the_risk: 'เครื่องหนีบมือ', picture_of_the_problem: '-', responsible: 'John', cause_of_risk: 'ไม่มี Sensor ป้องกัน', picture_of_the_improvement: '-', detail: 'ติดตั้ง Light Curtain', start_date: '2026-08-01' },
+                    { id: 2, category: 'machine', line: 'c-door', the_risk: 'มอเตอร์ไหม้', picture_of_the_problem: '-', responsible: 'Smith', cause_of_risk: 'กระแสไฟเกิน', picture_of_the_improvement: '-', detail: 'เปลี่ยน Overload Relay', start_date: '2026-08-05' }
                 ];
             } else {
                 allData = data || [];
@@ -280,7 +275,7 @@
                 const [year, month] = ym.split('-');
                 const option = document.createElement('option');
                 option.value = ym;
-                option.text = `${monthNames[parseInt(month) - 1]}${year}`;
+                option.text = `${monthNames[parseInt(month) - 1]} ${year}`;
                 monthSelect.appendChild(option);
             });
         }
@@ -344,44 +339,32 @@
 
         function updateKPIs(data) {
             let stats = {
-                'a-door': { time: 0, count: 0 },
-                'b-door': { time: 0, count: 0 },
-                'c-door': { time: 0, count: 0 },
-                'bottom': { time: 0, count: 0 },
-                'dnd': { time: 0, count: 0 }
+                'a-door': 0,
+                'b-door': 0,
+                'c-door': 0,
+                'bottom': 0,
+                'dnd': 0,
+                'press machine': 0
             };
 
             data.forEach(item => {
                 const l = (item.line || '').toLowerCase();
-                const t = parseInt(item.downtime || item.time || 0);
-                const c = parseInt(item.count_down || item.count || 1);
-
                 for (let key in stats) {
                     if (l.includes(key)) {
-                        stats[key].time += t;
-                        stats[key].count += c;
+                        stats[key]++;
                     }
                 }
             });
 
-            document.getElementById('kpi-adoor-time').innerHTML = `${stats['a-door'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
-            document.getElementById('kpi-adoor-count').innerText = `${stats['a-door'].count} ครั้ง`;
-            
-            document.getElementById('kpi-bdoor-time').innerHTML = `${stats['b-door'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
-            document.getElementById('kpi-bdoor-count').innerText = `${stats['b-door'].count} ครั้ง`;
-
-            document.getElementById('kpi-cdoor-time').innerHTML = `${stats['c-door'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
-            document.getElementById('kpi-cdoor-count').innerText = `${stats['c-door'].count} ครั้ง`;
-
-            document.getElementById('kpi-bottom-time').innerHTML = `${stats['bottom'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
-            document.getElementById('kpi-bottom-count').innerText = `${stats['bottom'].count} ครั้ง`;
-
-            document.getElementById('kpi-dnd-time').innerHTML = `${stats['dnd'].time} <span class="text-xs font-normal text-blue-400">นาที</span>`;
-            document.getElementById('kpi-dnd-count').innerText = `${stats['dnd'].count}ครั้ง`;
+            document.getElementById('kpi-adoor-proj').innerText = stats['a-door'];
+            document.getElementById('kpi-bdoor-proj').innerText = stats['b-door'];
+            document.getElementById('kpi-cdoor-proj').innerText = stats['c-door'];
+            document.getElementById('kpi-bottom-proj').innerText = stats['bottom'];
+            document.getElementById('kpi-dnd-proj').innerText = stats['dnd'];
+            document.getElementById('kpi-press-proj').innerText = stats['press machine'];
         }
 
         function updateCharts(data) {
-            // Category Doughnut
             const catMap = {};
             data.forEach(item => {
                 const cat = item.category || 'General';
@@ -391,7 +374,6 @@
             categoryChart.data.datasets[0].data = Object.values(catMap);
             categoryChart.update();
 
-            // Line Bar Chart (แกน X: Line, แกน Y: จำนวนหัวข้อในตาราง)
             const lineKeys = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND', 'Press machine'];
             const lineCounts = lineKeys.map(lk => {
                 return data.filter(item => (item.line || '').toLowerCase().includes(lk.toLowerCase())).length;
