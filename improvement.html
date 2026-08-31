@@ -394,7 +394,12 @@
                 console.error('Error fetching data from Supabase:', error);
                 allData = [];
             } else {
-                allData = data || [];
+                // เรียงลำดับข้อมูลจากวันที่ล่าสุดไปเก่าสุด (ใหม่สุดขึ้นก่อน เพื่อให้แสดงเป็น No. 1)
+                allData = (data || []).sort((a, b) => {
+                    const dateA = new Date(a.start_date || a["star date"] || a.date || 0);
+                    const dateB = new Date(b.start_date || b["star date"] || b.date || 0);
+                    return dateB - dateA;
+                });
             }
 
             populateMonthDropdown();
