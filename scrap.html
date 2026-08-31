@@ -87,28 +87,28 @@
                         <span>Line: A-Door (ชิ้นงานเสีย)</span>
                         <i class="fa-solid fa-filter text-[10px] text-blue-400 opacity-60"></i>
                     </div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">pcs</span></div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-adoor">0 <span class="text-sm font-normal text-blue-300">ฝา</span></div>
                 </div>
                 <div id="card-bdoor" onclick="toggleCardFilter('B-Door')" class="bg-gradient-to-br from-purple-900/50 to-slate-900 border border-purple-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-purple-400">
                     <div class="text-slate-400 text-xs font-medium flex items-center justify-between">
                         <span>Line: B-Door (ชิ้นงานเสีย)</span>
                         <i class="fa-solid fa-filter text-[10px] text-purple-400 opacity-60"></i>
                     </div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">pcs</span></div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-bdoor">0 <span class="text-sm font-normal text-purple-300">ฝา</span></div>
                 </div>
                 <div id="card-cdoor" onclick="toggleCardFilter('C-Door')" class="bg-gradient-to-br from-emerald-900/50 to-slate-900 border border-emerald-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-emerald-400">
                     <div class="text-slate-400 text-xs font-medium flex items-center justify-between">
                         <span>Line: C-Door (ชิ้นงานเสีย)</span>
                         <i class="fa-solid fa-filter text-[10px] text-emerald-400 opacity-60"></i>
                     </div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">pcs</span></div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-cdoor">0 <span class="text-sm font-normal text-emerald-300">ฝา</span></div>
                 </div>
                 <div id="card-dnd" onclick="toggleCardFilter('DND')" class="bg-gradient-to-br from-amber-900/50 to-slate-900 border border-amber-500/30 p-5 rounded-2xl relative overflow-hidden transition-all cursor-pointer hover:border-amber-400">
                     <div class="text-slate-400 text-xs font-medium flex items-center justify-between">
                         <span>Line: DND (ชิ้นงานเสีย)</span>
                         <i class="fa-solid fa-filter text-[10px] text-amber-400 opacity-60"></i>
                     </div>
-                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">pcs</span></div>
+                    <div class="text-3xl font-bold mt-2 text-white" id="kpi-dnd">0 <span class="text-sm font-normal text-amber-300">ฝา</span></div>
                 </div>
             </div>
 
@@ -147,7 +147,7 @@
                                         <th class="p-2.5 rounded-l-lg">An.</th>
                                         <th class="p-2.5">Model</th>
                                         <th class="p-2.5">Line</th>
-                                        <th class="p-2.5 rounded-r-lg text-right">จำนวน (Pcs)</th>
+                                        <th class="p-2.5 rounded-r-lg text-right">จำนวน (ฝา)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="topModelsTableBody" class="divide-y divide-slate-800"></tbody>
@@ -242,7 +242,7 @@
                 data: {
                     labels: [],
                     datasets: [{
-                        label: 'จำนวนชิ้นงานเสีย (Pcs)',
+                        label: 'จำนวนชิ้นงานเสีย (ฝา)',
                         data: [],
                         borderColor: '#f59e0b',
                         backgroundColor: 'rgba(245, 158, 11, 0.1)',
@@ -360,7 +360,7 @@
                                 ctx.strokeStyle = '#334155';
                                 ctx.lineWidth = 1;
                                 
-                                const text = `${label}: ${value} pcs`;
+                                const text = `${label}: ${value} ฝา`;
                                 ctx.font = 'bold 10px Prompt';
                                 const textWidth = ctx.measureText(text).width;
                                 
@@ -698,10 +698,10 @@
                 else if (lineName === 'DND' || lineName === 'DND Door') lineDND += qty;
             });
 
-            document.getElementById('kpi-adoor').innerHTML = `${lineA} <span class="text-sm font-normal text-blue-300">pcs</span>`;
-            document.getElementById('kpi-bdoor').innerHTML = `${lineB} <span class="text-sm font-normal text-purple-300">pcs</span>`;
-            document.getElementById('kpi-cdoor').innerHTML = `${lineC} <span class="text-sm font-normal text-emerald-300">pcs</span>`;
-            document.getElementById('kpi-dnd').innerHTML = `${lineDND} <span class="text-sm font-normal text-amber-300">pcs</span>`;
+            document.getElementById('kpi-adoor').innerHTML = `${lineA} <span class="text-sm font-normal text-blue-300">ฝา</span>`;
+            document.getElementById('kpi-bdoor').innerHTML = `${lineB} <span class="text-sm font-normal text-purple-300">ฝา</span>`;
+            document.getElementById('kpi-cdoor').innerHTML = `${lineC} <span class="text-sm font-normal text-emerald-300">ฝา</span>`;
+            document.getElementById('kpi-dnd').innerHTML = `${lineDND} <span class="text-sm font-normal text-amber-300">ฝา</span>`;
         }
 
         function updateTopModelsTable(data) {
