@@ -36,7 +36,12 @@
 
             <!-- UI การกรองข้อมูล (Filters) -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- ช่วงวันที่ (Start - End Date) - พื้นหลังขาวตามต้องการ -->
+                <!-- ปุ่มเพิ่มข้อมูล (ADD) -->
+                <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> เพิ่มข้อมูล
+                </button>
+
+                <!-- ช่วงวันที่ (Start - End Date) -->
                 <div class="flex items-center bg-white rounded-xl px-3 py-1.5 border border-slate-300 shadow-md">
                     <span class="text-slate-700 mr-2 text-xs font-semibold">ตั้งแต่</span>
                     <input type="date" id="startDate" onchange="applyFilters()" class="bg-transparent text-xs text-slate-900 font-medium outline-none cursor-pointer">
@@ -51,7 +56,7 @@
                     </select>
                 </div>
 
-                <!-- Line Filter Group (Single-Select) -->
+                <!-- Line Filter Group -->
                 <div class="flex items-center bg-[#131c31] p-1 rounded-xl border border-blue-900/50 gap-1 flex-wrap">
                     <span class="text-xs text-blue-300 font-medium px-2">Line:</span>
                     <button onclick="setLineFilter('')" id="btn-line-all" class="line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow">All</button>
@@ -73,7 +78,7 @@
         <!-- Main Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
             
-            <!-- Top KPI Cards (Interactive Multi-Select / Clickable with Custom Colors & Highlights) -->
+            <!-- Top KPI Cards -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 <div id="card-adoor" onclick="toggleKpiLine('A-Door')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
                     <div class="text-blue-300 text-xs font-medium">Line A-Door</div>
@@ -142,8 +147,21 @@
                     <h2 class="text-base font-bold text-white flex items-center gap-2">
                         <i class="fa-solid fa-table-list text-blue-400"></i> ตารางบันทึกข้อมูล Improvement Logs
                     </h2>
-                    <div class="flex items-center gap-2">
-                        <input type="text" id="searchLog" placeholder="ค้นหา category, line, the risk..." onkeyup="searchTable()" class="bg-[#131c31] text-xs text-white font-medium border border-blue-900/50 rounded-lg px-3 py-2 outline-none w-64 shadow-inner placeholder:text-slate-500">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- เลือกจำนวนแถวการแสดงผล -->
+                        <div class="flex items-center gap-2 text-xs text-blue-300">
+                            <span>แสดง:</span>
+                            <select id="rowsPerPage" onchange="changeRowsPerPage()" class="bg-[#131c31] text-xs text-white font-medium border border-blue-900/50 rounded-lg px-2.5 py-1.5 outline-none cursor-pointer">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">ทั้งหมด</option>
+                            </select>
+                            <span>รายการ</span>
+                        </div>
+                        <!-- ช่องค้นหา -->
+                        <input type="text" id="searchLog" placeholder="ค้นหา category, line, the risk..." onkeyup="searchTable()" class="bg-[#131c31] text-xs text-white font-medium border border-blue-900/50 rounded-lg px-3 py-2 outline-none w-56 shadow-inner placeholder:text-slate-500">
                     </div>
                 </div>
 
@@ -155,10 +173,10 @@
                                 <th class="p-3">Category</th>
                                 <th class="p-3">Line</th>
                                 <th class="p-3">The Risk</th>
-                                <th class="p-3">Picture of the Problem (สูงสุด 2 รูป)</th>
+                                <th class="p-3">Picture of the Problem</th>
                                 <th class="p-3">Responsible</th>
                                 <th class="p-3">Cause of Risk</th>
-                                <th class="p-3">Picture of the Improvement (สูงสุด 2 รูป)</th>
+                                <th class="p-3">Picture of the Improvement</th>
                                 <th class="p-3">Detail</th>
                                 <th class="p-3 rounded-r-lg">Start Date</th>
                             </tr>
@@ -167,14 +185,74 @@
                     </table>
                 </div>
 
-                <div class="flex items-center justify-between mt-4 pt-3 border-t border-blue-900/30 text-xs text-blue-300">
+                <div class="flex flex-wrap items-center justify-between mt-4 pt-3 border-t border-blue-900/30 text-xs text-blue-300">
                     <div id="paginationInfo">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
+                    <div id="paginationControls" class="flex items-center gap-1"></div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Script สำหรับจัดการ Dashboard และ Supabase Storage Upload (Drag & Drop / Ctrl+V) -->
+    <!-- Modal เพิ่มข้อมูล (ADD Modal) -->
+    <div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#0f172a] border border-blue-900/60 rounded-2xl w-full max-w-xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-blue-900/40">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-emerald-400"></i> เพิ่มข้อมูล Improvement Log ใหม่
+                </h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="addForm" onsubmit="submitNewData(event)" class="space-y-4 text-xs">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-blue-300 font-medium mb-1">Category</label>
+                        <input type="text" id="addCategory" required class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-blue-300 font-medium mb-1">Line</label>
+                        <select id="addLine" required class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500">
+                            <option value="A-Door">A-Door</option>
+                            <option value="B-Door">B-Door</option>
+                            <option value="C-Door">C-Door</option>
+                            <option value="Bottom">Bottom</option>
+                            <option value="DND">DND</option>
+                            <option value="Press machine">Press machine</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-blue-300 font-medium mb-1">The Risk</label>
+                    <textarea id="addTheRisk" rows="2" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-blue-300 font-medium mb-1">Responsible</label>
+                        <input type="text" id="addResponsible" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-blue-300 font-medium mb-1">Start Date</label>
+                        <input type="date" id="addStartDate" required class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-blue-300 font-medium mb-1">Cause of Risk</label>
+                    <textarea id="addCauseOfRisk" rows="2" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-blue-300 font-medium mb-1">Detail</label>
+                    <textarea id="addDetail" rows="2" class="w-full bg-[#131c31] border border-blue-900/50 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-blue-900/40">
+                    <button type="button" onclick="closeAddModal()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-medium transition">ยกเลิก</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script หลักของระบบ -->
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_JSk7IBVoiTyRyY5M7Nj7iQ_jxD_d9JE';
@@ -182,8 +260,11 @@
 
         let categoryChart, lineBarChart;
         let allData = [];
+        let filteredData = [];
         let selectedLineFilter = ''; 
         let selectedKpiLines = [];   
+        let currentPage = 1;
+        let rowsPerPage = 10;
 
         document.addEventListener("DOMContentLoaded", () => {
             initCharts();
@@ -347,31 +428,32 @@
             const endDate = document.getElementById('endDate').value;
             const monthYM = document.getElementById('filterMonth').value;
 
-            let filtered = allData;
+            filteredData = allData;
 
             if (selectedLineFilter !== '') {
-                filtered = filtered.filter(item => (item.line || '').toLowerCase().includes(selectedLineFilter.toLowerCase()));
+                filteredData = filteredData.filter(item => (item.line || '').toLowerCase().includes(selectedLineFilter.toLowerCase()));
             }
 
             if (selectedKpiLines.length > 0) {
-                filtered = filtered.filter(item => {
+                filteredData = filteredData.filter(item => {
                     const l = (item.line || '').toLowerCase();
                     return selectedKpiLines.some(kpiLine => l.includes(kpiLine.toLowerCase()));
                 });
             }
 
             if (monthYM) {
-                filtered = filtered.filter(item => {
+                filteredData = filteredData.filter(item => {
                     const dVal = item.start_date || item.date;
                     if (!dVal) return false;
                     const d = new Date(dVal);
                     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === monthYM;
                 });
             }
-            if (startDate) filtered = filtered.filter(item => (item.start_date || item.date) >= startDate);
-            if (endDate) filtered = filtered.filter(item => (item.start_date || item.date) <= endDate);
+            if (startDate) filteredData = filteredData.filter(item => (item.start_date || item.date) >= startDate);
+            if (endDate) filteredData = filteredData.filter(item => (item.start_date || item.date) <= endDate);
 
-            updateDashboard(filtered);
+            currentPage = 1;
+            updateDashboard(filteredData);
         }
 
         function updateDashboard(data) {
@@ -413,28 +495,51 @@
             lineBarChart.update();
         }
 
+        function changeRowsPerPage() {
+            const val = document.getElementById('rowsPerPage').value;
+            rowsPerPage = val === 'all' ? filteredData.length : parseInt(val);
+            currentPage = 1;
+            renderTable(filteredData);
+        }
+
         function renderTable(data) {
             const tbody = document.getElementById('improvementTableBody');
             tbody.innerHTML = '';
 
-            data.forEach((row, index) => {
+            const totalRows = data.length;
+            const rPage = rowsPerPage; 
+            const totalPages = rPage >= totalRows ? 1 : Math.ceil(totalRows / rPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+
+            const startIdx = (currentPage - 1) * rPage;
+            const endIdx = rPage >= totalRows ? totalRows : Math.min(startIdx + rPage, totalRows);
+            const paginatedData = rPage >= totalRows ? data : data.slice(startIdx, endIdx);
+
+            paginatedData.forEach((row, index) => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-950/30 transition";
 
                 let probImages = [];
-                if (Array.isArray(row.picture_of_the_problem)) probImages = row.picture_of_the_problem;
-                else if (row.picture_of_the_problem) probImages = [row.picture_of_the_problem];
+                // รองรับชื่อคอลัมน์ทั้งแบบมีเว้นวรรคและไม่มีเว้นวรรค
+                let probData = row.picture_of_the_problem || row["picture of the problem"];
+                let impData = row.picture_of_the_improvement || row["picture of the improvement "];
+
+                if (Array.isArray(probData)) probImages = probData;
+                else if (probData) probImages = [probData];
 
                 let impImages = [];
-                if (Array.isArray(row.picture_of_the_improvement)) impImages = row.picture_of_the_improvement;
-                else if (row.picture_of_the_improvement) impImages = [row.picture_of_the_improvement];
+                if (Array.isArray(impData)) impImages = impData;
+                else if (impData) impImages = [impData];
+
+                let theRiskText = row.the_risk || row["the risk"] || '-';
+                let causeRiskText = row.cause_of_risk || row["cause of risk"] || '-';
+                let startDateText = row.start_date || row["star date"] || row.date || '-';
 
                 tr.innerHTML = `
-                    <td class="p-3 text-blue-300 font-bold">${index + 1}</td>
+                    <td class="p-3 text-blue-300 font-bold">${startIdx + index + 1}</td>
                     <td class="p-3 font-medium text-white"><span class="bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">${row.category || '-'}</span></td>
                     <td class="p-3">${row.line || '-'}</td>
-                    <td class="p-3 text-slate-200">${row.the_risk || '-'}</td>
-                    <!-- ช่อง Picture of the Problem -->
+                    <td class="p-3 text-slate-200">${theRiskText}</td>
                     <td class="p-3">
                         <div id="prob-container-${row.id}" class="flex items-center gap-2 flex-wrap min-h-[40px] p-1.5 bg-[#131c31] border border-dashed border-blue-900/60 rounded-xl"
                              ondragover="event.preventDefault()" ondrop="handleDrop(event, ${row.id}, 'problem')" tabindex="0" onpaste="handlePaste(event, ${row.id}, 'problem')">
@@ -443,8 +548,7 @@
                         </div>
                     </td>
                     <td class="p-3">${row.responsible || '-'}</td>
-                    <td class="p-3">${row.cause_of_risk || '-'}</td>
-                    <!-- ช่อง Picture of the Improvement -->
+                    <td class="p-3">${causeRiskText}</td>
                     <td class="p-3">
                         <div id="imp-container-${row.id}" class="flex items-center gap-2 flex-wrap min-h-[40px] p-1.5 bg-[#131c31] border border-dashed border-blue-900/60 rounded-xl"
                              ondragover="event.preventDefault()" ondrop="handleDrop(event, ${row.id}, 'improvement')" tabindex="0" onpaste="handlePaste(event, ${row.id}, 'improvement')">
@@ -453,12 +557,30 @@
                         </div>
                     </td>
                     <td class="p-3">${row.detail || '-'}</td>
-                    <td class="p-3 text-blue-300">${row.start_date || row.date || '-'}</td>
+                    <td class="p-3 text-blue-300">${startDateText}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('paginationInfo').innerText = `แสดงทั้งหมด ${data.length} รายการ`;
+            document.getElementById('paginationInfo').innerText = totalRows === 0 ? `แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ` : `แสดง ${startIdx + 1} ถึง ${endIdx} จากทั้งหมด ${totalRows} รายการ`;
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const container = document.getElementById('paginationControls');
+            container.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `px-2.5 py-1 rounded text-xs font-semibold transition ${i === currentPage ? 'bg-blue-600 text-white shadow' : 'bg-[#131c31] text-slate-300 hover:bg-blue-900/40'}`;
+                btn.onclick = () => {
+                    currentPage = i;
+                    renderTable(filteredData);
+                };
+                container.appendChild(btn);
+            }
         }
 
         function renderImageThumbnails(images, rowId, type) {
@@ -501,10 +623,11 @@
             const row = allData.find(r => r.id === rowId);
             if (!row) return;
 
-            let fieldName = type === 'problem' ? 'picture_of_the_problem' : 'picture_of_the_improvement';
+            let fieldName = type === 'problem' ? ('picture_of_the_problem' in row ? 'picture_of_the_problem' : 'picture of the problem') : ('picture_of_the_improvement' in row ? 'picture_of_the_improvement' : 'picture of the improvement ');
             let currentImgs = [];
-            if (Array.isArray(row[fieldName])) currentImgs = [...row[fieldName]];
-            else if (row[fieldName]) currentImgs = [row[fieldName]];
+            let existingVal = row[fieldName];
+            if (Array.isArray(existingVal)) currentImgs = [...existingVal];
+            else if (existingVal) currentImgs = [existingVal];
 
             if (currentImgs.length >= 2) {
                 alert('สามารถใส่รูปได้สูงสุด 2 รูปเท่านั้นครับ');
@@ -546,8 +669,9 @@
             const row = allData.find(r => r.id === rowId);
             if (!row) return;
 
-            let fieldName = type === 'problem' ? 'picture_of_the_problem' : 'picture_of_the_improvement';
-            let currentImgs = Array.isArray(row[fieldName]) ? [...row[fieldName]] : [row[fieldName]];
+            let fieldName = type === 'problem' ? ('picture_of_the_problem' in row ? 'picture_of_the_problem' : 'picture of the problem') : ('picture_of_the_improvement' in row ? 'picture_of_the_improvement' : 'picture of the improvement ');
+            let existingVal = row[fieldName];
+            let currentImgs = Array.isArray(existingVal) ? [...existingVal] : [existingVal];
             
             currentImgs.splice(index, 1);
 
@@ -570,8 +694,55 @@
                 applyFilters();
                 return;
             }
-            const filtered = allData.filter(row => Object.values(row).join(' ').toLowerCase().includes(input));
-            updateDashboard(filtered);
+            filteredData = allData.filter(row => Object.values(row).join(' ').toLowerCase().includes(input));
+            currentPage = 1;
+            updateDashboard(filteredData);
+        }
+
+        // ฟังก์ชันจัดการ Modal เพิ่มข้อมูล
+        function openAddModal() {
+            document.getElementById('addForm').reset();
+            document.getElementById('addStartDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+        }
+
+        async function submitNewData(event) {
+            event.preventDefault();
+            const category = document.getElementById('addCategory').value;
+            const line = document.getElementById('addLine').value;
+            const theRisk = document.getElementById('addTheRisk').value;
+            const responsible = document.getElementById('addResponsible').value;
+            const startDate = document.getElementById('addStartDate').value;
+            const causeOfRisk = document.getElementById('addCauseOfRisk').value;
+            const detail = document.getElementById('addDetail').value;
+
+            // ตรวจสอบชื่อคอลัมน์จริงในตารางเพื่อบันทึกให้ถูกต้อง
+            const newRecord = {
+                category: category,
+                line: line,
+                responsible: responsible,
+                detail: detail,
+                start_date: startDate,
+                the_risk: theRisk,
+                cause_of_risk: causeOfRisk
+            };
+
+            const { data, error } = await supabaseClient
+                .from('improvement_logs')
+                .insert([newRecord])
+                .select();
+
+            if (error) {
+                alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message);
+            } else {
+                alert('บันทึกข้อมูลสำเร็จ!');
+                closeAddModal();
+                fetchImprovementData();
+            }
         }
     </script>
 </body>
