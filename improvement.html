@@ -36,12 +36,12 @@
 
             <!-- UI การกรองข้อมูล (Filters) -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- ช่วงวันที่ (Start - End Date) -->
-                <div class="flex items-center bg-[#131c31] rounded-xl px-3 py-1.5 border border-blue-900/50 shadow-inner">
-                    <span class="text-blue-300 mr-2 text-xs">ตั้งแต่</span>
-                    <input type="date" id="startDate" onchange="applyFilters()" class="bg-transparent text-xs text-white outline-none cursor-pointer">
-                    <span class="text-blue-300 mx-2 text-xs">ถึง</span>
-                    <input type="date" id="endDate" onchange="applyFilters()" class="bg-transparent text-xs text-white outline-none cursor-pointer">
+                <!-- ช่วงวันที่ (Start - End Date) - พื้นหลังขาวตามต้องการ -->
+                <div class="flex items-center bg-white rounded-xl px-3 py-1.5 border border-slate-300 shadow-md">
+                    <span class="text-slate-700 mr-2 text-xs font-semibold">ตั้งแต่</span>
+                    <input type="date" id="startDate" onchange="applyFilters()" class="bg-transparent text-xs text-slate-900 font-medium outline-none cursor-pointer">
+                    <span class="text-slate-700 mx-2 text-xs font-semibold">ถึง</span>
+                    <input type="date" id="endDate" onchange="applyFilters()" class="bg-transparent text-xs text-slate-900 font-medium outline-none cursor-pointer">
                 </div>
 
                 <!-- เลือกเดือน -->
@@ -75,42 +75,36 @@
             
             <!-- Top KPI Cards (Interactive Multi-Select / Clickable with Custom Colors & Highlights) -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                <!-- Line A-Door (ฟ้า) -->
                 <div id="card-adoor" onclick="toggleKpiLine('A-Door')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
                     <div class="text-blue-300 text-xs font-medium">Line A-Door</div>
                     <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
                         <span id="kpi-adoor-proj" class="text-3xl text-sky-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <!-- Line B-Door (เหลือง) -->
                 <div id="card-bdoor" onclick="toggleKpiLine('B-Door')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
                     <div class="text-amber-300 text-xs font-medium">Line B-Door</div>
                     <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
                         <span id="kpi-bdoor-proj" class="text-3xl text-amber-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <!-- Line C-Door (แดง) -->
                 <div id="card-cdoor" onclick="toggleKpiLine('C-Door')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
                     <div class="text-rose-300 text-xs font-medium">Line C-Door</div>
                     <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
                         <span id="kpi-cdoor-proj" class="text-3xl text-rose-500 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <!-- Line Bottom (ม่วง) -->
                 <div id="card-bottom" onclick="toggleKpiLine('Bottom')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
                     <div class="text-purple-300 text-xs font-medium">Line Bottom</div>
                     <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
                         <span id="kpi-bottom-proj" class="text-3xl text-purple-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <!-- Line DND (เขียว) -->
                 <div id="card-dnd" onclick="toggleKpiLine('DND')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
                     <div class="text-emerald-300 text-xs font-medium">Line DND</div>
                     <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
                         <span id="kpi-dnd-proj" class="text-3xl text-emerald-400 font-extrabold">0</span> <span class="text-xs font-normal text-slate-300">เรื่อง</span>
                     </div>
                 </div>
-                <!-- Press machine (ส้ม) -->
                 <div id="card-press" onclick="toggleKpiLine('Press machine')" class="kpi-card bg-gradient-to-br from-[#111c38] to-[#0a1022] border border-blue-900/60 p-4 rounded-2xl shadow-xl cursor-pointer transition transform hover:scale-[1.02]">
                     <div class="text-orange-300 text-xs font-medium">Press machine</div>
                     <div class="mt-2 text-2xl font-bold text-white flex items-baseline gap-1">
@@ -119,9 +113,8 @@
                 </div>
             </div>
 
-            <!-- Charts Section: โดนัท (Category) และ กราฟแท่ง (Line) -->
+            <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- กราฟโดนัท: แสดงจำนวนหัวข้อของ category -->
                 <div class="bg-[#0f172a] border border-blue-900/50 p-5 rounded-2xl shadow-xl lg:col-span-4 flex flex-col justify-between">
                     <h2 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
                         <i class="fa-solid fa-chart-pie text-blue-400"></i> กราฟโดนัท "Project Improve" (Category)
@@ -130,8 +123,6 @@
                         <canvas id="categoryDoughnutChart"></canvas>
                     </div>
                 </div>
-
-                <!-- กราฟแท่ง: แกน X คือ Line, แกน Y คือ จำนวนหัวข้อของ line ในตาราง log -->
                 <div class="bg-[#0f172a] border border-blue-900/50 p-5 rounded-2xl shadow-xl lg:col-span-8 flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-2">
                         <h2 class="text-sm font-bold text-white flex items-center gap-2">
@@ -164,10 +155,10 @@
                                 <th class="p-3">Category</th>
                                 <th class="p-3">Line</th>
                                 <th class="p-3">The Risk</th>
-                                <th class="p-3">Picture of the Problem</th>
+                                <th class="p-3">Picture of the Problem (สูงสุด 2 รูป)</th>
                                 <th class="p-3">Responsible</th>
                                 <th class="p-3">Cause of Risk</th>
-                                <th class="p-3">Picture of the Improvement</th>
+                                <th class="p-3">Picture of the Improvement (สูงสุด 2 รูป)</th>
                                 <th class="p-3">Detail</th>
                                 <th class="p-3 rounded-r-lg">Start Date</th>
                             </tr>
@@ -176,7 +167,6 @@
                     </table>
                 </div>
 
-                <!-- Pagination info -->
                 <div class="flex items-center justify-between mt-4 pt-3 border-t border-blue-900/30 text-xs text-blue-300">
                     <div id="paginationInfo">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
                 </div>
@@ -184,7 +174,7 @@
         </main>
     </div>
 
-    <!-- Script สำหรับจัดการ Dashboard และระบบกรองข้อมูล -->
+    <!-- Script สำหรับจัดการ Dashboard และ Supabase Storage Upload (Drag & Drop / Ctrl+V) -->
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
@@ -192,8 +182,8 @@
 
         let categoryChart, lineBarChart;
         let allData = [];
-        let selectedLineFilter = ''; // Single-select สำหรับปุ่มด้านบน
-        let selectedKpiLines = [];   // Multi-select สำหรับคลิก KPI Cards ด้านบนสุด
+        let selectedLineFilter = ''; 
+        let selectedKpiLines = [];   
 
         document.addEventListener("DOMContentLoaded", () => {
             initCharts();
@@ -216,9 +206,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Prompt', size: 10 } } } 
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Prompt', size: 10 } } } }
                 }
             });
 
@@ -253,11 +241,8 @@
                 .order('start_date', { ascending: false });
 
             if (error) {
-                console.error('Error fetching data:', error);
-                allData = [
-                    { id: 1, category: 'safety', line: 'press machine', the_risk: 'เครื่องหนีบมือ', picture_of_the_problem: '-', responsible: 'John', cause_of_risk: 'ไม่มี Sensor ป้องกัน', picture_of_the_improvement: '-', detail: 'ติดตั้ง Light Curtain', start_date: '2026-08-01' },
-                    { id: 2, category: 'machine', line: 'c-door', the_risk: 'มอเตอร์ไหม้', picture_of_the_problem: '-', responsible: 'Smith', cause_of_risk: 'กระแสไฟเกิน', picture_of_the_improvement: '-', detail: 'เปลี่ยน Overload Relay', start_date: '2026-08-05' }
-                ];
+                console.error('Error fetching data from Supabase:', error);
+                allData = [];
             } else {
                 allData = data || [];
             }
@@ -287,10 +272,8 @@
             });
         }
 
-        // Single-select สำหรับปุ่มกรองด้านบน
         function setLineFilter(lineValue) {
             selectedLineFilter = lineValue;
-            // ล้างการเลือกจาก KPI Cards เพื่อป้องกันการทับซ้อนกัน
             selectedKpiLines = [];
             updateKpiCardStyles();
 
@@ -300,15 +283,12 @@
             if (lineValue === '') {
                 document.getElementById('btn-line-all').className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow";
             } else {
-                const activeId = event.target.id;
-                document.getElementById(activeId).className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow";
+                document.getElementById(`btn-line-${lineValue === 'Press machine' ? 'Press' : lineValue}`).className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white transition shadow";
             }
             applyFilters();
         }
 
-        // Multi-select สำหรับคลิกที่ KPI Cards
         function toggleKpiLine(lineName) {
-            // เมื่อคลิก KPI ให้รีเซ็ตปุ่มด้านบนเป็น All เพื่อโฟกัสที่การ์ด
             selectedLineFilter = '';
             document.querySelectorAll('.line-btn').forEach(btn => {
                 btn.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white transition";
@@ -317,9 +297,9 @@
 
             const index = selectedKpiLines.indexOf(lineName);
             if (index > -1) {
-                selectedKpiLines.splice(index, 1); // เอาออกถ้าเลือกซ้ำ
+                selectedKpiLines.splice(index, 1);
             } else {
-                selectedKpiLines.push(lineName); // เพิ่มเข้าไปถ้ายังไม่เลือก
+                selectedKpiLines.push(lineName);
             }
 
             updateKpiCardStyles();
@@ -369,12 +349,10 @@
 
             let filtered = allData;
 
-            // กรองด้วยปุ่ม Single-select ด้านบน
             if (selectedLineFilter !== '') {
                 filtered = filtered.filter(item => (item.line || '').toLowerCase().includes(selectedLineFilter.toLowerCase()));
             }
 
-            // กรองด้วย Multi-select จาก KPI Cards ด้านบนสุด
             if (selectedKpiLines.length > 0) {
                 filtered = filtered.filter(item => {
                     const l = (item.line || '').toLowerCase();
@@ -403,21 +381,11 @@
         }
 
         function updateKPIs(data) {
-            let stats = {
-                'a-door': 0,
-                'b-door': 0,
-                'c-door': 0,
-                'bottom': 0,
-                'dnd': 0,
-                'press machine': 0
-            };
-
+            let stats = { 'a-door': 0, 'b-door': 0, 'c-door': 0, 'bottom': 0, 'dnd': 0, 'press machine': 0 };
             data.forEach(item => {
                 const l = (item.line || '').toLowerCase();
                 for (let key in stats) {
-                    if (l.includes(key)) {
-                        stats[key]++;
-                    }
+                    if (l.includes(key)) stats[key]++;
                 }
             });
 
@@ -440,13 +408,12 @@
             categoryChart.update();
 
             const lineKeys = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND', 'Press machine'];
-            const lineCounts = lineKeys.map(lk => {
-                return data.filter(item => (item.line || '').toLowerCase().includes(lk.toLowerCase())).length;
-            });
+            const lineCounts = lineKeys.map(lk => data.filter(item => (item.line || '').toLowerCase().includes(lk.toLowerCase())).length);
             lineBarChart.data.datasets[0].data = lineCounts;
             lineBarChart.update();
         }
 
+        // Render ตาราง พร้อมฟังก์ชันจัดการอัปโหลด/แสดงผลรูปภาพจาก Supabase Bucket 'improvement-image' (รองรับสูงสุด 2 รูป, Drag & Drop, Ctrl+V)
         function renderTable(data) {
             const tbody = document.getElementById('improvementTableBody');
             tbody.innerHTML = '';
@@ -454,15 +421,39 @@
             data.forEach((row, index) => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-blue-950/30 transition";
+
+                // จัดการแปลงข้อมูลรูปภาพ (รองรับทั้งแบบ Array หรือ String เดี่ยว)
+                let probImages = [];
+                if (Array.isArray(row.picture_of_the_problem)) probImages = row.picture_of_the_problem;
+                else if (row.picture_of_the_problem) probImages = [row.picture_of_the_problem];
+
+                let impImages = [];
+                if (Array.isArray(row.picture_of_the_improvement)) impImages = row.picture_of_the_improvement;
+                else if (row.picture_of_the_improvement) impImages = [row.picture_of_the_improvement];
+
                 tr.innerHTML = `
                     <td class="p-3 text-blue-300 font-bold">${index + 1}</td>
                     <td class="p-3 font-medium text-white"><span class="bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800">${row.category || '-'}</span></td>
                     <td class="p-3">${row.line || '-'}</td>
                     <td class="p-3 text-slate-200">${row.the_risk || '-'}</td>
-                    <td class="p-3">${row.picture_of_the_problem ? `<a href="${row.picture_of_the_problem}" target="_blank" class="text-blue-400 underline">ดูรูป</a>` : '-'}</td>
+                    <!-- ช่อง Picture of the Problem -->
+                    <td class="p-3">
+                        <div id="prob-container-${row.id}" class="flex items-center gap-2 flex-wrap min-h-[40px] p-1.5 bg-[#131c31] border border-dashed border-blue-900/60 rounded-xl"
+                             ondragover="event.preventDefault()" ondrop="handleDrop(event, ${row.id}, 'problem')" tabindex="0" onpaste="handlePaste(event, ${row.id}, 'problem')">
+                            ${renderImageThumbnails(probImages, row.id, 'problem')}
+                            ${probImages.length < 2 ? `<label class="cursor-pointer text-[10px] text-blue-400 bg-blue-950/80 px-2 py-1 rounded border border-blue-800 hover:bg-blue-900 transition flex items-center gap-1"><i class="fa-solid fa-plus"></i> เพิ่มรูป<input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, ${row.id}, 'problem')"></label>` : ''}
+                        </div>
+                    </td>
                     <td class="p-3">${row.responsible || '-'}</td>
                     <td class="p-3">${row.cause_of_risk || '-'}</td>
-                    <td class="p-3">${row.picture_of_the_improvement ? `<a href="${row.picture_of_the_improvement}" target="_blank" class="text-blue-400 underline">ดูรูป</a>` : '-'}</td>
+                    <!-- ช่อง Picture of the Improvement -->
+                    <td class="p-3">
+                        <div id="imp-container-${row.id}" class="flex items-center gap-2 flex-wrap min-h-[40px] p-1.5 bg-[#131c31] border border-dashed border-blue-900/60 rounded-xl"
+                             ondragover="event.preventDefault()" ondrop="handleDrop(event, ${row.id}, 'improvement')" tabindex="0" onpaste="handlePaste(event, ${row.id}, 'improvement')">
+                            ${renderImageThumbnails(impImages, row.id, 'improvement')}
+                            ${impImages.length < 2 ? `<label class="cursor-pointer text-[10px] text-emerald-400 bg-emerald-950/80 px-2 py-1 rounded border border-emerald-800 hover:bg-emerald-900 transition flex items-center gap-1"><i class="fa-solid fa-plus"></i> เพิ่มรูป<input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, ${row.id}, 'improvement')"></label>` : ''}
+                        </div>
+                    </td>
                     <td class="p-3">${row.detail || '-'}</td>
                     <td class="p-3 text-blue-300">${row.start_date || row.date || '-'}</td>
                 `;
@@ -470,6 +461,111 @@
             });
 
             document.getElementById('paginationInfo').innerText = `แสดงทั้งหมด ${data.length} รายการ`;
+        }
+
+        function renderImageThumbnails(images, rowId, type) {
+            if (!images || images.length === 0) return `<span class="text-[10px] text-slate-500 px-1">ลากรูปมาวาง / กด Ctrl+V</span>`;
+            return images.map((url, idx) => `
+                <div class="relative group">
+                    <a href="${url}" target="_blank">
+                        <img src="${url}" class="w-10 h-10 object-cover rounded-lg border border-blue-500/40 hover:scale-105 transition" alt="img">
+                    </a>
+                    <button onclick="removeImage(${rowId}, '${type}', ${idx})" class="absolute -top-1.5 -right-1.5 bg-rose-600 text-white rounded-full w-4 h-4 text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow" title="ลบรูป">×</button>
+                </div>
+            `).join('');
+        }
+
+        async function handleFileSelect(event, rowId, type) {
+            const file = event.target.files[0];
+            if (file) await uploadAndSaveImage(file, rowId, type);
+        }
+
+        async function handleDrop(event, rowId, type) {
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                await uploadAndSaveImage(file, rowId, type);
+            }
+        }
+
+        async function handlePaste(event, rowId, type) {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (let item of items) {
+                if (item.type.indexOf("image") === 0) {
+                    const file = item.getAsFile();
+                    if (file) await uploadAndSaveImage(file, rowId, type);
+                    break;
+                }
+            }
+        }
+
+        // ฟังก์ชันอัปโหลดรูปขึ้น Supabase Storage Bucket "improvement-image" และบันทึกลง Database
+        async function uploadAndSaveImage(file, rowId, type) {
+            const row = allData.find(r => r.id === rowId);
+            if (!row) return;
+
+            let fieldName = type === 'problem' ? 'picture_of_the_problem' : 'picture_of_the_improvement';
+            let currentImgs = [];
+            if (Array.isArray(row[fieldName])) currentImgs = [...row[fieldName]];
+            else if (row[fieldName]) currentImgs = [row[fieldName]];
+
+            if (currentImgs.length >= 2) {
+                alert('สามารถใส่รูปได้สูงสุด 2 รูปเท่านั้นครับ');
+                return;
+            }
+
+            const fileName = `log_${rowId}_${type}_${Date.now()}.png`;
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('improvement-image')
+                .upload(fileName, file);
+
+            if (uploadError) {
+                alert('เกิดข้อผิดพลาดในการอัปโหลดรูป: ' + uploadError.message);
+                return;
+            }
+
+            const { data: publicURLData } = supabaseClient.storage
+                .from('improvement-image')
+                .getPublicUrl(fileName);
+
+            const publicUrl = publicURLData.publicUrl;
+            currentImgs.push(publicUrl);
+
+            // อัปเดตข้อมูลลง Supabase Table
+            const { error: updateError } = await supabaseClient
+                .from('improvement_logs')
+                .update({ [fieldName]: currentImgs })
+                .eq('id', rowId);
+
+            if (updateError) {
+                alert('ไม่สามารถบันทึกลิงก์รูปลงฐานข้อมูลได้: ' + updateError.message);
+            } else {
+                row[fieldName] = currentImgs;
+                applyFilters();
+            }
+        }
+
+        async function removeImage(rowId, type, index) {
+            if (!confirm('ต้องการลบรูปนี้ใช่หรือไม่?')) return;
+            const row = allData.find(r => r.id === rowId);
+            if (!row) return;
+
+            let fieldName = type === 'problem' ? 'picture_of_the_problem' : 'picture_of_the_improvement';
+            let currentImgs = Array.isArray(row[fieldName]) ? [...row[fieldName]] : [row[fieldName]];
+            
+            currentImgs.splice(index, 1);
+
+            const { error: updateError } = await supabaseClient
+                .from('improvement_logs')
+                .update({ [fieldName]: currentImgs.length > 0 ? currentImgs : null })
+                .eq('id', rowId);
+
+            if (!updateError) {
+                row[fieldName] = currentImgs.length > 0 ? currentImgs : null;
+                applyFilters();
+            } else {
+                alert('เกิดข้อผิดพลาดในการลบรูป: ' + updateError.message);
+            }
         }
 
         function searchTable() {
