@@ -179,7 +179,7 @@
     <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)</h3>
+            <h3 id="shiftChartTitle" class="text-sm font-bold text-orange-500 mb-2">Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)</h3>
             <div class="h-80 relative flex justify-center items-center">
                 <canvas id="shiftChart"></canvas>
             </div>
@@ -1439,10 +1439,10 @@
                     label: lineName,
                     data: dataPerDate,
                     borderColor: colorMap[lineName],
-                    backgroundColor: colorMap[lineName] + '33', // เพิ่มความโปร่งใสเล็กน้อยสำหรับพื้นที่ Area Chart
+                    backgroundColor: colorMap[lineName] + '33',
                     borderWidth: 2,
                     pointRadius: 3,
-                    fill: true // เปลี่ยนเป็น Area Chart (เติมสีใต้กราฟเส้น)
+                    fill: true
                 };
             });
 
@@ -1453,10 +1453,12 @@
 
         function updateShiftChart(data) {
             const selectedIssueVal = document.getElementById('issueFilter').value;
+            const chartTitleEl = document.getElementById('shiftChartTitle');
 
             // ตรวจสอบว่ามีการเลือก Issue เฉพาะเจาะจงหรือไม่
             if (selectedIssueVal !== 'All') {
-                // กรองเฉพาะข้อมูลที่เป็น issue ที่ถูกเลือก และจัดกลุ่มแยกตามวันที่ (แกน X เป็นวันที่แต่ละวัน)
+                chartTitleEl.innerText = `ปัญหา${selectedIssueVal}แยกตามวัน (จำนวนครั้ง)`;
+
                 const filteredByIssue = data.filter(item => item.issue === selectedIssueVal);
                 const dates = [...new Set(filteredByIssue.map(item => item.date))].filter(Boolean).sort();
 
@@ -1464,7 +1466,6 @@
                     return filteredByIssue.filter(item => item.date === d).length;
                 });
 
-                // เปลี่ยนรูปแบบกราฟให้เป็นกราฟแท่ง (bar) พร้อมตั้งค่าตัด label, กล่องไฮไลท์ และจุด marker ออก
                 shiftChartInstance.config.type = 'bar';
                 shiftChartInstance.data.labels = dates.length > 0 ? dates : ['ไม่มีข้อมูล'];
                 shiftChartInstance.data.datasets = [{
@@ -1474,7 +1475,6 @@
                     borderRadius: 4
                 }];
 
-                // ปิด Datalabels, ปิด Background/Border (กล่องไฮไลท์) และปรับแต่ง Tooltip สำหรับกราฟแท่งเมื่อเลือก Issue
                 shiftChartInstance.options.plugins.datalabels.display = false;
                 shiftChartInstance.options.plugins.tooltip.callbacks.label = function(context) {
                     return ` วันที่ ${context.label}: ${context.raw.toLocaleString()} ครั้ง`;
@@ -1484,7 +1484,8 @@
                 return;
             }
 
-            // กรณีปกติ (ไม่ได้เลือก Issue เฉพาะเจาะจง -> แสดง Top 5 สถิติปัญหาเครื่องจักรขัดข้องเป็นกราฟแท่งตามเดิม)
+            chartTitleEl.innerText = 'Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)';
+            
             shiftChartInstance.config.type = 'bar';
             shiftChartInstance.options.plugins.datalabels.display = true;
 
