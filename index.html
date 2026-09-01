@@ -1381,11 +1381,6 @@
                     plugins: {
                         legend: { display: false },
                         datalabels: {
-                            // ควบคุมการแสดง Data Labels ตามเงื่อนไข (แสดงเฉพาะตอน Top 5 / All, ซ่อนเมื่อเลือก Issue เจาะจง)
-                            display: function(context) {
-                                const selectedIssueVal = document.getElementById('issueFilter').value;
-                                return selectedIssueVal === 'All';
-                            },
                             color: '#ffffff',
                             font: { size: 11, weight: 'bold' },
                             anchor: 'center',
@@ -1460,10 +1455,12 @@
             const selectedIssueVal = document.getElementById('issueFilter').value;
             const chartTitleEl = document.getElementById('shiftChartTitle');
             
+            // ซ่อน DataLabels เมื่อเลือก Issue เฉพาะเจาะจง และแสดงเมื่อเลือก All (Top 5)
+            shiftChartInstance.options.plugins.datalabels.display = (selectedIssueVal === 'All');
+
             if (selectedIssueVal !== 'All') {
-                // หากเลือก Issue เฉพาะเจาะจง -> เปลี่ยนประเภทกราฟเป็น "line" (กราฟเส้น) เพื่อดูแนวโน้ม
-                shiftChartInstance.config.type = 'line';
-                chartTitleEl.innerText = `แนวโน้มปัญหา "${selectedIssueVal}" แยกตามวัน (จำนวนครั้ง)`;
+                // หากเลือก Issue เฉพาะเจาะจง -> แสดงกราฟแท่งแยกตาม "วัน" (Date)
+                chartTitleEl.innerText = `สถิติปัญหา "${selectedIssueVal}" แยกตามวัน (จำนวนครั้ง)`;
                 
                 // หาค่าวันที่ทั้งหมดที่มีในข้อมูลที่กรองแล้ว และเรียงลำดับจากน้อยไปมาก
                 const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
@@ -1473,15 +1470,9 @@
 
                 shiftChartInstance.data.labels = dates.length > 0 ? dates : ['ไม่มีข้อมูล'];
                 shiftChartInstance.data.datasets[0].data = countsPerDate.length > 0 ? countsPerDate : [0];
-                shiftChartInstance.data.datasets[0].borderColor = '#f59e0b';
-                shiftChartInstance.data.datasets[0].backgroundColor = '#f59e0b';
-                shiftChartInstance.data.datasets[0].borderWidth = 2;
-                shiftChartInstance.data.datasets[0].pointRadius = 4;
-                shiftChartInstance.data.datasets[0].tension = 0.3;
-                shiftChartInstance.data.datasets[0].fill = false;
+                shiftChartInstance.data.datasets[0].backgroundColor = '#f59e0b'; // ใช้โทนสีส้มเดี่ยว
             } else {
-                // หากเลือก All -> กลับมาเป็นกราฟแท่ง (Bar Chart) สำหรับ Top 5 ปัญหา
-                shiftChartInstance.config.type = 'bar';
+                // หากเลือก All -> แสดง Top 5 ปัญหาปกติ
                 chartTitleEl.innerText = 'Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)';
                 
                 const issueCounts = {};
