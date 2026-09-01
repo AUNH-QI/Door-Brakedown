@@ -124,8 +124,14 @@
             <!-- SCRAP BY MACHINE Button -->
             <div class="flex items-end mt-auto ml-auto">
                 <a href="scrap.html" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-4 py-1.5 rounded transition shadow flex items-center gap-1">
-                    📊 SCRAP BY MACHINE
+                     SCRAP BY MACHINE
                 </a>
+                <!-- IMPROVEMENT Button -->
+            <div class="flex items-end mt-auto ml-2">
+                <a href="improvement.html" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-4 py-1.5 rounded-xl shadow-lg transition flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie"></i> IMPROVEMENT
+                </a>
+
             </div>
 
         </div>
@@ -1348,7 +1354,7 @@
         function initCharts() {
             const ctxLine = document.getElementById('lineChart').getContext('2d');
             lineChartInstance = new Chart(ctxLine, {
-                type: 'line', // ตั้งค่าเริ่มต้นเป็น line (จะถูกปรับเป็น area chart ในฟังก์ชัน updateLineChart โดยการใส่ fill: true)
+                type: 'line',
                 data: { labels: [], datasets: [] },
                 options: {
                     responsive: true,
@@ -1371,7 +1377,7 @@
                     datasets: [{ 
                         label: 'จำนวนครั้ง',
                         data: [], 
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], 
+                        backgroundColor: '#f59e0b', 
                         borderRadius: 4
                     }] 
                 },
@@ -1382,21 +1388,11 @@
                         legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
-                            font: { size: 11, weight: 'bold' },
-                            anchor: 'center',
-                            align: 'center',
-                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                            borderColor: '#000000',
-                            borderWidth: 1,
-                            borderRadius: 4,
-                            padding: 4,
-                            formatter: (value, context) => {
-                                const selectedIssueVal = document.getElementById('issueFilter').value;
-                                // ถ้าเลือก Issue แล้ว (กราฟแท่งตอนเลือก issue) ให้ซ่อน label/datalabels ตามที่ต้องการ
-                                if (selectedIssueVal !== 'All') {
-                                    return '';
-                                }
-                                return value > 0 ? value.toLocaleString() + ' ครั้ง' : '';
+                            font: { size: 10, weight: 'bold' },
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => {
+                                return value > 0 ? value.toLocaleString() : '';
                             }
                         },
                         tooltip: {
@@ -1442,12 +1438,11 @@
                     return totalMins === 0 ? null : totalMins;
                 });
 
-                // แปลงเป็น Area Chart โดยเปิดใช้ fill: true และกำหนดสีพื้นหลังโปร่งแสง
                 return {
                     label: lineName,
                     data: dataPerDate,
                     borderColor: colorMap[lineName],
-                    backgroundColor: colorMap[lineName] + '33', // เติมความโปร่งแสง hex alpha (ประมาณ 20%)
+                    backgroundColor: colorMap[lineName] + '33',
                     borderWidth: 2,
                     pointRadius: 3,
                     fill: true 
@@ -1464,7 +1459,6 @@
             const chartTitleEl = document.getElementById('shiftChartTitle');
             
             if (selectedIssueVal !== 'All') {
-                // หากเลือก Issue เฉพาะเจาะจง -> แสดงกราฟแท่งแยกตาม "วัน" (Date) พร้อมทั้งตัดจุด marker ออกด้วย (pointRadius = 0)
                 chartTitleEl.innerText = `สถิติปัญหา "${selectedIssueVal}" แยกตามวัน (จำนวนครั้ง)`;
                 
                 const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
@@ -1475,10 +1469,7 @@
                 shiftChartInstance.data.labels = dates.length > 0 ? dates : ['ไม่มีข้อมูล'];
                 shiftChartInstance.data.datasets[0].data = countsPerDate.length > 0 ? countsPerDate : [0];
                 shiftChartInstance.data.datasets[0].backgroundColor = '#f59e0b';
-                
-                // ตัดจุด marker ออก (สำหรับ bar chart ปกติจุด marker จะไม่มีผลอยู่แล้ว แต่เพื่อให้มั่นใจว่าไม่มีจุดจุดไข่ปลาหรือเอฟเฟกต์ติดมา)
             } else {
-                // หากเลือก All -> แสดง Top 5 ปัญหาปกติ
                 chartTitleEl.innerText = 'Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)';
                 
                 const issueCounts = {};
