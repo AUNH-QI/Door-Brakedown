@@ -1111,7 +1111,7 @@
                 document.getElementById('lineFilter').value = 'All';
                 ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
                     const btn = document.getElementById(`btn-line-${l}`);
-                    if (btn) { btn.className = l === 'All' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
+                    if (btn) { btn.className = l === 'All' ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2 py-1 rounded text-gray-300 hover:text-white transition"; }
                 });
 
                 selectedKpiLines = [];
@@ -1439,10 +1439,10 @@
                     label: lineName,
                     data: dataPerDate,
                     borderColor: colorMap[lineName],
-                    backgroundColor: colorMap[lineName] + '33', // Area fill with transparency
+                    backgroundColor: colorMap[lineName] + '33', // เพิ่มความโปร่งใสเล็กน้อยสำหรับพื้นที่ Area Chart
                     borderWidth: 2,
                     pointRadius: 3,
-                    fill: true // Area chart
+                    fill: true // เปลี่ยนเป็น Area Chart (เติมสีใต้กราฟเส้น)
                 };
             });
 
@@ -1452,6 +1452,42 @@
         }
 
         function updateShiftChart(data) {
+            const selectedIssueVal = document.getElementById('issueFilter').value;
+
+            // ตรวจสอบว่ามีการเลือก Issue เฉพาะเจาะจงหรือไม่
+            if (selectedIssueVal !== 'All') {
+                // กรองเฉพาะข้อมูลที่เป็น issue ที่ถูกเลือก และจัดกลุ่มแยกตามวันที่ (แกน X เป็นวันที่แต่ละวัน)
+                const filteredByIssue = data.filter(item => item.issue === selectedIssueVal);
+                const dates = [...new Set(filteredByIssue.map(item => item.date))].filter(Boolean).sort();
+
+                const countsPerDate = dates.map(d => {
+                    return filteredByIssue.filter(item => item.date === d).length;
+                });
+
+                // เปลี่ยนรูปแบบกราฟให้เป็นกราฟแท่ง (bar) พร้อมตั้งค่าตัด label, กล่องไฮไลท์ และจุด marker ออก
+                shiftChartInstance.config.type = 'bar';
+                shiftChartInstance.data.labels = dates.length > 0 ? dates : ['ไม่มีข้อมูล'];
+                shiftChartInstance.data.datasets = [{
+                    label: selectedIssueVal,
+                    data: countsPerDate.length > 0 ? countsPerDate : [0],
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 4
+                }];
+
+                // ปิด Datalabels, ปิด Background/Border (กล่องไฮไลท์) และปรับแต่ง Tooltip สำหรับกราฟแท่งเมื่อเลือก Issue
+                shiftChartInstance.options.plugins.datalabels.display = false;
+                shiftChartInstance.options.plugins.tooltip.callbacks.label = function(context) {
+                    return ` วันที่ ${context.label}: ${context.raw.toLocaleString()} ครั้ง`;
+                };
+
+                shiftChartInstance.update();
+                return;
+            }
+
+            // กรณีปกติ (ไม่ได้เลือก Issue เฉพาะเจาะจง -> แสดง Top 5 สถิติปัญหาเครื่องจักรขัดข้องเป็นกราฟแท่งตามเดิม)
+            shiftChartInstance.config.type = 'bar';
+            shiftChartInstance.options.plugins.datalabels.display = true;
+
             const issueCounts = {};
             data.forEach(item => {
                 const issue = item.issue || 'ไม่ระบุ';
@@ -1463,37 +1499,44 @@
             let finalCounts = [];
             hiddenIssuesDetail = [];
 
-            const selectedIssueVal = document.getElementById('issueFilter').value;
-
-            if (selectedIssueVal !== 'All') {
-                finalLabels = [selectedIssueVal];
-                finalCounts = [data.length];
-                // ตัด label, กล่องไฮไลท์ และจุด marker ออก ตอนเลือก issue
-                shiftChartInstance.options.plugins.datalabels.display = false;
-            } else {
-                shiftChartInstance.options.plugins.datalabels.display = true;
-                if (sortedIssues.length > 5) {
-                    for (let i = 0; i < 4; i++) {
-                        finalLabels.push(sortedIssues[i][0]);
-                        finalCounts.push(sortedIssues[i][1]);
-                    }
-                    let othersSum = 0;
-                    for (let i = 4; i < sortedIssues.length; i++) {
-                        othersSum += sortedIssues[i][1];
-                        hiddenIssuesDetail.push({ issue: sortedIssues[i][0], count: sortedIssues[i][1] });
-                    }
-                    finalLabels.push('ปัญหาอื่นๆ (รวม)');
-                    finalCounts.push(othersSum);
-                } else {
-                    sortedIssues.forEach(item => {
-                        finalLabels.push(item[0]);
-                        finalCounts.push(item[1]);
-                    });
+            if (sortedIssues.length > 5) {
+                for (let i = 0; i < 4; i++) {
+                    finalLabels.push(sortedIssues[i][0]);
+                    finalCounts.push(sortedIssues[i][1]);
                 }
+                let othersSum = 0;
+                for (let i = 4; i < sortedIssues.length; i++) {
+                    othersSum += sortedIssues[i][1];
+                    hiddenIssuesDetail.push({ issue: sortedIssues[i][0], count: sortedIssues[i][1] });
+                }
+                finalLabels.push('ปัญหาอื่นๆ (รวม)');
+                finalCounts.push(othersSum);
+            } else {
+                sortedIssues.forEach(item => {
+                    finalLabels.push(item[0]);
+                    finalCounts.push(item[1]);
+                });
             }
 
             shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
-            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
+            shiftChartInstance.data.datasets = [{
+                label: 'จำนวนครั้ง',
+                data: finalCounts.length > 0 ? finalCounts : [0],
+                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'],
+                borderRadius: 4
+            }];
+
+            shiftChartInstance.options.plugins.tooltip.callbacks.label = function(context) {
+                let sum = context.dataset.data.reduce((a, b) => a + b, 0);
+                let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
+                if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
+                    let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
+                    hiddenIssuesDetail.forEach(item => { details.push(` - ${item.issue}: ${item.count} ครั้ง`); });
+                    return details;
+                }
+                return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
+            };
+
             shiftChartInstance.update();
         }
     </script>
