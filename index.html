@@ -126,12 +126,12 @@
                 <a href="scrap.html" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-4 py-1.5 rounded transition shadow flex items-center gap-1">
                      SCRAP BY MACHINE
                 </a>
-                <!-- IMPROVEMENT Button -->
+            <!-- IMPROVEMENT Button -->
             <div class="flex items-end mt-auto ml-2">
                 <a href="improvement.html" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-4 py-1.5 rounded-xl shadow-lg transition flex items-center gap-2">
                 <i class="fa-solid fa-chart-pie"></i> IMPROVEMENT
                 </a>
-
+            </div>
             </div>
 
         </div>
@@ -179,13 +179,13 @@
     <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
-            <h3 id="shiftChartTitle" class="text-sm font-bold text-orange-500 mb-2">Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)</h3>
+            <h3 class="text-sm font-bold text-orange-500 mb-2">Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)</h3>
             <div class="h-80 relative flex justify-center items-center">
                 <canvas id="shiftChart"></canvas>
             </div>
         </div>
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7">
-            <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที)</h3>
+            <h3 class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที) [ไม่แสดงค่า 0]</h3>
             <div class="h-80"><canvas id="lineChart"></canvas></div>
         </div>
     </div>
@@ -1111,7 +1111,7 @@
                 document.getElementById('lineFilter').value = 'All';
                 ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
                     const btn = document.getElementById(`btn-line-${l}`);
-                    if (btn) { btn.className = l === 'All' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
+                    if (btn) { btn.className = l === 'All' ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
                 });
 
                 selectedKpiLines = [];
@@ -1377,7 +1377,7 @@
                     datasets: [{ 
                         label: 'จำนวนครั้ง',
                         data: [], 
-                        backgroundColor: '#f59e0b', 
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], 
                         borderRadius: 4
                     }] 
                 },
@@ -1388,36 +1388,33 @@
                         legend: { display: false },
                         datalabels: {
                             color: '#ffffff',
-                            font: { size: 10, weight: 'bold' },
-                            anchor: 'end',
-                            align: 'top',
-                            formatter: (value) => {
-                                return value > 0 ? value.toLocaleString() : '';
-                            }
+                            font: { size: 11, weight: 'bold' },
+                            anchor: 'center',
+                            align: 'center',
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            borderColor: '#000000',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            padding: 4,
+                            formatter: (value) => value > 0 ? value.toLocaleString() + ' ครั้ง' : ''
                         },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const selectedIssueVal = document.getElementById('issueFilter').value;
                                     let sum = context.dataset.data.reduce((a, b) => a + b, 0);
                                     let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
-                                    
-                                    if (selectedIssueVal === 'All') {
-                                        if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
-                                            let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
-                                            hiddenIssuesDetail.forEach(item => { details.push(` - ${item.issue}: ${item.count} ครั้ง`); });
-                                            return details;
-                                        }
-                                        return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
-                                    } else {
-                                        return ` วันที่ ${context.label}: ${context.raw.toLocaleString()} ครั้ง`;
+                                    if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
+                                        let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
+                                        hiddenIssuesDetail.forEach(item => { details.push(` - ${item.issue}: ${item.count} ครั้ง`); });
+                                        return details;
                                     }
+                                    return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
                                 }
                             }
                         }
                     },
                     scales: {
-                        x: { ticks: { color: '#9ca3af', font: { size: 11 }, maxRotation: 25, minRotation: 0 }, grid: { display: false } },
+                        x: { ticks: { color: '#9ca3af', font: { size: 12 }, maxRotation: 25, minRotation: 0 }, grid: { display: false } },
                         y: { beginAtZero: true, ticks: { color: '#9ca3af', precision: 0 }, grid: { color: '#242b35' } }
                     }
                 },
@@ -1442,10 +1439,10 @@
                     label: lineName,
                     data: dataPerDate,
                     borderColor: colorMap[lineName],
-                    backgroundColor: colorMap[lineName] + '33',
+                    backgroundColor: colorMap[lineName],
                     borderWidth: 2,
                     pointRadius: 3,
-                    fill: true 
+                    fill: false
                 };
             });
 
@@ -1455,58 +1452,43 @@
         }
 
         function updateShiftChart(data) {
+            const issueCounts = {};
+            data.forEach(item => {
+                const issue = item.issue || 'ไม่ระบุ';
+                issueCounts[issue] = (issueCounts[issue] || 0) + 1;
+            });
+
+            let sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
+            let finalLabels = [];
+            let finalCounts = [];
+            hiddenIssuesDetail = [];
+
             const selectedIssueVal = document.getElementById('issueFilter').value;
-            const chartTitleEl = document.getElementById('shiftChartTitle');
-            
+
             if (selectedIssueVal !== 'All') {
-                chartTitleEl.innerText = `สถิติปัญหา "${selectedIssueVal}" แยกตามวัน (จำนวนครั้ง)`;
-                
-                const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
-                const countsPerDate = dates.map(d => {
-                    return data.filter(item => item.date === d).length;
-                });
-
-                shiftChartInstance.data.labels = dates.length > 0 ? dates : ['ไม่มีข้อมูล'];
-                shiftChartInstance.data.datasets[0].data = countsPerDate.length > 0 ? countsPerDate : [0];
-                shiftChartInstance.data.datasets[0].backgroundColor = '#f59e0b';
-            } else {
-                chartTitleEl.innerText = 'Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)';
-                
-                const issueCounts = {};
-                data.forEach(item => {
-                    const issue = item.issue || 'ไม่ระบุ';
-                    issueCounts[issue] = (issueCounts[issue] || 0) + 1;
-                });
-
-                let sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
-                let finalLabels = [];
-                let finalCounts = [];
-                hiddenIssuesDetail = [];
-
-                if (sortedIssues.length > 5) {
-                    for (let i = 0; i < 4; i++) {
-                        finalLabels.push(sortedIssues[i][0]);
-                        finalCounts.push(sortedIssues[i][1]);
-                    }
-                    let othersSum = 0;
-                    for (let i = 4; i < sortedIssues.length; i++) {
-                        othersSum += sortedIssues[i][1];
-                        hiddenIssuesDetail.push({ issue: sortedIssues[i][0], count: sortedIssues[i][1] });
-                    }
-                    finalLabels.push('ปัญหาอื่นๆ (รวม)');
-                    finalCounts.push(othersSum);
-                } else {
-                    sortedIssues.forEach(item => {
-                        finalLabels.push(item[0]);
-                        finalCounts.push(item[1]);
-                    });
+                finalLabels = [selectedIssueVal];
+                finalCounts = [data.length];
+            } else if (sortedIssues.length > 5) {
+                for (let i = 0; i < 4; i++) {
+                    finalLabels.push(sortedIssues[i][0]);
+                    finalCounts.push(sortedIssues[i][1]);
                 }
-
-                shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
-                shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
-                shiftChartInstance.data.datasets[0].backgroundColor = ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'];
+                let othersSum = 0;
+                for (let i = 4; i < sortedIssues.length; i++) {
+                    othersSum += sortedIssues[i][1];
+                    hiddenIssuesDetail.push({ issue: sortedIssues[i][0], count: sortedIssues[i][1] });
+                }
+                finalLabels.push('ปัญหาอื่นๆ (รวม)');
+                finalCounts.push(othersSum);
+            } else {
+                sortedIssues.forEach(item => {
+                    finalLabels.push(item[0]);
+                    finalCounts.push(item[1]);
+                });
             }
 
+            shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
+            shiftChartInstance.data.datasets[0].data = finalCounts.length > 0 ? finalCounts : [0];
             shiftChartInstance.update();
         }
     </script>
