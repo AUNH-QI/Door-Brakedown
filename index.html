@@ -758,30 +758,30 @@
         }
 
         async function fetchLogs() {
-            const statusEl = document.getElementById('loadingStatus');
-            statusEl.classList.remove('hidden');
+    const statusEl = document.getElementById('loadingStatus');
+    statusEl.classList.remove('hidden');
 
-            try {
-                const { data, error } = await supabaseClient
-                    .from('breakdown_logs')
-                    .select('*')
-                    .order('date', { ascending: false })
-                    .order('time', { ascending: false, nullsFirst: false })
-                    .order('id', { ascending: false });
+    try {
+        const { data, error } = await supabaseClient
+            .from('breakdown_logs')
+            .select('*')
+            .order('date', { ascending: false })
+            .order('time', { ascending: false, nullsFirst: false })
+            .order('id', { ascending: false })
+            .limit(10000); // ขยายลิมิตการดึงข้อมูลเป็น 10,000 รายการ (หรือปรับเพิ่มตามต้องการ)[cite: 8]
 
-                if (error) throw error;
+        if (error) throw error;
 
-                logsData = data || [];
-                populateDropdowns();
-                updateDashboard();
-            } catch (err) {
-                console.error("Error fetching data:", err);
-                alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
-            } finally {
-                statusEl.classList.add('hidden');
-            }
-        }
-
+        logsData = data || [];
+        populateDropdowns();
+        updateDashboard();
+    } catch (err) {
+        console.error("Error fetching data:", err);
+        alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
+    } finally {
+        statusEl.classList.add('hidden');
+    }
+}
         function populateDropdowns() {
             const stationCounts = {};
             logsData.forEach(item => {
