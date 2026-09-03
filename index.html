@@ -219,6 +219,7 @@
         </div>
 
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
+            <!-- บรรทัดแรกประกอบด้วย DATE, TIME, SHIFT และ LINE Buttons -->
             <div>
                 <label class="block text-gray-400 mb-1">DATE</label>
                 <input type="date" id="inputDate" required class="w-full bg-gray-200 text-gray-900 font-semibold p-2 rounded border border-gray-400">
@@ -241,15 +242,17 @@
             </div>
             <div>
                 <label class="block text-gray-400 mb-1">LINE</label>
-                <div class="flex bg-[#181c24] p-1 rounded border border-gray-700 gap-1 h-[34px] items-center overflow-x-auto">
-                    <button type="button" onclick="setInputLine('A-Door')" id="btnInputLineA" class="px-2 py-1 rounded text-gray-400 hover:text-white transition text-[11px] font-medium whitespace-nowrap">A-Door</button>
-                    <button type="button" onclick="setInputLine('B-Door')" id="btnInputLineB" class="px-2 py-1 rounded text-gray-400 hover:text-white transition text-[11px] font-medium whitespace-nowrap">B-Door</button>
-                    <button type="button" onclick="setInputLine('C-Door')" id="btnInputLineC" class="px-2 py-1 rounded text-gray-400 hover:text-white transition text-[11px] font-medium whitespace-nowrap">C-Door</button>
-                    <button type="button" onclick="setInputLine('Bottom')" id="btnInputLineBottom" class="px-2 py-1 rounded text-gray-400 hover:text-white transition text-[11px] font-medium whitespace-nowrap">Bottom</button>
-                    <button type="button" onclick="setInputLine('DND')" id="btnInputLineDND" class="px-2 py-1 rounded text-gray-400 hover:text-white transition text-[11px] font-medium whitespace-nowrap">DND</button>
+                <div class="flex bg-[#181c24] p-1 rounded border border-gray-700 gap-1 h-[34px] items-center justify-between px-1">
+                    <button type="button" onclick="setInputLine('A-Door')" id="btnInputLineA" class="px-2 py-1 rounded text-[11px] text-gray-400 hover:text-white transition font-medium">A-Door</button>
+                    <button type="button" onclick="setInputLine('B-Door')" id="btnInputLineB" class="px-2 py-1 rounded text-[11px] text-gray-400 hover:text-white transition font-medium">B-Door</button>
+                    <button type="button" onclick="setInputLine('C-Door')" id="btnInputLineC" class="px-2 py-1 rounded text-[11px] text-gray-400 hover:text-white transition font-medium">C-Door</button>
+                    <button type="button" onclick="setInputLine('Bottom')" id="btnInputLineBottom" class="px-2 py-1 rounded text-[11px] text-gray-400 hover:text-white transition font-medium">Bottom</button>
+                    <button type="button" onclick="setInputLine('DND')" id="btnInputLineDND" class="px-2 py-1 rounded text-[11px] text-gray-400 hover:text-white transition font-medium">DND</button>
                 </div>
                 <input type="hidden" id="inputLine" value="A-Door">
             </div>
+
+            <!-- บรรทัดถัดไปสำหรับ Machine, Station, Issue, Cause ฯลฯ -->
             <div>
                 <label class="block text-gray-400 mb-1">machine</label>
                 <select id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
@@ -430,16 +433,23 @@
         // ตัวแปรเก็บสถานะการเลือก Line แบบ Multi-select ผ่าน KPI Cards
         let selectedKpiLines = [];
 
+        // กำหนดสีของแต่ละ Line ให้ตรงกับกราฟเส้นแนวโน้ม Downtime
+        const lineColors = {
+            'A-Door': { border: '#ef4444', bgClass: 'bg-red-500/20 border-red-500 text-red-300 shadow' },
+            'B-Door': { border: '#10b981', bgClass: 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow' },
+            'C-Door': { border: '#f59e0b', bgClass: 'bg-amber-500/20 border-amber-500 text-amber-300 shadow' },
+            'Bottom': { border: '#8b5cf6', bgClass: 'bg-purple-500/20 border-purple-500 text-purple-300 shadow' },
+            'DND':    { border: '#3b82f6', bgClass: 'bg-blue-500/20 border-blue-500 text-blue-300 shadow' }
+        };
+
         // ฟังก์ชันกำหนดค่า Shift อัตโนมัติจาก Time (08.00-19.50 = Day, 19.51-07.59 = Night)
         function handleTimeChange() {
             const timeVal = document.getElementById('inputTime').value;
             if (!timeVal) return;
             
-            // แปลงเวลาเป็นนาทีตั้งแต่เที่ยงคืน เพื่อให้เปรียบเทียบช่วงเวลาได้แม่นยำ
             const [hours, minutes] = timeVal.split(':').map(Number);
             const totalMins = hours * 60 + minutes;
             
-            // 08:00 คือ 480 นาที, 19:50 คือ 1190 นาที
             const dayStart = 8 * 60;       // 08:00
             const dayEnd = 19 * 60 + 50;   // 19:50
 
@@ -465,17 +475,21 @@
             }
         }
 
-        // ฟังก์ชันเลือก Line ในฟอร์มเพิ่มข้อมูล (Input Form)
+        // ฟังก์ชันเลือก Line ในฟอร์ม +ADD พร้อมไฮไลท์สีตามกราฟเส้น
         function setInputLine(lineName) {
-                document.getElementById('inputLine').value = lineName;
-                const lines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
-                lines.forEach(l => {
+            document.getElementById('inputLine').value = lineName;
+            const lines = ['A', 'B', 'C', 'Bottom', 'DND'];
+            
+            lines.forEach(l => {
+                const fullKey = l === 'Bottom' ? 'Bottom' : (l === 'DND' ? 'DND' : l + '-Door');
                 const btn = document.getElementById(`btnInputLine${l}`);
-                if (!btn) return;
-                if (l === lineName) {
-                btn.className = "px-2 py-1 rounded bg-orange-500/25 border border-orange-500 text-orange-300 font-semibold transition text-[11px] whitespace-nowrap shadow";
-            } else {
-                btn.className = "px-2 py-1 rounded text-gray-400 hover:text-white transition text-[11px] font-medium whitespace-nowrap";
+                if (btn) {
+                    if (fullKey === lineName) {
+                        const styleConfig = lineColors[fullKey];
+                        btn.className = `px-2 py-1 rounded text-[11px] font-semibold transition border ${styleConfig.bgClass}`;
+                    } else {
+                        btn.className = "px-2 py-1 rounded text-[11px] text-gray-400 hover:text-white transition font-medium border border-transparent";
+                    }
                 }
             });
         }
@@ -533,7 +547,7 @@
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('inputDate').valueAsDate = new Date();
             setInputShift('Day'); // ตั้งค่าเริ่มต้น Shift เป็น Day
-            setInputLine('A-Door'); // ตั้งค่าเริ่มต้น Line เป็น A-Door
+            setInputLine('A-Door'); // ตั้งค่าเริ่มต้น Line ในฟอร์มเป็น A-Door
 
             initImageUploaderSystem();
             initModalImageUploaderSystem();
@@ -1129,7 +1143,6 @@
                 selectedKpiLines.push(lineName);
             }
 
-            // อัปเดตไฮไลท์การ์ดตามสถานะ selectedKpiLines
             const kpiLines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
             kpiLines.forEach(l => {
                 const card = document.getElementById(`card-${l}`);
