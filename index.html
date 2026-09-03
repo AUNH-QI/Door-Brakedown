@@ -225,14 +225,19 @@
             </div>
             <div>
                 <label class="block text-gray-400 mb-1">TIME</label>
-                <input type="time" id="inputTime" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
+                <input type="time" id="inputTime" required onchange="handleTimeChange()" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
             </div>
             <div>
                 <label class="block text-gray-400 mb-1">SHIFT</label>
-                <select id="inputShift" class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
-                    <option value="Day">Day</option>
-                    <option value="Night">Night</option>
-                </select>
+                <div class="flex bg-[#181c24] p-1 rounded border border-gray-700 gap-1 h-[34px] items-center">
+                    <button type="button" onclick="setInputShift('Day')" id="btnInputShiftDay" class="flex-1 py-1 rounded text-gray-400 hover:text-white transition flex items-center justify-center gap-1 text-xs font-medium">
+                        ☀️ Day
+                    </button>
+                    <button type="button" onclick="setInputShift('Night')" id="btnInputShiftNight" class="flex-1 py-1 rounded text-gray-400 hover:text-white transition flex items-center justify-center gap-1 text-xs font-medium">
+                        🌙 Night
+                    </button>
+                </div>
+                <input type="hidden" id="inputShift" value="Day">
             </div>
             <div>
                 <label class="block text-gray-400 mb-1">LINE</label>
@@ -424,6 +429,41 @@
         // ตัวแปรเก็บสถานะการเลือก Line แบบ Multi-select ผ่าน KPI Cards
         let selectedKpiLines = [];
 
+        // ฟังก์ชันกำหนดค่า Shift อัตโนมัติจาก Time (08.00-19.50 = Day, 19.51-07.59 = Night)
+        function handleTimeChange() {
+            const timeVal = document.getElementById('inputTime').value;
+            if (!timeVal) return;
+            
+            // แปลงเวลาเป็นนาทีตั้งแต่เที่ยงคืน เพื่อให้เปรียบเทียบช่วงเวลาได้แม่นยำ
+            const [hours, minutes] = timeVal.split(':').map(Number);
+            const totalMins = hours * 60 + minutes;
+            
+            // 08:00 คือ 480 นาที, 19:50 คือ 1190 นาที
+            const dayStart = 8 * 60;       // 08:00
+            const dayEnd = 19 * 60 + 50;   // 19:50
+
+            if (totalMins >= dayStart && totalMins <= dayEnd) {
+                setInputShift('Day');
+            } else {
+                setInputShift('Night');
+            }
+        }
+
+        // ฟังก์ชันเลือก Shift ผ่านปุ่มไอคอน
+        function setInputShift(shiftName) {
+            document.getElementById('inputShift').value = shiftName;
+            const btnDay = document.getElementById('btnInputShiftDay');
+            const btnNight = document.getElementById('btnInputShiftNight');
+
+            if (shiftName === 'Day') {
+                btnDay.className = "flex-1 py-1 rounded bg-amber-500/20 border border-amber-500 text-amber-300 font-semibold transition flex items-center justify-center gap-1 text-xs shadow";
+                btnNight.className = "flex-1 py-1 rounded text-gray-400 hover:text-white transition flex items-center justify-center gap-1 text-xs font-medium";
+            } else {
+                btnNight.className = "flex-1 py-1 rounded bg-indigo-500/20 border border-indigo-500 text-indigo-300 font-semibold transition flex items-center justify-center gap-1 text-xs shadow";
+                btnDay.className = "flex-1 py-1 rounded text-gray-400 hover:text-white transition flex items-center justify-center gap-1 text-xs font-medium";
+            }
+        }
+
         // ฟังก์ชันสำหรับบีบอัดและปรับขนาดรูปภาพก่อนอัปโหลด (Canvas API)
         function compressImage(file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) {
             return new Promise((resolve, reject) => {
@@ -476,6 +516,7 @@
             document.getElementById('startDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('inputDate').valueAsDate = new Date();
+            setInputShift('Day'); // ตั้งค่าเริ่มต้น Shift เป็น Day
 
             initImageUploaderSystem();
             initModalImageUploaderSystem();
@@ -829,6 +870,7 @@
         function resetFormState() {
             document.getElementById('addLogForm').reset();
             document.getElementById('inputDate').valueAsDate = new Date();
+            setInputShift('Day');
             
             ['before', 'after'].forEach(type => {
                 document.getElementById(`${type}PreviewContainer`).classList.add('hidden');
@@ -1111,7 +1153,7 @@
                 document.getElementById('lineFilter').value = 'All';
                 ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
                     const btn = document.getElementById(`btn-line-${l}`);
-                    if (btn) { btn.className = l === 'All' ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2 py-1 rounded text-gray-300 hover:text-white transition"; }
+                    if (btn) { btn.className = l === 'All' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
                 });
 
                 selectedKpiLines = [];
@@ -1192,12 +1234,8 @@
             return logsData.filter(item => {
                 const itemDate = item.date;
                 
-                // กรองตามปุ่ม Line เดี่ยว (Single Select)
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
-
-                // กรองตาม KPI Cards (Multi-Select หากมีการเลือกการ์ดไว้)
                 if (selectedKpiLines.length > 0 && !selectedKpiLines.includes(item.line)) return false;
-
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
                 if (stationVal !== 'All' && item.station !== stationVal) return false;
                 if (issueVal !== 'All' && item.issue !== issueVal) return false;
@@ -1455,7 +1493,6 @@
             const selectedIssueVal = document.getElementById('issueFilter').value;
             const chartTitleEl = document.getElementById('shiftChartTitle');
 
-            // ตรวจสอบว่ามีการเลือก Issue เฉพาะเจาะจงหรือไม่
             if (selectedIssueVal !== 'All') {
                 chartTitleEl.innerText = `ปัญหา${selectedIssueVal}แยกตามวัน (จำนวนครั้ง)`;
 
