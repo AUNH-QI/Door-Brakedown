@@ -123,6 +123,12 @@
                 </select>
             </div>
 
+            <!-- Cause Search Input (ขนาด 30 ตัวอักษร) -->
+            <div>
+                <label class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
+                <input type="text" id="causeSearchInput" size="30" placeholder="พิมพ์ค้นหาสาเหตุ..." class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs">
+            </div>
+
             <!-- Action Buttons -->
             <div class="flex items-end gap-1.5 mt-auto">
                 <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
@@ -589,6 +595,7 @@
             document.getElementById('stationFilter').addEventListener('change', () => { currentPage = 1; updateDashboard(); });
             document.getElementById('issueFilter').addEventListener('change', () => { currentPage = 1; updateDashboard(); });
             document.getElementById('causeFilter').addEventListener('change', () => { currentPage = 1; updateDashboard(); });
+            document.getElementById('causeSearchInput').addEventListener('input', () => { currentPage = 1; updateDashboard(); });
             document.getElementById('monthFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('startDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
@@ -865,15 +872,17 @@
                 inputStation.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
             });
 
-            // 2. Issues (ปัญหา)
-            const issueCounts = {};
+            // 2. Issues (ปัญหา) - เรียงตามจำนวนนาที มากสุด-น้อยสุด
+            const issueDowntimeMap = {};
             subsetData.forEach(item => {
                 const issue = item.issue;
-                if (issue) { issueCounts[issue] = (issueCounts[issue] || 0) + 1; }
+                if (issue) {
+                    issueDowntimeMap[issue] = (issueDowntimeMap[issue] || 0) + (Number(item.downtime) || 0);
+                }
             });
-            const sortedIssues = Object.keys(issueCounts).sort((a, b) => issueCounts[b] - issueCounts[a]);
+            const sortedIssues = Object.keys(issueDowntimeMap).sort((a, b) => issueDowntimeMap[b] - issueDowntimeMap[a]);
             const allIssuesSet = [...new Set(subsetData.map(item => item.issue))].filter(Boolean);
-            const remainingIssues = allIssuesSet.filter(issue => !issueCounts[issue]).sort();
+            const remainingIssues = allIssuesSet.filter(issue => issueDowntimeMap[issue] === undefined);
             const finalIssues = [...sortedIssues, ...remainingIssues];
 
             const issueFilter = document.getElementById('issueFilter');
@@ -1277,6 +1286,7 @@
                 document.getElementById('stationFilter').value = 'All';
                 document.getElementById('issueFilter').value = 'All';
                 document.getElementById('causeFilter').value = 'All';
+                document.getElementById('causeSearchInput').value = '';
                 document.getElementById('monthFilter').value = 'All';
                 document.getElementById('startDateFilter').value = '';
                 document.getElementById('endDateFilter').value = '';
@@ -1336,6 +1346,7 @@
             const stationVal = document.getElementById('stationFilter').value;
             const issueVal = document.getElementById('issueFilter').value;
             const causeVal = document.getElementById('causeFilter').value;
+            const causeSearchVal = document.getElementById('causeSearchInput').value.trim().toLowerCase();
             const startDate = document.getElementById('startDateFilter').value;
             const endDate = document.getElementById('endDateFilter').value;
             const monthVal = document.getElementById('monthFilter').value;
@@ -1349,6 +1360,10 @@
                 if (stationVal !== 'All' && item.station !== stationVal) return false;
                 if (issueVal !== 'All' && item.issue !== issueVal) return false;
                 if (causeVal !== 'All' && item.cause !== causeVal) return false;
+                if (causeSearchVal !== '') {
+                    const itemCause = (item.cause || '').toLowerCase();
+                    if (!itemCause.includes(causeSearchVal)) return false;
+                }
                 if (monthVal && monthVal !== 'All') {
                     if (!itemDate || !itemDate.startsWith(monthVal)) return false;
                 }
