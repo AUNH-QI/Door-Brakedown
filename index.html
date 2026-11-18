@@ -894,21 +894,14 @@
                 inputIssue.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
             });
 
-            // 3. Causes (สาเหตุ)
-            const causeCounts = {};
-            subsetData.forEach(item => {
-                const cause = item.cause;
-                if (cause && cause !== '-') { causeCounts[cause] = (causeCounts[cause] || 0) + 1; }
-            });
-            const sortedCauses = Object.keys(causeCounts).sort((a, b) => causeCounts[b] - causeCounts[a]);
-            const allCausesSet = [...new Set(subsetData.map(item => item.cause))].filter(Boolean);
-            const remainingCauses = allCausesSet.filter(c => !causeCounts[c] && c !== '-').sort();
-            const finalCauses = [...sortedCauses, ...remainingCauses];
+            // 3. Causes (สาเหตุ) - เรียงตามตัวอักษร A-Z, ก-ฮ
+            const allCausesSet = [...new Set(subsetData.map(item => item.cause))].filter(Boolean).filter(c => c !== '-');
+            allCausesSet.sort((a, b) => a.localeCompare(b, 'th'));
 
             const causeFilter = document.getElementById('causeFilter');
             const currentCause = causeFilter.value;
             causeFilter.innerHTML = '<option value="All">ทุกสาเหตุ (All)</option>';
-            finalCauses.forEach(c => {
+            allCausesSet.forEach(c => {
                 const selected = c === currentCause ? 'selected' : '';
                 causeFilter.innerHTML += `<option value="${c}" ${selected}>${c}</option>`;
             });
