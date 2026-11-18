@@ -41,7 +41,20 @@
                     <h1 class="text-2xl font-bold tracking-wide text-orange-500">DOOR LINE BREAKDOWN</h1>
                     <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังดึงข้อมูล...</span>
                 </div>
-                <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
+                <div class="flex items-center gap-3 mt-1">
+                    <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
+                    <span id="lastUpdateLabel" class="text-xs text-emerald-400 font-mono bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">Update ล่าสุด : -</span>
+                </div>
+            </div>
+
+            <!-- Right Action Buttons (SCRAP & IMPROVEMENT ย้ายมาไว้บริเวณวงสีแดงมุมขวาบน) -->
+            <div class="flex items-center gap-2">
+                <a href="scrap.html" class="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow flex items-center gap-1">
+                     SCRAP BY MACHINE
+                </a>
+                <a href="improvement.html" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow flex items-center gap-1">
+                     IMPROVEMENT
+                </a>
             </div>
         </div>
         
@@ -108,54 +121,42 @@
                 </div>
             </div>
 
-            <!-- บรรทัดที่ 2: Station, Issue, Cause, ค้นหาสาเหตุ, ล้างตัวกรอง, รีเฟรช, ปุ่มลิงก์ขวา -->
-            <div class="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-gray-800">
-                <div class="flex flex-wrap items-center gap-2.5">
-                    <!-- Station Filter -->
-                    <div>
-                        <label class="block text-[10px] text-gray-400 mb-1">Station</label>
-                        <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                            <option value="All">ทุก Station (All)</option>
-                        </select>
-                    </div>
-
-                    <!-- Issue Category Filter -->
-                    <div>
-                        <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
-                        <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                            <option value="All">ทุกปัญหา (All)</option>
-                        </select>
-                    </div>
-
-                    <!-- Cause Filter -->
-                    <div>
-                        <label class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
-                        <select id="causeFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                            <option value="All">ทุกสาเหตุ (All)</option>
-                        </select>
-                    </div>
-
-                    <!-- Cause Search Input (ขนาด 30 ตัวอักษร) -->
-                    <div>
-                        <label class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
-                        <input type="text" id="causeSearchInput" size="30" placeholder="พิมพ์ค้นหาสาเหตุ..." class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs">
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex items-end gap-1.5 mt-auto">
-                        <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
-                        <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
-                    </div>
+            <!-- บรรทัดที่ 2: Station, Issue, Cause, ค้นหาสาเหตุ, ล้างตัวกรอง, รีเฟรช -->
+            <div class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-gray-800">
+                <!-- Station Filter -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 mb-1">Station</label>
+                    <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                        <option value="All">ทุก Station (All)</option>
+                    </select>
                 </div>
 
-                <!-- Right Action Buttons (SCRAP & IMPROVEMENT) -->
-                <div class="flex items-center gap-2 mt-auto ml-auto">
-                    <a href="scrap.html" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-4 py-1.5 rounded transition shadow flex items-center gap-1">
-                         SCRAP BY MACHINE
-                    </a>
-                    <a href="improvement.html" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-4 py-1.5 rounded-xl shadow-lg transition flex items-center gap-2">
-                    <i class="fa-solid fa-chart-pie"></i> IMPROVEMENT
-                    </a>
+                <!-- Issue Category Filter -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
+                    <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                        <option value="All">ทุกปัญหา (All)</option>
+                    </select>
+                </div>
+
+                <!-- Cause Filter -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
+                    <select id="causeFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                        <option value="All">ทุกสาเหตุ (All)</option>
+                    </select>
+                </div>
+
+                <!-- Cause Search Input (ขนาด 30 ตัวอักษร) -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
+                    <input type="text" id="causeSearchInput" size="30" placeholder="พิมพ์ค้นหาสาเหตุ..." class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-end gap-1.5 mt-auto">
+                    <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
+                    <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
                 </div>
             </div>
 
@@ -837,6 +838,7 @@
                 if (error) throw error;
 
                 logsData = data || [];
+                updateLastUpdateLabel();
                 populateDropdowns();
                 updateDashboard();
             } catch (err) {
@@ -844,6 +846,19 @@
                 alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
             } finally {
                 statusEl.classList.add('hidden');
+            }
+        }
+
+        // อัปเดตเวลา Update ล่าสุดจากข้อมูลในระบบ (รายการแรกสุด)
+        function updateLastUpdateLabel() {
+            const labelEl = document.getElementById('lastUpdateLabel');
+            if (logsData.length > 0) {
+                const latest = logsData[0];
+                const dateStr = latest.date || '-';
+                const timeStr = latest.time ? ` เวลา ${latest.time}` : '';
+                labelEl.innerText = `Update ล่าสุด : ${dateStr}${timeStr}`;
+            } else {
+                labelEl.innerText = `Update ล่าสุด : -`;
             }
         }
 
