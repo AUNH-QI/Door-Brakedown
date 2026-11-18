@@ -184,7 +184,7 @@
         </div>
     </div>
 
-    <!-- Charts & Line TOP10 Tables Area -->
+    <!-- Charts & Line TOP18 Tables Area -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
             <h3 id="shiftChartTitle" class="text-sm font-bold text-orange-500 mb-2">Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)</h3>
@@ -193,39 +193,39 @@
             </div>
         </div>
         
-        <!-- ฝั่งขวา: เปลี่ยนสลับระหว่าง กราฟเส้นแนวโน้ม กับ ตาราง TOP10 ตาม Line ที่เลือก -->
+        <!-- ฝั่งขวา: เปลี่ยนสลับระหว่าง กราฟเส้นแนวโน้ม กับ ตาราง TOP18 ตาม Line ที่เลือก (แบ่ง 1-9 และ 10-18) -->
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7 flex flex-col justify-between">
             <h3 id="rightSectionTitle" class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที)</h3>
             
             <!-- กรณีแสดงกราฟเส้น -->
             <div id="lineChartContainer" class="h-80"><canvas id="lineChart"></canvas></div>
 
-            <!-- กรณีแสดงตาราง TOP10 เมื่อเลือก Line (ซ่อนไว้ก่อนจนกว่าจะเลือก Line เฉพาะเจาะจง) -->
-            <div id="lineTop10Container" class="hidden h-80 overflow-y-auto">
+            <!-- กรณีแสดงตาราง TOP18 เมื่อเลือก Line -->
+            <div id="lineTop18Container" class="hidden min-h-[20rem] overflow-y-auto">
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-3 h-full">
-                    <!-- ตารางที่ 1 (Rank 1-5) -->
+                    <!-- ตารางที่ 1 (Rank 1-9) -->
                     <div class="bg-[#242b35] rounded-lg p-2 border border-gray-700 overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-[#181c24] text-gray-300 uppercase border-b border-gray-700">
                                 <tr>
-                                    <th class="p-2 text-center w-10">No.</th>
-                                    <th class="p-2">Cause</th>
-                                    <th class="p-2 text-right">ครั้ง</th>
-                                    <th class="p-2 text-right">นาที</th>
+                                    <th class="p-1.5 text-center w-9">No.</th>
+                                    <th class="p-1.5">Cause</th>
+                                    <th class="p-1.5 text-right">ครั้ง</th>
+                                    <th class="p-1.5 text-right">นาที</th>
                                 </tr>
                             </thead>
                             <tbody id="lineTop1TableBody" class="divide-y divide-gray-800"></tbody>
                         </table>
                     </div>
-                    <!-- ตารางที่ 2 (Rank 6-10) -->
+                    <!-- ตารางที่ 2 (Rank 10-18) -->
                     <div class="bg-[#242b35] rounded-lg p-2 border border-gray-700 overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-[#181c24] text-gray-300 uppercase border-b border-gray-700">
                                 <tr>
-                                    <th class="p-2 text-center w-10">No.</th>
-                                    <th class="p-2">Cause</th>
-                                    <th class="p-2 text-right">ครั้ง</th>
-                                    <th class="p-2 text-right">นาที</th>
+                                    <th class="p-1.5 text-center w-9">No.</th>
+                                    <th class="p-1.5">Cause</th>
+                                    <th class="p-1.5 text-right">ครั้ง</th>
+                                    <th class="p-1.5 text-right">นาที</th>
                                 </tr>
                             </thead>
                             <tbody id="lineTop2TableBody" class="divide-y divide-gray-800"></tbody>
@@ -833,7 +833,7 @@
         function populateDropdowns() {
             const lineVal = document.getElementById('lineFilter').value;
             
-            // กรองข้อมูลเฉพาะ Line ที่เลือก (ถ้าเลือก All หรือไม่เลือก ให้ใช้ข้อมูลทั้งหมดเพื่อตั้งต้น)
+            // กรองข้อมูลเฉพาะ Line ที่เลือก (ถ้าเลือก All ให้ใช้ข้อมูลทั้งหมด)
             const subsetData = (lineVal === 'All') ? logsData : logsData.filter(item => item.line === lineVal);
 
             // 1. Stations
@@ -1580,21 +1580,21 @@
         function updateLineChart(data) {
             const lineVal = document.getElementById('lineFilter').value;
             const lineChartContainer = document.getElementById('lineChartContainer');
-            const lineTop10Container = document.getElementById('lineTop10Container');
+            const lineTop18Container = document.getElementById('lineTop18Container');
             const rightSectionTitle = document.getElementById('rightSectionTitle');
 
-            // หากเลือกกรอง Line เฉพาะเจาะจง (ไม่ใช่ All) ให้แสดงตาราง TOP10 Cause แทนกราฟเส้น
+            // หากเลือกกรอง Line เฉพาะเจาะจง (ไม่ใช่ All) ให้แสดงตาราง TOP18 แทนกราฟเส้น
             if (lineVal !== 'All') {
                 lineChartContainer.classList.add('hidden');
-                lineTop10Container.classList.remove('hidden');
-                rightSectionTitle.innerText = `Top 10 สาเหตุปัญหา (Cause) ประจำ Line: ${lineVal}`;
-                renderLineTop10Tables(data);
+                lineTop18Container.classList.remove('hidden');
+                rightSectionTitle.innerText = `Top 18 สาเหตุปัญหา (Cause) ประจำ Line: ${lineVal} (เรียงตามนาที)`;
+                renderLineTop18Tables(data);
                 return;
             }
 
             // หากเลือก All ให้แสดงกราฟเส้นแนวโน้ม Downtime ตามปกติ
             lineChartContainer.classList.remove('hidden');
-            lineTop10Container.classList.add('hidden');
+            lineTop18Container.classList.add('hidden');
             rightSectionTitle.innerText = 'แนวโน้ม Downtime แยกตาม Line (นาที)';
 
             const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
@@ -1625,8 +1625,8 @@
             lineChartInstance.update();
         }
 
-        // ฟังก์ชันประมวลผลและสร้างตาราง TOP 10 Cause สำหรับ Line ที่เลือก (แบ่ง 2 ตาราง 1-5 และ 6-10 โดยอันดับ 10 คือ "อื่นๆ")
-        function renderLineTop10Tables(data) {
+        // ฟังก์ชันประมวลผลและสร้างตาราง TOP 18 Cause เรียงตามจำนวนนาที (แบ่ง 2 ตาราง: 1-9 และ 10-18 โดยอันดับ 18 คือ "อื่นๆ")
+        function renderLineTop18Tables(data) {
             const causeMap = {};
             data.forEach(item => {
                 const causeName = (item.cause && item.cause.trim() !== '') ? item.cause : 'ไม่ระบุสาเหตุ';
@@ -1637,59 +1637,60 @@
                 causeMap[causeName].downtime += Number(item.downtime) || 0;
             });
 
+            // จัดเรียงตามจำนวนนาทีมากไปน้อย (หากนาทีเท่ากัน เรียงตามจำนวนครั้ง)
             let sortedCauses = Object.entries(causeMap).map(([cause, obj]) => ({
                 cause,
                 count: obj.count,
                 downtime: obj.downtime
-            })).sort((a, b) => b.count - a.count || b.downtime - a.downtime);
+            })).sort((a, b) => b.downtime - a.downtime || b.count - a.count);
 
-            let top10List = [];
-            if (sortedCauses.length > 10) {
-                top10List = sortedCauses.slice(0, 9);
+            let top18List = [];
+            if (sortedCauses.length > 18) {
+                top18List = sortedCauses.slice(0, 17);
                 let othersCount = 0;
                 let othersDowntime = 0;
-                for (let i = 9; i < sortedCauses.length; i++) {
+                for (let i = 17; i < sortedCauses.length; i++) {
                     othersCount += sortedCauses[i].count;
                     othersDowntime += sortedCauses[i].downtime;
                 }
-                top10List.push({ cause: 'อื่นๆ (รวม)', count: othersCount, downtime: othersDowntime });
+                top18List.push({ cause: 'อื่นๆ (รวม)', count: othersCount, downtime: othersDowntime });
             } else {
-                top10List = sortedCauses;
+                top18List = sortedCauses;
             }
 
-            const list1to5 = top10List.slice(0, 5);
-            const list6to10 = top10List.slice(5, 10);
+            const list1to9 = top18List.slice(0, 9);
+            const list10to18 = top18List.slice(9, 18);
 
             const tbody1 = document.getElementById('lineTop1TableBody');
             const tbody2 = document.getElementById('lineTop2TableBody');
             tbody1.innerHTML = '';
             tbody2.innerHTML = '';
 
-            if (top10List.length === 0) {
+            if (top18List.length === 0) {
                 tbody1.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
                 tbody2.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
                 return;
             }
 
-            list1to5.forEach((item, idx) => {
+            list1to9.forEach((item, idx) => {
                 tbody1.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
-                        <td class="p-2 text-center font-bold text-orange-400">${idx + 1}</td>
-                        <td class="p-2 font-medium text-gray-200 truncate max-w-[130px]" title="${item.cause}">${item.cause}</td>
-                        <td class="p-2 text-right font-semibold text-emerald-400">${item.count.toLocaleString()}</td>
-                        <td class="p-2 text-right font-semibold text-amber-400">${item.downtime.toLocaleString()}</td>
+                        <td class="p-1.5 text-center font-bold text-orange-400">${idx + 1}</td>
+                        <td class="p-1.5 font-medium text-gray-200 truncate max-w-[130px]" title="${item.cause}">${item.cause}</td>
+                        <td class="p-1.5 text-right font-semibold text-emerald-400">${item.count.toLocaleString()}</td>
+                        <td class="p-1.5 text-right font-semibold text-amber-400">${item.downtime.toLocaleString()}</td>
                     </tr>
                 `;
             });
 
-            list6to10.forEach((item, idx) => {
-                const rank = idx + 6;
+            list10to18.forEach((item, idx) => {
+                const rank = idx + 10;
                 tbody2.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
-                        <td class="p-2 text-center font-bold text-orange-400">${rank}</td>
-                        <td class="p-2 font-medium text-gray-200 truncate max-w-[130px]" title="${item.cause}">${item.cause}</td>
-                        <td class="p-2 text-right font-semibold text-emerald-400">${item.count.toLocaleString()}</td>
-                        <td class="p-2 text-right font-semibold text-amber-400">${item.downtime.toLocaleString()}</td>
+                        <td class="p-1.5 text-center font-bold text-orange-400">${rank}</td>
+                        <td class="p-1.5 font-medium text-gray-200 truncate max-w-[130px]" title="${item.cause}">${item.cause}</td>
+                        <td class="p-1.5 text-right font-semibold text-emerald-400">${item.count.toLocaleString()}</td>
+                        <td class="p-1.5 text-right font-semibold text-amber-400">${item.downtime.toLocaleString()}</td>
                     </tr>
                 `;
             });
