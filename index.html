@@ -34,118 +34,129 @@
 <body class="bg-[#0f1115] text-white p-6 font-sans">
 
     <!-- Header & Filters -->
-    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
-        <div>
-            <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-bold tracking-wide text-orange-500">DOOR LINE BREAKDOWN</h1>
-                <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังดึงข้อมูล...</span>
+    <div class="flex flex-col mb-6 gap-4">
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl font-bold tracking-wide text-orange-500">DOOR LINE BREAKDOWN</h1>
+                    <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังดึงข้อมูล...</span>
+                </div>
+                <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
             </div>
-            <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
         </div>
         
-        <div class="flex flex-wrap gap-2.5 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs items-center">
+        <!-- Filter Container (2 Rows Layout) -->
+        <div class="flex flex-col gap-2.5 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs">
             
-            <!-- Quick Date Buttons -->
-            <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
-                <button onclick="setQuickDate('all')" id="btn-date-all" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">ทั้งหมด</button>
-                <button onclick="setQuickDate('today')" id="btn-date-today" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">วันนี้</button>
-                <button onclick="setQuickDate('week')" id="btn-date-week" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">สัปดาห์นี้</button>
-                <button onclick="setQuickDate('month')" id="btn-date-month" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">เดือนนี้</button>
-            </div>
-
-            <!-- Custom Date Range -->
-            <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium">
+            <!-- บรรทัดที่ 1: เลือก Line, Shift, ปุ่มลัดเวลา, เดือนเฉพาะ, ช่วงวันที่ -->
+            <div class="flex flex-wrap items-center gap-2.5">
+                <!-- Line Buttons Filter (Single Select) -->
                 <div>
-                    <label class="block text-[9px] text-gray-600">ตั้งแต่วันที่</label>
-                    <input type="date" id="startDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+                    <label class="block text-[10px] text-gray-400 mb-1">เลือก Line (Single)</label>
+                    <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+                        <button onclick="setLineFilter('All')" id="btn-line-All" class="px-2 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
+                        <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line A</button>
+                        <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line B</button>
+                        <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line C</button>
+                        <button onclick="setLineFilter('Bottom')" id="btn-line-Bottom" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Bottom</button>
+                        <button onclick="setLineFilter('DND')" id="btn-line-DND" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">DND</button>
+                    </div>
+                    <input type="hidden" id="lineFilter" value="All">
                 </div>
-                <span class="text-gray-500 mt-3">-</span>
+
+                <!-- Shift Buttons Filter -->
                 <div>
-                    <label class="block text-[9px] text-gray-600">ถึงวันที่</label>
-                    <input type="date" id="endDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+                    <label class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
+                    <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+                        <button onclick="setShiftFilter('All')" id="btn-shift-All" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
+                        <button onclick="setShiftFilter('Day')" id="btn-shift-Day" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Day</button>
+                        <button onclick="setShiftFilter('Night')" id="btn-shift-Night" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Night</button>
+                    </div>
+                    <input type="hidden" id="shiftFilter" value="All">
+                </div>
+
+                <!-- Quick Date Buttons (ตัดเดือนนี้ออก) -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 mb-1">ช่วงเวลา</label>
+                    <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+                        <button onclick="setQuickDate('all')" id="btn-date-all" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">ทั้งหมด</button>
+                        <button onclick="setQuickDate('today')" id="btn-date-today" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">วันนี้</button>
+                        <button onclick="setQuickDate('week')" id="btn-date-week" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">สัปดาห์นี้</button>
+                    </div>
+                </div>
+
+                <!-- Month Dropdown Filter -->
+                <div>
+                    <label class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
+                    <select id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
+                        <option value="All">ทุกเดือน (All)</option>
+                    </select>
+                </div>
+
+                <!-- Custom Date Range -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 mb-1">เลือกวันที่ช่วงเวลา</label>
+                    <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium h-[30px]">
+                        <div>
+                            <input type="date" id="startDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+                        </div>
+                        <span class="text-gray-500">-</span>
+                        <div>
+                            <input type="date" id="endDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Month Dropdown Filter -->
-            <div>
-                <label class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
-                <select id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
-                    <option value="All">ทุกเดือน (All)</option>
-                </select>
-            </div>
+            <!-- บรรทัดที่ 2: Station, Issue, Cause, ค้นหาสาเหตุ, ล้างตัวกรอง, รีเฟรช, ปุ่มลิงก์ขวา -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-gray-800">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <!-- Station Filter -->
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1">Station</label>
+                        <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                            <option value="All">ทุก Station (All)</option>
+                        </select>
+                    </div>
 
-            <!-- Line Buttons Filter (Single Select) -->
-            <div>
-                <label class="block text-[10px] text-gray-400 mb-1">เลือก Line (Single)</label>
-                <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
-                    <button onclick="setLineFilter('All')" id="btn-line-All" class="px-2 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
-                    <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line A</button>
-                    <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line B</button>
-                    <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line C</button>
-                    <button onclick="setLineFilter('Bottom')" id="btn-line-Bottom" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Bottom</button>
-                    <button onclick="setLineFilter('DND')" id="btn-line-DND" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">DND</button>
+                    <!-- Issue Category Filter -->
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
+                        <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                            <option value="All">ทุกปัญหา (All)</option>
+                        </select>
+                    </div>
+
+                    <!-- Cause Filter -->
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
+                        <select id="causeFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                            <option value="All">ทุกสาเหตุ (All)</option>
+                        </select>
+                    </div>
+
+                    <!-- Cause Search Input (ขนาด 30 ตัวอักษร) -->
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
+                        <input type="text" id="causeSearchInput" size="30" placeholder="พิมพ์ค้นหาสาเหตุ..." class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-end gap-1.5 mt-auto">
+                        <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
+                        <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
+                    </div>
                 </div>
-                <input type="hidden" id="lineFilter" value="All">
-            </div>
 
-            <!-- Shift Buttons Filter -->
-            <div>
-                <label class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
-                <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
-                    <button onclick="setShiftFilter('All')" id="btn-shift-All" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
-                    <button onclick="setShiftFilter('Day')" id="btn-shift-Day" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Day</button>
-                    <button onclick="setShiftFilter('Night')" id="btn-shift-Night" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Night</button>
+                <!-- Right Action Buttons (SCRAP & IMPROVEMENT) -->
+                <div class="flex items-center gap-2 mt-auto ml-auto">
+                    <a href="scrap.html" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-4 py-1.5 rounded transition shadow flex items-center gap-1">
+                         SCRAP BY MACHINE
+                    </a>
+                    <a href="improvement.html" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-4 py-1.5 rounded-xl shadow-lg transition flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie"></i> IMPROVEMENT
+                    </a>
                 </div>
-                <input type="hidden" id="shiftFilter" value="All">
-            </div>
-
-            <!-- Station Filter -->
-            <div>
-                <label class="block text-[10px] text-gray-400 mb-1">Station</label>
-                <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                    <option value="All">ทุก Station (All)</option>
-                </select>
-            </div>
-
-            <!-- Issue Category Filter -->
-            <div>
-                <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
-                <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                    <option value="All">ทุกปัญหา (All)</option>
-                </select>
-            </div>
-
-            <!-- Cause Filter -->
-            <div>
-                <label class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
-                <select id="causeFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                    <option value="All">ทุกสาเหตุ (All)</option>
-                </select>
-            </div>
-
-            <!-- Cause Search Input (ขนาด 30 ตัวอักษร) -->
-            <div>
-                <label class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
-                <input type="text" id="causeSearchInput" size="30" placeholder="พิมพ์ค้นหาสาเหตุ..." class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs">
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex items-end gap-1.5 mt-auto">
-                <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
-                <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
-            </div>
-
-            <!-- SCRAP BY MACHINE Button -->
-            <div class="flex items-end mt-auto ml-auto">
-                <a href="scrap.html" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold px-4 py-1.5 rounded transition shadow flex items-center gap-1">
-                     SCRAP BY MACHINE
-                </a>
-            <!-- IMPROVEMENT Button -->
-            <div class="flex items-end mt-auto ml-2">
-                <a href="improvement.html" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-4 py-1.5 rounded-xl shadow-lg transition flex items-center gap-2">
-                <i class="fa-solid fa-chart-pie"></i> IMPROVEMENT
-                </a>
-            </div>
             </div>
 
         </div>
@@ -1260,7 +1271,7 @@
             statusEl.innerText = 'กำลังล้างตัวกรอง...';
 
             setTimeout(() => {
-                ['all', 'today', 'week', 'month'].forEach(type => {
+                ['all', 'today', 'week'].forEach(type => {
                     const btn = document.getElementById(`btn-date-${type}`);
                     if (btn) { btn.className = type === 'all' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
                 });
@@ -1319,14 +1330,6 @@
                 firstDay.setDate(today.getDate() - today.getDay());
                 document.getElementById('startDateFilter').value = formatDate(firstDay);
                 document.getElementById('endDateFilter').value = formatDate(today);
-            } else if (type === 'month') {
-                const currentYm = today.toISOString().slice(0, 7);
-                const monthSelect = document.getElementById('monthFilter');
-                let found = false;
-                for (let opt of monthSelect.options) {
-                    if (opt.value === currentYm) { monthSelect.value = currentYm; found = true; break; }
-                }
-                if (!found) monthSelect.value = 'All';
             }
 
             currentPage = 1;
@@ -1334,7 +1337,7 @@
         }
 
         function clearActiveQuickDateBtn() {
-            ['all', 'today', 'week', 'month'].forEach(type => {
+            ['all', 'today', 'week'].forEach(type => {
                 const btn = document.getElementById(`btn-date-${type}`);
                 if (btn) { btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
             });
