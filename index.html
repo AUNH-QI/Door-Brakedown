@@ -115,7 +115,7 @@
                 </select>
             </div>
 
-            <!-- Cause Filter (NEW) -->
+            <!-- Cause Filter -->
             <div>
                 <label class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
                 <select id="causeFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
@@ -184,7 +184,7 @@
         </div>
     </div>
 
-    <!-- Charts & Cause TOP10 Tables Area -->
+    <!-- Charts & Line TOP10 Tables Area -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-5 flex flex-col justify-between">
             <h3 id="shiftChartTitle" class="text-sm font-bold text-orange-500 mb-2">Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)</h3>
@@ -193,15 +193,15 @@
             </div>
         </div>
         
-        <!-- ฝั่งขวา: เปลี่ยนสลับระหว่าง กราฟเส้นแนวโน้ม กับ ตาราง TOP10 Cause (แบ่งซ้าย-ขวา 2 ตาราง) -->
+        <!-- ฝั่งขวา: เปลี่ยนสลับระหว่าง กราฟเส้นแนวโน้ม กับ ตาราง TOP10 ตาม Line ที่เลือก -->
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7 flex flex-col justify-between">
             <h3 id="rightSectionTitle" class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที)</h3>
             
             <!-- กรณีแสดงกราฟเส้น -->
             <div id="lineChartContainer" class="h-80"><canvas id="lineChart"></canvas></div>
 
-            <!-- กรณีแสดงตาราง TOP10 Cause (ซ่อนไว้ก่อนจนกว่าจะเลือก Cause) -->
-            <div id="causeTop10Container" class="hidden h-80 overflow-y-auto">
+            <!-- กรณีแสดงตาราง TOP10 เมื่อเลือก Line (ซ่อนไว้ก่อนจนกว่าจะเลือก Line เฉพาะเจาะจง) -->
+            <div id="lineTop10Container" class="hidden h-80 overflow-y-auto">
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-3 h-full">
                     <!-- ตารางที่ 1 (Rank 1-5) -->
                     <div class="bg-[#242b35] rounded-lg p-2 border border-gray-700 overflow-x-auto">
@@ -214,7 +214,7 @@
                                     <th class="p-2 text-right">นาที</th>
                                 </tr>
                             </thead>
-                            <tbody id="causeTop1TableBody" class="divide-y divide-gray-800"></tbody>
+                            <tbody id="lineTop1TableBody" class="divide-y divide-gray-800"></tbody>
                         </table>
                     </div>
                     <!-- ตารางที่ 2 (Rank 6-10) -->
@@ -228,7 +228,7 @@
                                     <th class="p-2 text-right">นาที</th>
                                 </tr>
                             </thead>
-                            <tbody id="causeTop2TableBody" class="divide-y divide-gray-800"></tbody>
+                            <tbody id="lineTop2TableBody" class="divide-y divide-gray-800"></tbody>
                         </table>
                     </div>
                 </div>
@@ -829,14 +829,21 @@
             }
         }
 
+        // ฟังก์ชันอัปเดตรายการใน Dropdown แบบสัมพันธ์กับ Line ที่เลือก
         function populateDropdowns() {
+            const lineVal = document.getElementById('lineFilter').value;
+            
+            // กรองข้อมูลเฉพาะ Line ที่เลือก (ถ้าเลือก All หรือไม่เลือก ให้ใช้ข้อมูลทั้งหมดเพื่อตั้งต้น)
+            const subsetData = (lineVal === 'All') ? logsData : logsData.filter(item => item.line === lineVal);
+
+            // 1. Stations
             const stationCounts = {};
-            logsData.forEach(item => {
+            subsetData.forEach(item => {
                 const st = item.station;
                 if (st && st !== '-') { stationCounts[st] = (stationCounts[st] || 0) + 1; }
             });
             const sortedStations = Object.keys(stationCounts).sort((a, b) => stationCounts[b] - stationCounts[a]);
-            const allStationsSet = [...new Set(logsData.map(item => item.station))].filter(Boolean);
+            const allStationsSet = [...new Set(subsetData.map(item => item.station))].filter(Boolean);
             const remainingStations = allStationsSet.filter(st => !stationCounts[st]).sort();
             const finalStations = [...sortedStations, ...remainingStations];
             
@@ -848,21 +855,24 @@
                 stationFilter.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
             });
 
+            // Input Station (สำหรับฟอร์ม Add)
             const inputStation = document.getElementById('inputStation');
             const currentInputStation = inputStation.value;
             inputStation.innerHTML = '<option value="-">-- เลือก Station --</option>';
-            finalStations.forEach(st => {
+            const allGlobalStations = [...new Set(logsData.map(item => item.station))].filter(Boolean).sort();
+            allGlobalStations.forEach(st => {
                 const selected = st === currentInputStation ? 'selected' : '';
                 inputStation.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
             });
 
+            // 2. Issues (ปัญหา)
             const issueCounts = {};
-            logsData.forEach(item => {
+            subsetData.forEach(item => {
                 const issue = item.issue;
                 if (issue) { issueCounts[issue] = (issueCounts[issue] || 0) + 1; }
             });
             const sortedIssues = Object.keys(issueCounts).sort((a, b) => issueCounts[b] - issueCounts[a]);
-            const allIssuesSet = [...new Set(logsData.map(item => item.issue))].filter(Boolean);
+            const allIssuesSet = [...new Set(subsetData.map(item => item.issue))].filter(Boolean);
             const remainingIssues = allIssuesSet.filter(issue => !issueCounts[issue]).sort();
             const finalIssues = [...sortedIssues, ...remainingIssues];
 
@@ -874,22 +884,24 @@
                 issueFilter.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
             });
 
+            // Input Issue (สำหรับฟอร์ม Add)
             const inputIssue = document.getElementById('inputIssue');
             const currentInputIssue = inputIssue.value;
             inputIssue.innerHTML = '<option value="">-- เลือกปัญหา --</option>';
-            finalIssues.forEach(issue => {
+            const allGlobalIssues = [...new Set(logsData.map(item => item.issue))].filter(Boolean).sort();
+            allGlobalIssues.forEach(issue => {
                 const selected = issue === currentInputIssue ? 'selected' : '';
                 inputIssue.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
             });
 
-            // Populating Cause Dropdown (NEW)
+            // 3. Causes (สาเหตุ)
             const causeCounts = {};
-            logsData.forEach(item => {
+            subsetData.forEach(item => {
                 const cause = item.cause;
                 if (cause && cause !== '-') { causeCounts[cause] = (causeCounts[cause] || 0) + 1; }
             });
             const sortedCauses = Object.keys(causeCounts).sort((a, b) => causeCounts[b] - causeCounts[a]);
-            const allCausesSet = [...new Set(logsData.map(item => item.cause))].filter(Boolean);
+            const allCausesSet = [...new Set(subsetData.map(item => item.cause))].filter(Boolean);
             const remainingCauses = allCausesSet.filter(c => !causeCounts[c] && c !== '-').sort();
             const finalCauses = [...sortedCauses, ...remainingCauses];
 
@@ -901,6 +913,7 @@
                 causeFilter.innerHTML += `<option value="${c}" ${selected}>${c}</option>`;
             });
 
+            // Months Dropdown
             const monthFilter = document.getElementById('monthFilter');
             const currentMonth = monthFilter.value;
             const monthsSet = new Set();
@@ -1196,6 +1209,9 @@
                 btn.className = (l === lineName) ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2 py-1 rounded text-gray-300 hover:text-white transition";
             });
 
+            // อัปเดต Dropdown Station, Issue, Cause ให้สัมพันธ์กับ Line ที่เลือก
+            populateDropdowns();
+
             currentPage = 1;
             updateDashboard();
         }
@@ -1267,11 +1283,12 @@
 
                 document.getElementById('stationFilter').value = 'All';
                 document.getElementById('issueFilter').value = 'All';
-                document.getElementById('causeFilter').value = 'All'; // Clear Cause Filter
+                document.getElementById('causeFilter').value = 'All';
                 document.getElementById('monthFilter').value = 'All';
                 document.getElementById('startDateFilter').value = '';
                 document.getElementById('endDateFilter').value = '';
 
+                populateDropdowns();
                 currentPage = 1;
                 updateDashboard();
                 statusEl.classList.add('hidden');
@@ -1325,7 +1342,7 @@
             const shiftVal = document.getElementById('shiftFilter').value;
             const stationVal = document.getElementById('stationFilter').value;
             const issueVal = document.getElementById('issueFilter').value;
-            const causeVal = document.getElementById('causeFilter').value; // Get Cause Filter
+            const causeVal = document.getElementById('causeFilter').value;
             const startDate = document.getElementById('startDateFilter').value;
             const endDate = document.getElementById('endDateFilter').value;
             const monthVal = document.getElementById('monthFilter').value;
@@ -1338,7 +1355,7 @@
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
                 if (stationVal !== 'All' && item.station !== stationVal) return false;
                 if (issueVal !== 'All' && item.issue !== issueVal) return false;
-                if (causeVal !== 'All' && item.cause !== causeVal) return false; // Filter by Cause
+                if (causeVal !== 'All' && item.cause !== causeVal) return false;
                 if (monthVal && monthVal !== 'All') {
                     if (!itemDate || !itemDate.startsWith(monthVal)) return false;
                 }
@@ -1561,23 +1578,23 @@
         }
 
         function updateLineChart(data) {
-            const causeVal = document.getElementById('causeFilter').value;
+            const lineVal = document.getElementById('lineFilter').value;
             const lineChartContainer = document.getElementById('lineChartContainer');
-            const causeTop10Container = document.getElementById('causeTop10Container');
+            const lineTop10Container = document.getElementById('lineTop10Container');
             const rightSectionTitle = document.getElementById('rightSectionTitle');
 
-            // ถ้าเลือกกรอง Cause ให้ซ่อนกราฟเส้น แล้วแสดงตาราง TOP10 Cause แทน
-            if (causeVal !== 'All') {
+            // หากเลือกกรอง Line เฉพาะเจาะจง (ไม่ใช่ All) ให้แสดงตาราง TOP10 Cause แทนกราฟเส้น
+            if (lineVal !== 'All') {
                 lineChartContainer.classList.add('hidden');
-                causeTop10Container.classList.remove('hidden');
-                rightSectionTitle.innerText = `Top 10 สาเหตุปัญหา (Cause) สำหรับ: ${causeVal}`;
-                renderCauseTop10Tables(data);
+                lineTop10Container.classList.remove('hidden');
+                rightSectionTitle.innerText = `Top 10 สาเหตุปัญหา (Cause) ประจำ Line: ${lineVal}`;
+                renderLineTop10Tables(data);
                 return;
             }
 
-            // หากไม่เลือก Cause ให้แสดงกราฟเส้นตามปกติ
+            // หากเลือก All ให้แสดงกราฟเส้นแนวโน้ม Downtime ตามปกติ
             lineChartContainer.classList.remove('hidden');
-            causeTop10Container.classList.add('hidden');
+            lineTop10Container.classList.add('hidden');
             rightSectionTitle.innerText = 'แนวโน้ม Downtime แยกตาม Line (นาที)';
 
             const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
@@ -1608,8 +1625,8 @@
             lineChartInstance.update();
         }
 
-        // ฟังก์ชันประมวลผลและสร้างตาราง TOP 10 Cause (แบ่งเป็น 2 ตาราง: 1-5 และ 6-10 โดยอันดับ 10 คือ "อื่นๆ")
-        function renderCauseTop10Tables(data) {
+        // ฟังก์ชันประมวลผลและสร้างตาราง TOP 10 Cause สำหรับ Line ที่เลือก (แบ่ง 2 ตาราง 1-5 และ 6-10 โดยอันดับ 10 คือ "อื่นๆ")
+        function renderLineTop10Tables(data) {
             const causeMap = {};
             data.forEach(item => {
                 const causeName = (item.cause && item.cause.trim() !== '') ? item.cause : 'ไม่ระบุสาเหตุ';
@@ -1620,7 +1637,6 @@
                 causeMap[causeName].downtime += Number(item.downtime) || 0;
             });
 
-            // จัดเรียงตามจำนวนครั้งหรือนาที (ในที่นี้เรียงตามจำนวนครั้งมากไปน้อย)
             let sortedCauses = Object.entries(causeMap).map(([cause, obj]) => ({
                 cause,
                 count: obj.count,
@@ -1644,8 +1660,8 @@
             const list1to5 = top10List.slice(0, 5);
             const list6to10 = top10List.slice(5, 10);
 
-            const tbody1 = document.getElementById('causeTop1TableBody');
-            const tbody2 = document.getElementById('causeTop2TableBody');
+            const tbody1 = document.getElementById('lineTop1TableBody');
+            const tbody2 = document.getElementById('lineTop2TableBody');
             tbody1.innerHTML = '';
             tbody2.innerHTML = '';
 
@@ -1770,5 +1786,3 @@
     </script>
 </body>
 </html>
-
-```
