@@ -551,7 +551,7 @@
                 compareShiftChartTitle: 'เปรียบเทียบจำนวนครั้งแยกตามเดือน',
                 defaultLineChartTitle: 'แนวโน้ม Downtime แยกตาม Line (นาที)',
                 compareLineChartTitleAll: 'Downtime เปรียบเทียบรายเดือน รวมทุก Line (นาที)',
-                compareLineChartTitleFiltered: 'Downtime เปรียบเทียบรายเดือน: รวมทุก Line vs ',
+                compareLineChartTitleLine: 'Downtime เปรียบเทียบรายเดือน: ',
                 allLinesGroupLabel: 'รวมทุก Line',
                 top18TitlePrefix: 'Top 18 สาเหตุปัญหา (Cause) ประจำ Line: ',
                 top18TitleSuffix: ' (เรียงตามนาที)',
@@ -616,7 +616,7 @@
                 compareShiftChartTitle: '各月问题发生次数对比',
                 defaultLineChartTitle: '各产线停机趋势 (分钟)',
                 compareLineChartTitleAll: '各月停机时长对比 - 全部产线汇总 (分钟)',
-                compareLineChartTitleFiltered: '各月停机时长对比: 全部产线 vs ',
+                compareLineChartTitleLine: '各月停机时长对比: ',
                 allLinesGroupLabel: '全部产线',
                 top18TitlePrefix: 'Top 18 问题原因 (Cause) - 产线: ',
                 top18TitleSuffix: '（按分钟排序）',
@@ -1542,37 +1542,6 @@
             });
         }
 
-        function getBaseCompareFilteredData(ignoreLine = false) {
-            const shiftVal = document.getElementById('shiftFilter').value;
-            const stationVal = document.getElementById('stationFilter').value;
-            const causeVal = document.getElementById('causeFilter').value;
-            const causeSearchVal = document.getElementById('causeSearchInput').value.trim().toLowerCase();
-            const lineVal = document.getElementById('lineFilter').value;
-
-            return logsData.filter(item => {
-                const itemDate = item.date;
-                if (!ignoreLine) {
-                    if (lineVal !== 'All' && item.line !== lineVal) return false;
-                    if (selectedKpiLines.length > 0 && !selectedKpiLines.includes(item.line)) return false;
-                }
-                if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
-                if (stationVal !== 'All' && item.station !== stationVal) return false;
-
-                if (compareSelectedMonths.length > 0) {
-                    if (!itemDate || !compareSelectedMonths.some(ym => itemDate.startsWith(ym))) return false;
-                }
-                if (compareSelectedIssues.length > 0) {
-                    if (!compareSelectedIssues.includes(item.issue)) return false;
-                }
-
-                if (causeVal !== 'All' && item.cause !== causeVal) return false;
-                if (causeSearchVal !== '') {
-                    if (!(item.cause || '').toLowerCase().includes(causeSearchVal)) return false;
-                }
-                return true;
-            });
-        }
-
         function getFilteredData() {
             const lineVal = document.getElementById('lineFilter').value;
             const shiftVal = document.getElementById('shiftFilter').value;
@@ -1836,13 +1805,13 @@
                     ? [lineVal]
                     : (selectedKpiLines.length > 0 ? selectedKpiLines : []);
 
-                const allLinesData = getBaseCompareFilteredData(true);
-                const hasFilteredLine = activeLines.length > 0;
-                const filteredLineLabel = hasFilteredLine ? activeLines.join(', ') : '';
+                const isLineSelected = activeLines.length > 0;
+                const lineLabel = isLineSelected ? activeLines.join(', ') : t.allLinesGroupLabel;
+                const monthLabels = monthsToShow.map(formatShortMonthLabel);
 
-                rightSectionTitle.innerText = hasFilteredLine
-                    ? `${t.compareLineChartTitleFiltered}${filteredLineLabel} (${monthsToShow.map(formatShortMonthLabel).join(' vs ')})`
-                    : `${t.compareLineChartTitleAll} (${monthsToShow.map(formatShortMonthLabel).join(' vs ')})`;
+                rightSectionTitle.innerText = isLineSelected
+                    ? `${t.compareLineChartTitleLine}${lineLabel} (${t.unitMin}) (${monthLabels.join(' vs ')})`
+                    : `${t.compareLineChartTitleAll} (${monthLabels.join(' vs ')})`;
 
                 lineChartInstance.config.type = 'bar';
                 lineChartInstance.options.indexAxis = 'x';
@@ -1870,48 +1839,21 @@
                 };
                 lineChartInstance.options.scales.y.grace = '20%';
 
-                const datasets = [];
-                if (hasFilteredLine) {
-                    const labels = [t.allLinesGroupLabel, filteredLineLabel];
-                    monthsToShow.forEach((ym, idx) => {
-                        const color = comparePalette[idx % comparePalette.length];
-                        const allMins = allLinesData
-                            .filter(item => item.date && item.date.startsWith(ym))
-                            .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
-                        const selectedMins = data
-                            .filter(item => item.date && item.date.startsWith(ym))
-                            .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
+                const valuesByMonth = monthsToShow.map(ym =>
+                    data
+                        .filter(item => item.date && item.date.startsWith(ym))
+                        .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0)
+                );
 
-                        datasets.push({
-                            label: formatShortMonthLabel(ym),
-                            data: [allMins, selectedMins],
-                            backgroundColor: color,
-                            borderColor: color,
-                            borderWidth: 1,
-                            borderRadius: 4
-                        });
-                    });
-                    lineChartInstance.data.labels = labels;
-                } else {
-                    const labels = monthsToShow.map(formatShortMonthLabel);
-                    const totalsByMonth = monthsToShow.map(ym =>
-                        allLinesData
-                            .filter(item => item.date && item.date.startsWith(ym))
-                            .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0)
-                    );
-
-                    datasets.push({
-                        label: t.allLinesGroupLabel,
-                        data: totalsByMonth,
-                        backgroundColor: labels.map((_, idx) => comparePalette[idx % comparePalette.length]),
-                        borderColor: labels.map((_, idx) => comparePalette[idx % comparePalette.length]),
-                        borderWidth: 1,
-                        borderRadius: 4
-                    });
-                    lineChartInstance.data.labels = labels;
-                }
-
-                lineChartInstance.data.datasets = datasets;
+                lineChartInstance.data.labels = monthLabels;
+                lineChartInstance.data.datasets = [{
+                    label: lineLabel,
+                    data: valuesByMonth,
+                    backgroundColor: monthLabels.map((_, idx) => comparePalette[idx % comparePalette.length]),
+                    borderColor: monthLabels.map((_, idx) => comparePalette[idx % comparePalette.length]),
+                    borderWidth: 1,
+                    borderRadius: 4
+                }];
                 lineChartInstance.update();
                 return;
             }
