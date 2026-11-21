@@ -1839,21 +1839,24 @@
                 };
                 lineChartInstance.options.scales.y.grace = '20%';
 
-                const valuesByMonth = monthsToShow.map(ym =>
-                    data
+                const datasets = monthsToShow.map((ym, idx) => {
+                    const color = comparePalette[idx % comparePalette.length];
+                    const totalMins = data
                         .filter(item => item.date && item.date.startsWith(ym))
-                        .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0)
-                );
+                        .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
 
-                lineChartInstance.data.labels = monthLabels;
-                lineChartInstance.data.datasets = [{
-                    label: lineLabel,
-                    data: valuesByMonth,
-                    backgroundColor: monthLabels.map((_, idx) => comparePalette[idx % comparePalette.length]),
-                    borderColor: monthLabels.map((_, idx) => comparePalette[idx % comparePalette.length]),
-                    borderWidth: 1,
-                    borderRadius: 4
-                }];
+                    return {
+                        label: formatShortMonthLabel(ym),
+                        data: [totalMins],
+                        backgroundColor: color,
+                        borderColor: color,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    };
+                });
+
+                lineChartInstance.data.labels = [lineLabel];
+                lineChartInstance.data.datasets = datasets;
                 lineChartInstance.update();
                 return;
             }
