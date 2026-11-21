@@ -65,100 +65,125 @@
             </div>
         </div>
         
-        <!-- Filter Container (2 Rows Layout) -->
-        <div class="flex flex-col gap-2.5 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs">
+        <!-- Filter Container (Left Filters + Right Embedded Compare Box) -->
+        <div class="flex flex-col xl:flex-row justify-between gap-3 bg-[#181c24] p-3 rounded-lg border border-gray-800 text-xs">
             
-            <!-- บรรทัดที่ 1 -->
-            <div class="flex flex-wrap items-center gap-2.5">
-                <div>
-                    <label id="lblLineFilter" class="block text-[10px] text-gray-400 mb-1">เลือก Line (Single)</label>
-                    <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
-                        <button onclick="setLineFilter('All')" id="btn-line-All" class="px-2 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
-                        <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line A</button>
-                        <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line B</button>
-                        <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line C</button>
-                        <button onclick="setLineFilter('Bottom')" id="btn-line-Bottom" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Bottom</button>
-                        <button onclick="setLineFilter('DND')" id="btn-line-DND" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">DND</button>
-                    </div>
-                    <input type="hidden" id="lineFilter" value="All">
-                </div>
-
-                <div>
-                    <label id="lblShiftFilter" class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
-                    <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
-                        <button onclick="setShiftFilter('All')" id="btn-shift-All" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
-                        <button onclick="setShiftFilter('Day')" id="btn-shift-Day" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Day</button>
-                        <button onclick="setShiftFilter('Night')" id="btn-shift-Night" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Night</button>
-                    </div>
-                    <input type="hidden" id="shiftFilter" value="All">
-                </div>
-
-                <div>
-                    <label id="lblQuickDate" class="block text-[10px] text-gray-400 mb-1">ช่วงเวลา</label>
-                    <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
-                        <button onclick="setQuickDate('all')" id="btn-date-all" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">ทั้งหมด</button>
-                        <button onclick="setQuickDate('today')" id="btn-date-today" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">วันนี้</button>
-                        <button onclick="setQuickDate('week')" id="btn-date-week" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">สัปดาห์นี้</button>
-                    </div>
-                </div>
-
-                <div>
-                    <label id="lblMonthFilter" class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
-                    <select id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
-                        <option value="All">ทุกเดือน (All)</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label id="lblDateRange" class="block text-[10px] text-gray-400 mb-1">เลือกวันที่ช่วงเวลา</label>
-                    <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium h-[30px]">
-                        <div>
-                            <input type="date" id="startDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+            <!-- Left Main Filters (2 Rows) -->
+            <div class="flex flex-col gap-2.5 flex-1 min-w-0">
+                <!-- บรรทัดที่ 1 -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <div>
+                        <label id="lblLineFilter" class="block text-[10px] text-gray-400 mb-1">เลือก Line (Single)</label>
+                        <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+                            <button onclick="setLineFilter('All')" id="btn-line-All" class="px-2 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
+                            <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line A</button>
+                            <button onclick="setLineFilter('B-Door')" id="btn-line-B-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line B</button>
+                            <button onclick="setLineFilter('C-Door')" id="btn-line-C-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line C</button>
+                            <button onclick="setLineFilter('Bottom')" id="btn-line-Bottom" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Bottom</button>
+                            <button onclick="setLineFilter('DND')" id="btn-line-DND" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">DND</button>
                         </div>
-                        <span class="text-gray-500">-</span>
-                        <div>
-                            <input type="date" id="endDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+                        <input type="hidden" id="lineFilter" value="All">
+                    </div>
+
+                    <div>
+                        <label id="lblShiftFilter" class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
+                        <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+                            <button onclick="setShiftFilter('All')" id="btn-shift-All" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
+                            <button onclick="setShiftFilter('Day')" id="btn-shift-Day" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Day</button>
+                            <button onclick="setShiftFilter('Night')" id="btn-shift-Night" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Night</button>
                         </div>
+                        <input type="hidden" id="shiftFilter" value="All">
+                    </div>
+
+                    <div>
+                        <label id="lblQuickDate" class="block text-[10px] text-gray-400 mb-1">ช่วงเวลา</label>
+                        <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
+                            <button onclick="setQuickDate('all')" id="btn-date-all" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">ทั้งหมด</button>
+                            <button onclick="setQuickDate('today')" id="btn-date-today" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">วันนี้</button>
+                            <button onclick="setQuickDate('week')" id="btn-date-week" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">สัปดาห์นี้</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label id="lblMonthFilter" class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
+                        <select id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
+                            <option value="All">ทุกเดือน (All)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label id="lblDateRange" class="block text-[10px] text-gray-400 mb-1">เลือกวันที่ช่วงเวลา</label>
+                        <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium h-[30px]">
+                            <div>
+                                <input type="date" id="startDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+                            </div>
+                            <span class="text-gray-500">-</span>
+                            <div>
+                                <input type="date" id="endDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- บรรทัดที่ 2 -->
+                <div class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-gray-800">
+                    <div>
+                        <label id="lblStationFilter" class="block text-[10px] text-gray-400 mb-1">Station</label>
+                        <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                            <option value="All">ทุก Station (All)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label id="lblIssueFilter" class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
+                        <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                            <option value="All">ทุกปัญหา (All)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label id="lblCauseFilter" class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
+                        <select id="causeFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
+                            <option value="All">ทุกสาเหตุ (All)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label id="lblCauseSearch" class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
+                        <input type="text" id="causeSearchInput" size="22" placeholder="พิมพ์ค้นหาสาเหตุ..." class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs">
+                    </div>
+
+                    <div class="flex items-end gap-1.5 mt-auto">
+                        <button onclick="clearFilters()" id="btnClearFilters" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
+                        <button onclick="fetchLogs()" id="btnRefresh" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
                     </div>
                 </div>
             </div>
 
-            <!-- บรรทัดที่ 2: Station, Issue, Cause, ค้นหาสาเหตุ, ล้างตัวกรอง, รีเฟรช, ปุ่มเปรียบเทียบ -->
-            <div class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-gray-800">
-                <div>
-                    <label id="lblStationFilter" class="block text-[10px] text-gray-400 mb-1">Station</label>
-                    <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                        <option value="All">ทุก Station (All)</option>
+            <!-- Right Embedded Compare Box (Red Box Area) -->
+            <div id="compareBox" class="w-full xl:w-[440px] shrink-0 bg-[#242b35] border border-amber-500/40 rounded-lg p-2.5 flex flex-col justify-between gap-2">
+                <!-- บรรทัดที่ 1: เลือกเดือน (ตัวย่อ พ.ย.26, ต.ค.26) -->
+                <div class="flex items-center gap-2">
+                    <span id="lblCompareMonthShort" class="text-[11px] text-amber-300 font-semibold shrink-0">เดือน:</span>
+                    <div id="compareMonthsContainer" class="flex items-center gap-1.5 overflow-x-auto py-0.5 flex-1"></div>
+                </div>
+
+                <!-- บรรทัดที่ 2: เลือกปัญหา (Dropdown + Tag) -->
+                <div class="flex items-center gap-2">
+                    <span id="lblCompareIssueShort" class="text-[11px] text-sky-300 font-semibold shrink-0">ปัญหา:</span>
+                    <select id="compareIssueDropdown" onchange="handleCompareIssueDropdownChange(this)" class="bg-gray-200 text-gray-900 font-semibold px-2 py-1 rounded border border-gray-400 focus:outline-none text-[11px] max-w-[165px] cursor-pointer">
+                        <option value="">-- เลือกปัญหา --</option>
                     </select>
+                    <div id="compareSelectedIssueTags" class="flex items-center gap-1 overflow-x-auto flex-1 py-0.5"></div>
                 </div>
 
-                <div>
-                    <label id="lblIssueFilter" class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
-                    <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                        <option value="All">ทุกปัญหา (All)</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label id="lblCauseFilter" class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
-                    <select id="causeFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
-                        <option value="All">ทุกสาเหตุ (All)</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label id="lblCauseSearch" class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
-                    <input type="text" id="causeSearchInput" size="26" placeholder="พิมพ์ค้นหาสาเหตุ..." class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs">
-                </div>
-
-                <div class="flex items-end gap-1.5 mt-auto flex-wrap">
-                    <button onclick="clearFilters()" id="btnClearFilters" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
-                    <button onclick="fetchLogs()" id="btnRefresh" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
-                    <button type="button" onclick="openCompareModal()" id="btnToggleCompare" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded transition flex items-center gap-1 shadow">
-                        <span>⚖️</span>
-                        <span id="compareBtnText">เปรียบเทียบข้อมูล</span>
-                        <span id="compareActiveDot" class="hidden w-2 h-2 rounded-full bg-emerald-300"></span>
-                    </button>
+                <!-- บรรทัดที่ 3: ปุ่ม ใช้งานการเปรียบเทียบ & กลับสู่โหมดปกติ -->
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-gray-700/80">
+                    <span id="compareStatusBadge" class="text-[10px] text-gray-400">ปิดอยู่</span>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="deactivateCompareMode()" id="btnDisableCompare" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-2.5 py-1 rounded text-[11px] transition">กลับสู่โหมดปกติ</button>
+                        <button type="button" onclick="activateCompareMode()" id="btnApplyCompare" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded text-[11px] transition">ใช้งานการเปรียบเทียบ</button>
+                    </div>
                 </div>
             </div>
 
@@ -418,50 +443,6 @@
         </div>
     </div>
 
-    <!-- Compact Compare Modal -->
-    <div id="compareModal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
-        <div class="bg-[#181c24] border border-amber-500/40 rounded-xl p-5 w-full max-w-2xl shadow-2xl text-xs space-y-4">
-            <div class="flex items-center justify-between border-b border-gray-800 pb-2.5">
-                <div class="flex items-center gap-2">
-                    <span id="comparePanelTitle" class="font-bold text-amber-400 text-sm">โหมดเปรียบเทียบข้อมูลข้ามเดือน & หลายปัญหา</span>
-                    <span id="compareStatusBadge" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[11px]">ปิดอยู่</span>
-                </div>
-                <button type="button" onclick="closeCompareModal()" class="text-gray-400 hover:text-white text-base font-bold px-2">✕</button>
-            </div>
-
-            <!-- เลือกเดือนได้มากกว่า 2 เดือน -->
-            <div class="bg-[#242b35] p-3 rounded-lg border border-gray-700">
-                <div class="flex items-center justify-between mb-2">
-                    <label id="lblSelectMonths" class="font-semibold text-gray-200">1. เลือกเดือนที่ต้องการเปรียบเทียบ (เลือกได้หลายเดือน เช่น พ.ย. vs ต.ค.)</label>
-                    <button type="button" onclick="selectLastTwoMonths()" id="btnQuickTwoMonths" class="text-[11px] text-amber-400 hover:underline">เลือก 2 เดือนล่าสุด</button>
-                </div>
-                <div id="compareMonthsContainer" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto"></div>
-            </div>
-
-            <!-- เลือกปัญหาแบบ Dropdown + Tag -->
-            <div class="bg-[#242b35] p-3 rounded-lg border border-gray-700 space-y-2">
-                <div class="flex items-center justify-between gap-2 flex-wrap">
-                    <label id="lblSelectIssues" class="font-semibold text-gray-200">2. เลือกปัญหา (Dropdown แล้วแสดงเป็น Tag)</label>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="selectTopIssues(5)" id="btnSelectTop5Issues" class="text-[11px] text-cyan-400 hover:underline">เลือก Top 5</button>
-                        <button type="button" onclick="clearSelectedIssues()" id="btnClearIssues" class="text-[11px] text-rose-400 hover:underline">ล้าง Tag ทั้งหมด</button>
-                    </div>
-                </div>
-
-                <select id="compareIssueDropdown" onchange="handleCompareIssueDropdownChange(this)" class="w-full bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
-                    <option value="">-- เลือกปัญหาเพื่อเพิ่ม Tag --</option>
-                </select>
-
-                <div id="compareSelectedIssueTags" class="flex flex-wrap gap-1.5 min-h-[28px] pt-1"></div>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-1">
-                <button type="button" onclick="deactivateCompareMode()" id="btnDisableCompare" class="bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium px-3.5 py-1.5 rounded transition">กลับสู่โหมดปกติ</button>
-                <button type="button" onclick="activateCompareMode()" id="btnApplyCompare" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded transition">ใช้งานการเปรียบเทียบ</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Custom Password Modal Pop-up -->
     <div id="passwordModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
         <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-sm shadow-2xl">
@@ -542,18 +523,13 @@
                 mainTitle: 'DOOR LINE BREAKDOWN',
                 subTitleDesc: 'ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)',
                 lastUpdatePrefix: 'Update ล่าสุด : ',
-                compareBtnText: 'เปรียบเทียบข้อมูล',
-                comparePanelTitle: 'โหมดเปรียบเทียบข้อมูลข้ามเดือน & หลายปัญหา',
+                lblCompareMonthShort: 'เดือน:',
+                lblCompareIssueShort: 'ปัญหา:',
                 compareStatusOff: 'ปิดอยู่',
                 compareStatusOn: 'กำลังเปรียบเทียบ',
                 btnApplyCompare: 'ใช้งานการเปรียบเทียบ',
                 btnDisableCompare: 'กลับสู่โหมดปกติ',
-                lblSelectMonths: '1. เลือกเดือนที่ต้องการเปรียบเทียบ (เลือกได้หลายเดือน เช่น พ.ย. vs ต.ค.)',
-                btnQuickTwoMonths: 'เลือก 2 เดือนล่าสุด',
-                lblSelectIssues: '2. เลือกปัญหา (Dropdown แล้วแสดงเป็น Tag)',
-                dropdownPlaceholder: '-- เลือกปัญหาเพื่อเพิ่ม Tag --',
-                btnSelectTop5Issues: 'เลือก Top 5',
-                btnClearIssues: 'ล้าง Tag ทั้งหมด',
+                dropdownPlaceholder: '-- เลือกปัญหา --',
                 lblLineFilter: 'เลือก Line (Single)',
                 lblShiftFilter: 'กะ (Shift)',
                 lblQuickDate: 'ช่วงเวลา',
@@ -599,24 +575,24 @@
                     '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
                     '05': 'พฤษภาคม', '06': 'มิถุนายน', '07': 'กรกฎาคม', '08': 'สิงหาคม',
                     '09': 'กันยายน', '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม'
+                },
+                shortMonths: {
+                    '01': 'ม.ค.', '02': 'ก.พ.', '03': 'มี.ค.', '04': 'เม.ย.',
+                    '05': 'พ.ค.', '06': 'มิ.ย.', '07': 'ก.ค.', '08': 'ส.ค.',
+                    '09': 'ก.ย.', '10': 'ต.ค.', '11': 'พ.ย.', '12': 'ธ.ค.'
                 }
             },
             zh: {
                 mainTitle: '门体产线停机统计 (DOOR LINE BREAKDOWN)',
                 subTitleDesc: '设备故障统计追踪系统 (Line A, B, C, Bottom, DND)',
                 lastUpdatePrefix: '最后更新 : ',
-                compareBtnText: '数据对比',
-                comparePanelTitle: '跨月与多问题对比模式',
+                lblCompareMonthShort: '月份:',
+                lblCompareIssueShort: '问题:',
                 compareStatusOff: '已关闭',
                 compareStatusOn: '对比中',
                 btnApplyCompare: '启用对比',
                 btnDisableCompare: '返回普通模式',
-                lblSelectMonths: '1. 选择对比月份（可多选，例如 11月 vs 10月）',
-                btnQuickTwoMonths: '选最近2个月',
-                lblSelectIssues: '2. 选择问题（下拉选择后生成标签）',
-                dropdownPlaceholder: '-- 选择问题添加标签 --',
-                btnSelectTop5Issues: '选 Top 5',
-                btnClearIssues: '清除所有标签',
+                dropdownPlaceholder: '-- 选择问题 --',
                 lblLineFilter: '选择产线 (单选)',
                 lblShiftFilter: '班次 (Shift)',
                 lblQuickDate: '时间范围',
@@ -662,6 +638,11 @@
                     '01': '1月', '02': '2月', '03': '3月', '04': '4月',
                     '05': '5月', '06': '6月', '07': '7月', '08': '8月',
                     '09': '9月', '10': '10月', '11': '11月', '12': '12月'
+                },
+                shortMonths: {
+                    '01': '1月', '02': '2月', '03': '3月', '04': '4月',
+                    '05': '5月', '06': '6月', '07': '7月', '08': '8月',
+                    '09': '9月', '10': '10月', '11': '11月', '12': '12月'
                 }
             }
         };
@@ -683,6 +664,17 @@
             return `${mName} ${year}`;
         }
 
+        function formatShortMonthLabel(ym) {
+            if (!ym || ym.length < 7) return ym;
+            const [year, monthNum] = ym.split('-');
+            const yy = year.slice(-2);
+            if (currentLang === 'zh') {
+                return `${Number(monthNum)}月${yy}`;
+            }
+            const sName = i18n.th.shortMonths[monthNum] || monthNum;
+            return `${sName}${yy}`;
+        }
+
         function setLanguage(lang) {
             currentLang = lang;
             document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'th';
@@ -699,15 +691,10 @@
             const t = i18n[lang];
             document.getElementById('mainTitle').innerText = t.mainTitle;
             document.getElementById('subTitleDesc').innerText = t.subTitleDesc;
-            document.getElementById('compareBtnText').innerText = t.compareBtnText;
-            document.getElementById('comparePanelTitle').innerText = t.comparePanelTitle;
+            document.getElementById('lblCompareMonthShort').innerText = t.lblCompareMonthShort;
+            document.getElementById('lblCompareIssueShort').innerText = t.lblCompareIssueShort;
             document.getElementById('btnApplyCompare').innerText = t.btnApplyCompare;
             document.getElementById('btnDisableCompare').innerText = t.btnDisableCompare;
-            document.getElementById('lblSelectMonths').innerText = t.lblSelectMonths;
-            document.getElementById('btnQuickTwoMonths').innerText = t.btnQuickTwoMonths;
-            document.getElementById('lblSelectIssues').innerText = t.lblSelectIssues;
-            document.getElementById('btnSelectTop5Issues').innerText = t.btnSelectTop5Issues;
-            document.getElementById('btnClearIssues').innerText = t.btnClearIssues;
             document.getElementById('lblLineFilter').innerText = t.lblLineFilter;
             document.getElementById('lblShiftFilter').innerText = t.lblShiftFilter;
             document.getElementById('lblQuickDate').innerText = t.lblQuickDate;
@@ -753,30 +740,15 @@
             updateDashboard();
         }
 
-        function openCompareModal() {
-            renderCompareSelectors();
-            if (compareSelectedMonths.length === 0) {
-                selectLastTwoMonths();
-            }
-            document.getElementById('compareModal').classList.remove('hidden');
-        }
-
-        function closeCompareModal() {
-            document.getElementById('compareModal').classList.add('hidden');
-        }
-
         function updateCompareStatusBadge() {
             const badge = document.getElementById('compareStatusBadge');
-            const dot = document.getElementById('compareActiveDot');
             const t = i18n[currentLang];
             if (isCompareMode) {
-                badge.innerText = `${t.compareStatusOn} (${compareSelectedMonths.length} ${currentLang === 'zh' ? '月' : 'เดือน'} / ${compareSelectedIssues.length} ${currentLang === 'zh' ? '项' : 'ปัญหา'})`;
-                badge.className = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded text-[11px] font-semibold';
-                dot.classList.remove('hidden');
+                badge.innerText = `${t.compareStatusOn} (${compareSelectedMonths.length}/${compareSelectedIssues.length})`;
+                badge.className = 'text-[10px] text-emerald-300 font-semibold';
             } else {
                 badge.innerText = t.compareStatusOff;
-                badge.className = 'bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[11px]';
-                dot.classList.add('hidden');
+                badge.className = 'text-[10px] text-gray-400';
             }
         }
 
@@ -810,15 +782,17 @@
 
             months.forEach(ym => {
                 const checked = compareSelectedMonths.includes(ym);
-                const labelEl = document.createElement('label');
-                labelEl.className = `flex items-center gap-1.5 px-2.5 py-1 rounded border cursor-pointer transition ${
-                    checked ? 'bg-amber-500/25 border-amber-400 text-amber-200 font-semibold' : 'bg-[#181c24] border-gray-700 text-gray-300 hover:border-gray-500'
+                const btnEl = document.createElement('button');
+                btnEl.type = 'button';
+                btnEl.className = `px-2 py-0.5 rounded border text-[11px] shrink-0 transition cursor-pointer ${
+                    checked
+                        ? 'bg-amber-500/25 border-amber-400 text-amber-200 font-bold'
+                        : 'bg-[#181c24] border-gray-700 text-gray-300 hover:border-gray-500'
                 }`;
-                labelEl.innerHTML = `
-                    <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCompareMonth('${ym}')" class="accent-amber-500 cursor-pointer">
-                    <span>${formatMonthLabel(ym)}</span>
-                `;
-                monthsContainer.appendChild(labelEl);
+                btnEl.textContent = `${checked ? '✓ ' : ''}${formatShortMonthLabel(ym)}`;
+                btnEl.title = formatMonthLabel(ym);
+                btnEl.onclick = () => toggleCompareMonth(ym);
+                monthsContainer.appendChild(btnEl);
             });
 
             const issues = getAvailableIssuesSorted();
@@ -840,9 +814,11 @@
 
             compareSelectedIssues.forEach(issue => {
                 const tagEl = document.createElement('span');
-                tagEl.className = 'inline-flex items-center gap-1.5 bg-sky-500/20 text-sky-200 border border-sky-400/50 px-2.5 py-1 rounded-full text-[11px] font-medium';
+                tagEl.className = 'inline-flex items-center gap-1 bg-sky-500/20 text-sky-200 border border-sky-400/50 px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0';
                 const labelSpan = document.createElement('span');
                 labelSpan.textContent = issue;
+                labelSpan.className = 'max-w-[90px] truncate';
+                labelSpan.title = issue;
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
@@ -893,28 +869,11 @@
         function selectLastTwoMonths() {
             compareSelectedMonths = getAvailableMonths().slice(0, 2);
             renderCompareSelectors();
-            if (isCompareMode) {
-                updateCompareStatusBadge();
-                updateDashboard();
-            }
         }
 
         function selectTopIssues(limit = 5) {
             compareSelectedIssues = getAvailableIssuesSorted().slice(0, limit);
             renderCompareSelectors();
-            if (isCompareMode) {
-                updateCompareStatusBadge();
-                updateDashboard();
-            }
-        }
-
-        function clearSelectedIssues() {
-            compareSelectedIssues = [];
-            renderCompareSelectors();
-            if (isCompareMode) {
-                updateCompareStatusBadge();
-                updateDashboard();
-            }
         }
 
         function activateCompareMode() {
@@ -924,7 +883,6 @@
             currentPage = 1;
             updateCompareStatusBadge();
             updateDashboard();
-            closeCompareModal();
         }
 
         function deactivateCompareMode() {
@@ -932,7 +890,6 @@
             currentPage = 1;
             updateCompareStatusBadge();
             updateDashboard();
-            closeCompareModal();
         }
 
         function handleTimeChange() {
