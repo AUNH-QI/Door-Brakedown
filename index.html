@@ -7,12 +7,9 @@
     <link rel="icon" type="image/png" href="https://rdatxagldckqsxkncvbu.supabase.co/storage/v1/object/public/logos/logo-1.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chart.js DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* สไตล์สำหรับ KPI Card ที่ถูกเลือกไฮไลท์ */
         .kpi-card-highlight {
             border: 2px solid #f97316 !important;
             background-color: rgba(249, 115, 22, 0.1) !important;
@@ -20,7 +17,6 @@
             transform: translateY(-2px);
             transition: all 0.3s ease;
         }
-        /* สไตล์สำหรับช่องลากวางไฟล์ (Drop Zone) */
         .drop-zone {
             border: 2px dashed #4b5563;
             transition: all 0.3s ease;
@@ -37,24 +33,73 @@
     <div class="flex flex-col mb-6 gap-4">
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
             <div>
-                <div class="flex items-center gap-3">
-                    <h1 class="text-2xl font-bold tracking-wide text-orange-500">DOOR LINE BREAKDOWN</h1>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <h1 id="mainTitle" class="text-2xl font-bold tracking-wide text-orange-500">DOOR LINE BREAKDOWN</h1>
                     <span id="loadingStatus" class="hidden text-xs bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded animate-pulse">กำลังดึงข้อมูล...</span>
                 </div>
-                <div class="flex items-center gap-3 mt-1">
-                    <p class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
+                <div class="flex items-center gap-3 mt-1 flex-wrap">
+                    <p id="subTitleDesc" class="text-xs text-gray-400">ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)</p>
                     <span id="lastUpdateLabel" class="text-xs text-emerald-400 font-mono bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">Update ล่าสุด : -</span>
                 </div>
             </div>
 
-            <!-- Right Action Buttons (SCRAP & IMPROVEMENT ย้ายมาไว้บริเวณวงสีแดงมุมขวาบน) -->
-            <div class="flex items-center gap-2">
-                <a href="scrap.html" class="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow flex items-center gap-1">
-                     SCRAP BY MACHINE
+            <!-- Right Action Buttons (Language Toggle + Compare + SCRAP & IMPROVEMENT) -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Language Switcher -->
+                <div class="flex bg-[#181c24] p-1 rounded border border-gray-700 gap-1 text-xs">
+                    <button type="button" onclick="setLanguage('th')" id="btn-lang-th" class="px-2.5 py-1 rounded bg-orange-600 text-white font-bold transition">ไทย</button>
+                    <button type="button" onclick="setLanguage('zh')" id="btn-lang-zh" class="px-2.5 py-1 rounded text-gray-300 hover:text-white font-bold transition">中文</button>
+                </div>
+
+                <!-- Compare Mode Button -->
+                <button type="button" onclick="toggleComparePanel()" id="btnToggleCompare" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3.5 py-2 rounded transition shadow flex items-center gap-1.5">
+                    <span>⚖️</span>
+                    <span id="compareBtnText">เปรียบเทียบข้อมูล</span>
+                </button>
+
+                <a href="scrap.html" id="btnScrapLink" class="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow flex items-center gap-1">
+                    SCRAP BY MACHINE
                 </a>
-                <a href="improvement.html" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow flex items-center gap-1">
-                     IMPROVEMENT
+                <a href="improvement.html" id="btnImprovementLink" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow flex items-center gap-1">
+                    IMPROVEMENT
                 </a>
+            </div>
+        </div>
+
+        <!-- Multi-Month & Multi-Issue Compare Panel -->
+        <div id="comparePanel" class="hidden bg-[#181c24] p-4 rounded-lg border border-amber-500/40 text-xs space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-2">
+                <div class="flex items-center gap-2">
+                    <span id="comparePanelTitle" class="font-bold text-amber-400 text-sm">โหมดเปรียบเทียบข้อมูลข้ามเดือน & หลายปัญหา</span>
+                    <span id="compareStatusBadge" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[11px]">ปิดอยู่</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="activateCompareMode()" id="btnApplyCompare" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded transition">ใช้งานการเปรียบเทียบ</button>
+                    <button type="button" onclick="deactivateCompareMode()" id="btnDisableCompare" class="bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium px-3 py-1 rounded transition">กลับสู่โหมดปกติ</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <!-- เลือกเดือนได้มากกว่า 2 เดือน -->
+                <div class="lg:col-span-5 bg-[#242b35] p-3 rounded border border-gray-700">
+                    <div class="flex items-center justify-between mb-2">
+                        <label id="lblSelectMonths" class="font-semibold text-gray-200">1. เลือกเดือนที่ต้องการเปรียบเทียบ (เลือกได้หลายเดือน เช่น พ.ย. vs ต.ค.)</label>
+                        <button type="button" onclick="selectLastTwoMonths()" id="btnQuickTwoMonths" class="text-[11px] text-amber-400 hover:underline">เลือก 2 เดือนล่าสุด</button>
+                    </div>
+                    <div id="compareMonthsContainer" class="flex flex-wrap gap-2 max-h-28 overflow-y-auto"></div>
+                </div>
+
+                <!-- เลือกปัญหาได้มากกว่า 1 ปัญหา -->
+                <div class="lg:col-span-7 bg-[#242b35] p-3 rounded border border-gray-700">
+                    <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                        <label id="lblSelectIssues" class="font-semibold text-gray-200">2. เลือกปัญหา (เลือกได้มากกว่า 1 ปัญหา เพื่อดูกราฟแท่งแนวนอนเปรียบเทียบ)</label>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="selectTopIssues(5)" id="btnSelectTop5Issues" class="text-[11px] text-cyan-400 hover:underline">เลือก Top 5</button>
+                            <button type="button" onclick="clearSelectedIssues()" id="btnClearIssues" class="text-[11px] text-rose-400 hover:underline">ล้างที่เลือก</button>
+                        </div>
+                    </div>
+                    <div id="compareIssuesContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5 max-h-28 overflow-y-auto pr-1"></div>
+                </div>
             </div>
         </div>
         
@@ -63,9 +108,8 @@
             
             <!-- บรรทัดที่ 1: เลือก Line, Shift, ปุ่มลัดเวลา, เดือนเฉพาะ, ช่วงวันที่ -->
             <div class="flex flex-wrap items-center gap-2.5">
-                <!-- Line Buttons Filter (Single Select) -->
                 <div>
-                    <label class="block text-[10px] text-gray-400 mb-1">เลือก Line (Single)</label>
+                    <label id="lblLineFilter" class="block text-[10px] text-gray-400 mb-1">เลือก Line (Single)</label>
                     <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
                         <button onclick="setLineFilter('All')" id="btn-line-All" class="px-2 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
                         <button onclick="setLineFilter('A-Door')" id="btn-line-A-Door" class="px-2 py-1 rounded text-gray-300 hover:text-white transition">Line A</button>
@@ -77,9 +121,8 @@
                     <input type="hidden" id="lineFilter" value="All">
                 </div>
 
-                <!-- Shift Buttons Filter -->
                 <div>
-                    <label class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
+                    <label id="lblShiftFilter" class="block text-[10px] text-gray-400 mb-1">กะ (Shift)</label>
                     <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
                         <button onclick="setShiftFilter('All')" id="btn-shift-All" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">All</button>
                         <button onclick="setShiftFilter('Day')" id="btn-shift-Day" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">Day</button>
@@ -88,9 +131,8 @@
                     <input type="hidden" id="shiftFilter" value="All">
                 </div>
 
-                <!-- Quick Date Buttons (ตัดเดือนนี้ออก) -->
                 <div>
-                    <label class="block text-[10px] text-gray-400 mb-1">ช่วงเวลา</label>
+                    <label id="lblQuickDate" class="block text-[10px] text-gray-400 mb-1">ช่วงเวลา</label>
                     <div class="flex bg-[#242b35] p-1 rounded border border-gray-700 gap-1">
                         <button onclick="setQuickDate('all')" id="btn-date-all" class="px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition">ทั้งหมด</button>
                         <button onclick="setQuickDate('today')" id="btn-date-today" class="px-2.5 py-1 rounded text-gray-300 hover:text-white transition">วันนี้</button>
@@ -98,17 +140,15 @@
                     </div>
                 </div>
 
-                <!-- Month Dropdown Filter -->
                 <div>
-                    <label class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
+                    <label id="lblMonthFilter" class="block text-[10px] text-gray-300 mb-1">เลือกเดือนเฉพาะ</label>
                     <select id="monthFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs cursor-pointer">
                         <option value="All">ทุกเดือน (All)</option>
                     </select>
                 </div>
 
-                <!-- Custom Date Range -->
                 <div>
-                    <label class="block text-[10px] text-gray-400 mb-1">เลือกวันที่ช่วงเวลา</label>
+                    <label id="lblDateRange" class="block text-[10px] text-gray-400 mb-1">เลือกวันที่ช่วงเวลา</label>
                     <div class="flex gap-2 items-center bg-gray-200 text-gray-900 px-2.5 py-1 rounded border border-gray-400 font-medium h-[30px]">
                         <div>
                             <input type="date" id="startDateFilter" class="bg-transparent text-gray-900 focus:outline-none text-xs font-semibold cursor-pointer">
@@ -123,40 +163,35 @@
 
             <!-- บรรทัดที่ 2: Station, Issue, Cause, ค้นหาสาเหตุ, ล้างตัวกรอง, รีเฟรช -->
             <div class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-gray-800">
-                <!-- Station Filter -->
                 <div>
-                    <label class="block text-[10px] text-gray-400 mb-1">Station</label>
+                    <label id="lblStationFilter" class="block text-[10px] text-gray-400 mb-1">Station</label>
                     <select id="stationFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
                         <option value="All">ทุก Station (All)</option>
                     </select>
                 </div>
 
-                <!-- Issue Category Filter -->
                 <div>
-                    <label class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
+                    <label id="lblIssueFilter" class="block text-[10px] text-gray-400 mb-1">ประเภทปัญหา (Issue)</label>
                     <select id="issueFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
                         <option value="All">ทุกปัญหา (All)</option>
                     </select>
                 </div>
 
-                <!-- Cause Filter -->
                 <div>
-                    <label class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
+                    <label id="lblCauseFilter" class="block text-[10px] text-gray-400 mb-1">สาเหตุ (Cause)</label>
                     <select id="causeFilter" class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs max-w-[130px] cursor-pointer">
                         <option value="All">ทุกสาเหตุ (All)</option>
                     </select>
                 </div>
 
-                <!-- Cause Search Input (ขนาด 30 ตัวอักษร) -->
                 <div>
-                    <label class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
+                    <label id="lblCauseSearch" class="block text-[10px] text-gray-400 mb-1">ค้นหา สาเหตุ (Cause)</label>
                     <input type="text" id="causeSearchInput" size="30" placeholder="พิมพ์ค้นหาสาเหตุ..." class="bg-gray-200 text-gray-900 font-semibold px-2.5 py-1.5 rounded border border-gray-400 focus:outline-none text-xs">
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex items-end gap-1.5 mt-auto">
-                    <button onclick="clearFilters()" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
-                    <button onclick="fetchLogs()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
+                    <button onclick="clearFilters()" id="btnClearFilters" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1.5 rounded transition">ล้างตัวกรอง</button>
+                    <button onclick="fetchLogs()" id="btnRefresh" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded transition flex items-center gap-1">🔄 รีเฟรช</button>
                 </div>
             </div>
 
@@ -168,36 +203,36 @@
         <div id="card-A-Door" onclick="toggleKpiCardFilter('A-Door')" class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md transition-all duration-300 cursor-pointer hover:border-orange-500/50">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line A-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-2xl font-extrabold text-white"><span id="kpi-a-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
-                <span class="text-2xl font-extrabold text-emerald-400"><span id="kpi-a-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
+                <span class="text-2xl font-extrabold text-white"><span id="kpi-a-mins">0</span> <span class="text-xs font-normal text-gray-400 unit-min">นาที</span></span>
+                <span class="text-2xl font-extrabold text-emerald-400"><span id="kpi-a-count">0</span> <span class="text-xs font-normal text-gray-400 unit-cnt">ครั้ง</span></span>
             </div>
         </div>
         <div id="card-B-Door" onclick="toggleKpiCardFilter('B-Door')" class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md transition-all duration-300 cursor-pointer hover:border-orange-500/50">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line B-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-2xl font-extrabold text-white"><span id="kpi-b-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
-                <span class="text-2xl font-extrabold text-amber-400"><span id="kpi-b-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
+                <span class="text-2xl font-extrabold text-white"><span id="kpi-b-mins">0</span> <span class="text-xs font-normal text-gray-400 unit-min">นาที</span></span>
+                <span class="text-2xl font-extrabold text-amber-400"><span id="kpi-b-count">0</span> <span class="text-xs font-normal text-gray-400 unit-cnt">ครั้ง</span></span>
             </div>
         </div>
         <div id="card-C-Door" onclick="toggleKpiCardFilter('C-Door')" class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md transition-all duration-300 cursor-pointer hover:border-orange-500/50">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line C-Door (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-2xl font-extrabold text-white"><span id="kpi-c-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
-                <span class="text-2xl font-extrabold text-rose-500"><span id="kpi-c-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
+                <span class="text-2xl font-extrabold text-white"><span id="kpi-c-mins">0</span> <span class="text-xs font-normal text-gray-400 unit-min">นาที</span></span>
+                <span class="text-2xl font-extrabold text-rose-500"><span id="kpi-c-count">0</span> <span class="text-xs font-normal text-gray-400 unit-cnt">ครั้ง</span></span>
             </div>
         </div>
         <div id="card-Bottom" onclick="toggleKpiCardFilter('Bottom')" class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md transition-all duration-300 cursor-pointer hover:border-orange-500/50">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line Bottom (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-2xl font-extrabold text-white"><span id="kpi-bottom-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
-                <span class="text-2xl font-extrabold text-purple-400"><span id="kpi-bottom-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
+                <span class="text-2xl font-extrabold text-white"><span id="kpi-bottom-mins">0</span> <span class="text-xs font-normal text-gray-400 unit-min">นาที</span></span>
+                <span class="text-2xl font-extrabold text-purple-400"><span id="kpi-bottom-count">0</span> <span class="text-xs font-normal text-gray-400 unit-cnt">ครั้ง</span></span>
             </div>
         </div>
         <div id="card-DND" onclick="toggleKpiCardFilter('DND')" class="bg-[#181c24] p-4 rounded-xl border border-gray-800 shadow-md sm:col-span-2 lg:col-span-1 transition-all duration-300 cursor-pointer hover:border-orange-500/50">
             <h3 class="text-xs font-semibold text-gray-400 mb-2">Line DND (Downtime รวม)</h3>
             <div class="flex justify-between items-baseline">
-                <span class="text-2xl font-extrabold text-white"><span id="kpi-dnd-mins">0</span> <span class="text-xs font-normal text-gray-400">นาที</span></span>
-                <span class="text-2xl font-extrabold text-blue-400"><span id="kpi-dnd-count">0</span> <span class="text-xs font-normal text-gray-400">ครั้ง</span></span>
+                <span class="text-2xl font-extrabold text-white"><span id="kpi-dnd-mins">0</span> <span class="text-xs font-normal text-gray-400 unit-min">นาที</span></span>
+                <span class="text-2xl font-extrabold text-blue-400"><span id="kpi-dnd-count">0</span> <span class="text-xs font-normal text-gray-400 unit-cnt">ครั้ง</span></span>
             </div>
         </div>
     </div>
@@ -211,39 +246,34 @@
             </div>
         </div>
         
-        <!-- ฝั่งขวา: เปลี่ยนสลับระหว่าง กราฟเส้นแนวโน้ม กับ ตาราง TOP18 ตาม Line ที่เลือก (แบ่ง 1-9 และ 10-18) -->
         <div class="bg-[#181c24] p-4 rounded-xl border border-gray-800 md:col-span-7 flex flex-col justify-between">
             <h3 id="rightSectionTitle" class="text-sm font-bold text-orange-500 mb-2">แนวโน้ม Downtime แยกตาม Line (นาที)</h3>
             
-            <!-- กรณีแสดงกราฟเส้น -->
             <div id="lineChartContainer" class="h-80"><canvas id="lineChart"></canvas></div>
 
-            <!-- กรณีแสดงตาราง TOP18 เมื่อเลือก Line -->
             <div id="lineTop18Container" class="hidden min-h-[20rem] overflow-y-auto">
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-3 h-full">
-                    <!-- ตารางที่ 1 (Rank 1-9) -->
                     <div class="bg-[#242b35] rounded-lg p-2 border border-gray-700 overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-[#181c24] text-gray-300 uppercase border-b border-gray-700">
                                 <tr>
                                     <th class="p-1.5 text-center w-9">No.</th>
                                     <th class="p-1.5">Cause</th>
-                                    <th class="p-1.5 text-right">ครั้ง</th>
-                                    <th class="p-1.5 text-right">นาที</th>
+                                    <th class="p-1.5 text-right top18-col-cnt">ครั้ง</th>
+                                    <th class="p-1.5 text-right top18-col-min">นาที</th>
                                 </tr>
                             </thead>
                             <tbody id="lineTop1TableBody" class="divide-y divide-gray-800"></tbody>
                         </table>
                     </div>
-                    <!-- ตารางที่ 2 (Rank 10-18) -->
                     <div class="bg-[#242b35] rounded-lg p-2 border border-gray-700 overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-[#181c24] text-gray-300 uppercase border-b border-gray-700">
                                 <tr>
                                     <th class="p-1.5 text-center w-9">No.</th>
                                     <th class="p-1.5">Cause</th>
-                                    <th class="p-1.5 text-right">ครั้ง</th>
-                                    <th class="p-1.5 text-right">นาที</th>
+                                    <th class="p-1.5 text-right top18-col-cnt">ครั้ง</th>
+                                    <th class="p-1.5 text-right top18-col-min">นาที</th>
                                 </tr>
                             </thead>
                             <tbody id="lineTop2TableBody" class="divide-y divide-gray-800"></tbody>
@@ -258,10 +288,9 @@
     <div class="bg-[#181c24] rounded-xl border border-gray-800 p-4 mb-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
             <div class="flex items-center gap-4">
-                <h3 class="text-sm font-bold text-orange-500">Breakdown Log Data</h3>
-                <!-- Rows per page selector (Default 10) -->
+                <h3 id="logSectionTitle" class="text-sm font-bold text-orange-500">Breakdown Log Data</h3>
                 <div class="flex items-center gap-1.5 text-xs text-gray-300">
-                    <span>แสดง:</span>
+                    <span id="lblShowRows">แสดง:</span>
                     <select id="rowsPerPageSelect" onchange="changeRowsPerPage()" class="bg-[#242b35] text-white px-2 py-1 rounded border border-gray-700 focus:outline-none cursor-pointer">
                         <option value="10" selected>10</option>
                         <option value="20">20</option>
@@ -269,21 +298,19 @@
                         <option value="100">100</option>
                         <option value="All">ทั้งหมด</option>
                     </select>
-                    <span>แถว</span>
+                    <span id="lblRowsUnit">แถว</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <!-- Quick Preset Button -->
-                <button onclick="applyQuickPreset()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3 py-1.5 rounded transition flex items-center gap-1 shadow">
+                <button onclick="applyQuickPreset()" id="btnQuickPreset" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-3 py-1.5 rounded transition flex items-center gap-1 shadow">
                     ⚡ ด่วน: Robot จับฝาร่วง (Line C)
                 </button>
-                <button onclick="toggleForm()" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded transition">+ADD</button>
+                <button onclick="toggleForm()" id="btnToggleAddForm" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded transition">+ADD</button>
             </div>
         </div>
 
         <form id="addLogForm" onsubmit="addNewLog(event)" class="hidden grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#242b35] p-4 rounded-lg mb-4 text-xs">
-            <!-- บรรทัดแรกประกอบด้วย DATE, TIME, SHIFT และ LINE Buttons -->
             <div>
                 <label class="block text-gray-400 mb-1">DATE</label>
                 <input type="date" id="inputDate" required class="w-full bg-gray-200 text-gray-900 font-semibold p-2 rounded border border-gray-400">
@@ -316,7 +343,6 @@
                 <input type="hidden" id="inputLine" value="A-Door">
             </div>
 
-            <!-- บรรทัดถัดไปสำหรับ Machine, Station, Issue, Cause ฯลฯ -->
             <div>
                 <label class="block text-gray-400 mb-1">machine</label>
                 <select id="inputMachine" required class="w-full bg-[#181c24] p-2 rounded border border-gray-700 text-white">
@@ -357,7 +383,6 @@
                 </div>
             </div>
             
-            <!-- ช่องอัปโหลดรูปภาพก่อน/หลังแก้ไข -->
             <div class="col-span-2 md:col-span-2">
                 <label class="block text-gray-400 mb-1">รูปภาพก่อนแก้ไข (Before Image)</label>
                 <div id="dropZoneBefore" class="drop-zone bg-[#181c24] p-3 rounded-lg text-center cursor-pointer relative hover:border-orange-500">
@@ -401,18 +426,18 @@
             <table class="w-full text-left text-xs border-collapse">
                 <thead class="bg-[#242b35] text-gray-300 sticky top-0 uppercase border-b border-gray-700">
                     <tr>
-                        <th class="p-2.5 border-r border-gray-700">DATE</th>
-                        <th class="p-2.5 border-r border-gray-700">SHIFT</th>
-                        <th class="p-2.5 border-r border-gray-700">LINE</th>
-                        <th class="p-2.5 border-r border-gray-700">MACHINE</th>
-                        <th class="p-2.5 border-r border-gray-700">STATION</th>
-                        <th class="p-2.5 border-r border-gray-700">ISSUE</th>
-                        <th class="p-2.5 border-r border-gray-700">CAUSE</th>
-                        <th class="p-2.5 border-r border-gray-700">FIX</th>
-                        <th class="p-2.5 border-r border-gray-700">TIME</th>
-                        <th class="p-2.5 border-r border-gray-700 text-right">DOWNTIME (MIN)</th>
-                        <th class="p-2.5 border-r border-gray-700 text-center">รูปภาพก่อนแก้ไข</th>
-                        <th class="p-2.5 border-r border-gray-700 text-center">รูปภาพหลังแก้ไข</th>
+                        <th id="thDate" class="p-2.5 border-r border-gray-700">DATE</th>
+                        <th id="thShift" class="p-2.5 border-r border-gray-700">SHIFT</th>
+                        <th id="thLine" class="p-2.5 border-r border-gray-700">LINE</th>
+                        <th id="thMachine" class="p-2.5 border-r border-gray-700">MACHINE</th>
+                        <th id="thStation" class="p-2.5 border-r border-gray-700">STATION</th>
+                        <th id="thIssue" class="p-2.5 border-r border-gray-700">ISSUE</th>
+                        <th id="thCause" class="p-2.5 border-r border-gray-700">CAUSE</th>
+                        <th id="thFix" class="p-2.5 border-r border-gray-700">FIX</th>
+                        <th id="thTime" class="p-2.5 border-r border-gray-700">TIME</th>
+                        <th id="thDowntime" class="p-2.5 border-r border-gray-700 text-right">DOWNTIME (MIN)</th>
+                        <th id="thBeforeImg" class="p-2.5 border-r border-gray-700 text-center">รูปภาพก่อนแก้ไข</th>
+                        <th id="thAfterImg" class="p-2.5 border-r border-gray-700 text-center">รูปภาพหลังแก้ไข</th>
                         <th class="p-2.5 text-center">⚙️</th>
                     </tr>
                 </thead>
@@ -420,14 +445,13 @@
             </table>
         </div>
 
-        <!-- Pagination Controls Bar -->
         <div class="flex flex-col sm:flex-row justify-between items-center mt-4 pt-3 border-t border-gray-800 text-xs gap-3">
             <div id="paginationInfo" class="text-gray-400">แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ</div>
             <div id="paginationControls" class="flex items-center gap-1"></div>
         </div>
     </div>
 
-    <!-- Custom Password Modal Pop-up (สำหรับยืนยันการลบ) -->
+    <!-- Custom Password Modal Pop-up -->
     <div id="passwordModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
         <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-sm shadow-2xl">
             <h3 id="modalTitle" class="text-sm font-bold text-orange-500 mb-2">ยืนยันรหัสผ่าน</h3>
@@ -442,7 +466,7 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับแสดงรูปภาพขนาดใหญ่ -->
+    <!-- Image Preview Modal -->
     <div id="imageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
         <div class="relative max-w-2xl w-full bg-[#181c24] p-4 rounded-xl border border-gray-700 shadow-2xl">
             <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white text-lg font-bold px-2">✕</button>
@@ -450,7 +474,7 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับอัปโหลดหรือแก้ไขรูปภาพย้อนหลัง -->
+    <!-- Upload Image Modal -->
     <div id="uploadImageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
         <div class="bg-[#181c24] border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <h3 id="uploadModalTitle" class="text-sm font-bold text-orange-500 mb-2">จัดการรูปภาพ Log ย้อนหลัง</h3>
@@ -482,22 +506,153 @@
     <script>
         const SUPABASE_URL = 'https://rdatxagldckqsxkncvbu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkYXR4YWdsZGNrcXN4a25jdmJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NTQzNzcsImV4cCI6MjEwMzIzMDM3N30.oDILmOxbch1Og6zlPNXQe1Ij0vnMgBHc3MkekcEjs2k';
-        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let logsData = [];
         let lineChartInstance = null;
         let shiftChartInstance = null;
-        let hiddenIssuesDetail = []; 
+        let hiddenIssuesDetail = [];
         let currentPage = 1;
-        let targetId = null;    
+        let targetId = null;
         let selectedLogIdForImage = null;
-        let selectedImageType = null; // 'before' หรือ 'after'
-        
-        // ตัวแปรเก็บสถานะการเลือก Line แบบ Multi-select ผ่าน KPI Cards
+        let selectedImageType = null;
         let selectedKpiLines = [];
 
-        // กำหนดสีของแต่ละ Line ให้ตรงกับกราฟเส้นแนวโน้ม Downtime
+        // Compare Mode State
+        let isCompareMode = false;
+        let compareSelectedMonths = [];
+        let compareSelectedIssues = [];
+
+        // Language State ('th' | 'zh')
+        let currentLang = 'th';
+
+        const i18n = {
+            th: {
+                mainTitle: 'DOOR LINE BREAKDOWN',
+                subTitleDesc: 'ระบบติดตามสถิติเครื่องจักรขัดข้อง (Line A, B, C, Bottom, DND)',
+                lastUpdatePrefix: 'Update ล่าสุด : ',
+                compareBtnText: 'เปรียบเทียบข้อมูล',
+                comparePanelTitle: 'โหมดเปรียบเทียบข้อมูลข้ามเดือน & หลายปัญหา',
+                compareStatusOff: 'ปิดอยู่',
+                compareStatusOn: 'กำลังเปรียบเทียบ',
+                btnApplyCompare: 'ใช้งานการเปรียบเทียบ',
+                btnDisableCompare: 'กลับสู่โหมดปกติ',
+                lblSelectMonths: '1. เลือกเดือนที่ต้องการเปรียบเทียบ (เลือกได้หลายเดือน เช่น พ.ย. vs ต.ค.)',
+                btnQuickTwoMonths: 'เลือก 2 เดือนล่าสุด',
+                lblSelectIssues: '2. เลือกปัญหา (เลือกได้มากกว่า 1 ปัญหา เพื่อดูกราฟแท่งแนวนอนเปรียบเทียบ)',
+                btnSelectTop5Issues: 'เลือก Top 5',
+                btnClearIssues: 'ล้างที่เลือก',
+                lblLineFilter: 'เลือก Line (Single)',
+                lblShiftFilter: 'กะ (Shift)',
+                lblQuickDate: 'ช่วงเวลา',
+                btnDateAll: 'ทั้งหมด',
+                btnDateToday: 'วันนี้',
+                btnDateWeek: 'สัปดาห์นี้',
+                lblMonthFilter: 'เลือกเดือนเฉพาะ',
+                lblDateRange: 'เลือกวันที่ช่วงเวลา',
+                lblStationFilter: 'Station',
+                lblIssueFilter: 'ประเภทปัญหา (Issue)',
+                lblCauseFilter: 'สาเหตุ (Cause)',
+                lblCauseSearch: 'ค้นหา สาเหตุ (Cause)',
+                causeSearchPlaceholder: 'พิมพ์ค้นหาสาเหตุ...',
+                btnClearFilters: 'ล้างตัวกรอง',
+                btnRefresh: 'รีเฟรช',
+                unitMin: 'นาที',
+                unitCnt: 'ครั้ง',
+                defaultShiftChartTitle: 'Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)',
+                compareShiftChartTitle: 'เปรียบเทียบจำนวนครั้งแยกตามเดือน',
+                defaultLineChartTitle: 'แนวโน้ม Downtime แยกตาม Line (นาที)',
+                compareLineChartTitle: 'แนวโน้ม Downtime เปรียบเทียบรายเดือน (นาที)',
+                top18TitlePrefix: 'Top 18 สาเหตุปัญหา (Cause) ประจำ Line: ',
+                top18TitleSuffix: ' (เรียงตามนาที)',
+                logSectionTitle: 'Breakdown Log Data',
+                lblShowRows: 'แสดง:',
+                lblRowsUnit: 'แถว',
+                btnQuickPreset: '⚡ ด่วน: Robot จับฝาร่วง (Line C)',
+                thDate: 'DATE',
+                thShift: 'SHIFT',
+                thLine: 'LINE',
+                thMachine: 'MACHINE',
+                thStation: 'STATION',
+                thIssue: 'ISSUE',
+                thCause: 'CAUSE',
+                thFix: 'FIX',
+                thTime: 'TIME',
+                thDowntime: 'DOWNTIME (MIN)',
+                thBeforeImg: 'รูปภาพก่อนแก้ไข',
+                thAfterImg: 'รูปภาพหลังแก้ไข',
+                yAxisMin: 'Downtime (นาที)',
+                yAxisCnt: 'จำนวนครั้ง',
+                months: {
+                    '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
+                    '05': 'พฤษภาคม', '06': 'มิถุนายน', '07': 'กรกฎาคม', '08': 'สิงหาคม',
+                    '09': 'กันยายน', '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม'
+                }
+            },
+            zh: {
+                mainTitle: '门体产线停机统计 (DOOR LINE BREAKDOWN)',
+                subTitleDesc: '设备故障统计追踪系统 (Line A, B, C, Bottom, DND)',
+                lastUpdatePrefix: '最后更新 : ',
+                compareBtnText: '数据对比',
+                comparePanelTitle: '跨月与多问题对比模式',
+                compareStatusOff: '已关闭',
+                compareStatusOn: '对比中',
+                btnApplyCompare: '启用对比',
+                btnDisableCompare: '返回普通模式',
+                lblSelectMonths: '1. 选择对比月份（可多选，例如 11月 vs 10月）',
+                btnQuickTwoMonths: '选最近2个月',
+                lblSelectIssues: '2. 选择问题（可多选，以横向柱状图对比次数）',
+                btnSelectTop5Issues: '选 Top 5',
+                btnClearIssues: '清除选择',
+                lblLineFilter: '选择产线 (单选)',
+                lblShiftFilter: '班次 (Shift)',
+                lblQuickDate: '时间范围',
+                btnDateAll: '全部',
+                btnDateToday: '今天',
+                btnDateWeek: '本周',
+                lblMonthFilter: '选择特定月份',
+                lblDateRange: '选择日期区间',
+                lblStationFilter: '工站 (Station)',
+                lblIssueFilter: '问题类型 (Issue)',
+                lblCauseFilter: '原因 (Cause)',
+                lblCauseSearch: '搜索原因 (Cause)',
+                causeSearchPlaceholder: '输入原因关键字...',
+                btnClearFilters: '清除筛选',
+                btnRefresh: '刷新',
+                unitMin: '分钟',
+                unitCnt: '次',
+                defaultShiftChartTitle: 'Top 5 设备故障统计（次数）',
+                compareShiftChartTitle: '各月问题发生次数对比',
+                defaultLineChartTitle: '各产线停机趋势 (分钟)',
+                compareLineChartTitle: '各月停机趋势对比 (分钟)',
+                top18TitlePrefix: 'Top 18 问题原因 (Cause) - 产线: ',
+                top18TitleSuffix: '（按分钟排序）',
+                logSectionTitle: '停机记录明细 (Breakdown Log Data)',
+                lblShowRows: '显示:',
+                lblRowsUnit: '行',
+                btnQuickPreset: '⚡ 快捷: 机器人抓盖掉落 (Line C)',
+                thDate: '日期',
+                thShift: '班次',
+                thLine: '产线',
+                thMachine: '设备',
+                thStation: '工站',
+                thIssue: '问题',
+                thCause: '原因',
+                thFix: '处理方式',
+                thTime: '时间',
+                thDowntime: '停机时长 (分钟)',
+                thBeforeImg: '改善前图片',
+                thAfterImg: '改善后图片',
+                yAxisMin: '停机时长 (分钟)',
+                yAxisCnt: '次数',
+                months: {
+                    '01': '1月', '02': '2月', '03': '3月', '04': '4月',
+                    '05': '5月', '06': '6月', '07': '7月', '08': '8月',
+                    '09': '9月', '10': '10月', '11': '11月', '12': '12月'
+                }
+            }
+        };
+
         const lineColors = {
             'A-Door': { border: '#ef4444', bgClass: 'bg-red-500/20 border-red-500 text-red-300 shadow' },
             'B-Door': { border: '#10b981', bgClass: 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow' },
@@ -506,30 +661,260 @@
             'DND':    { border: '#3b82f6', bgClass: 'bg-blue-500/20 border-blue-500 text-blue-300 shadow' }
         };
 
-        // ฟังก์ชันกำหนดค่า Shift อัตโนมัติจาก Time (08.00-19.50 = Day, 19.51-07.59 = Night)
+        const comparePalette = ['#38bdf8', '#fb923c', '#34d399', '#f472b6', '#a78bfa', '#facc15'];
+
+        function formatMonthLabel(ym) {
+            if (!ym || ym.length < 7) return ym;
+            const [year, monthNum] = ym.split('-');
+            const mName = i18n[currentLang].months[monthNum] || monthNum;
+            return `${mName} ${year}`;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'th';
+
+            const btnTh = document.getElementById('btn-lang-th');
+            const btnZh = document.getElementById('btn-lang-zh');
+            btnTh.className = lang === 'th'
+                ? 'px-2.5 py-1 rounded bg-orange-600 text-white font-bold transition'
+                : 'px-2.5 py-1 rounded text-gray-300 hover:text-white font-bold transition';
+            btnZh.className = lang === 'zh'
+                ? 'px-2.5 py-1 rounded bg-orange-600 text-white font-bold transition'
+                : 'px-2.5 py-1 rounded text-gray-300 hover:text-white font-bold transition';
+
+            const t = i18n[lang];
+            document.getElementById('mainTitle').innerText = t.mainTitle;
+            document.getElementById('subTitleDesc').innerText = t.subTitleDesc;
+            document.getElementById('compareBtnText').innerText = t.compareBtnText;
+            document.getElementById('comparePanelTitle').innerText = t.comparePanelTitle;
+            document.getElementById('btnApplyCompare').innerText = t.btnApplyCompare;
+            document.getElementById('btnDisableCompare').innerText = t.btnDisableCompare;
+            document.getElementById('lblSelectMonths').innerText = t.lblSelectMonths;
+            document.getElementById('btnQuickTwoMonths').innerText = t.btnQuickTwoMonths;
+            document.getElementById('lblSelectIssues').innerText = t.lblSelectIssues;
+            document.getElementById('btnSelectTop5Issues').innerText = t.btnSelectTop5Issues;
+            document.getElementById('btnClearIssues').innerText = t.btnClearIssues;
+            document.getElementById('lblLineFilter').innerText = t.lblLineFilter;
+            document.getElementById('lblShiftFilter').innerText = t.lblShiftFilter;
+            document.getElementById('lblQuickDate').innerText = t.lblQuickDate;
+            document.getElementById('btn-date-all').innerText = t.btnDateAll;
+            document.getElementById('btn-date-today').innerText = t.btnDateToday;
+            document.getElementById('btn-date-week').innerText = t.btnDateWeek;
+            document.getElementById('lblMonthFilter').innerText = t.lblMonthFilter;
+            document.getElementById('lblDateRange').innerText = t.lblDateRange;
+            document.getElementById('lblStationFilter').innerText = t.lblStationFilter;
+            document.getElementById('lblIssueFilter').innerText = t.lblIssueFilter;
+            document.getElementById('lblCauseFilter').innerText = t.lblCauseFilter;
+            document.getElementById('lblCauseSearch').innerText = t.lblCauseSearch;
+            document.getElementById('causeSearchInput').placeholder = t.causeSearchPlaceholder;
+            document.getElementById('btnClearFilters').innerText = t.btnClearFilters;
+            document.getElementById('btnRefresh').innerHTML = `🔄 ${t.btnRefresh}`;
+            document.getElementById('logSectionTitle').innerText = t.logSectionTitle;
+            document.getElementById('lblShowRows').innerText = t.lblShowRows;
+            document.getElementById('lblRowsUnit').innerText = t.lblRowsUnit;
+            document.getElementById('btnQuickPreset').innerText = t.btnQuickPreset;
+
+            document.querySelectorAll('.unit-min').forEach(el => el.innerText = t.unitMin);
+            document.querySelectorAll('.unit-cnt').forEach(el => el.innerText = t.unitCnt);
+            document.querySelectorAll('.top18-col-cnt').forEach(el => el.innerText = t.unitCnt);
+            document.querySelectorAll('.top18-col-min').forEach(el => el.innerText = t.unitMin);
+
+            document.getElementById('thDate').innerText = t.thDate;
+            document.getElementById('thShift').innerText = t.thShift;
+            document.getElementById('thLine').innerText = t.thLine;
+            document.getElementById('thMachine').innerText = t.thMachine;
+            document.getElementById('thStation').innerText = t.thStation;
+            document.getElementById('thIssue').innerText = t.thIssue;
+            document.getElementById('thCause').innerText = t.thCause;
+            document.getElementById('thFix').innerText = t.thFix;
+            document.getElementById('thTime').innerText = t.thTime;
+            document.getElementById('thDowntime').innerText = t.thDowntime;
+            document.getElementById('thBeforeImg').innerText = t.thBeforeImg;
+            document.getElementById('thAfterImg').innerText = t.thAfterImg;
+
+            updateLastUpdateLabel();
+            populateDropdowns();
+            renderCompareSelectors();
+            updateCompareStatusBadge();
+            updateDashboard();
+        }
+
+        function toggleComparePanel() {
+            const panel = document.getElementById('comparePanel');
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                renderCompareSelectors();
+                if (compareSelectedMonths.length === 0) {
+                    selectLastTwoMonths();
+                }
+            }
+        }
+
+        function updateCompareStatusBadge() {
+            const badge = document.getElementById('compareStatusBadge');
+            const t = i18n[currentLang];
+            if (isCompareMode) {
+                badge.innerText = `${t.compareStatusOn} (${compareSelectedMonths.length} ${currentLang === 'zh' ? '月' : 'เดือน'} / ${compareSelectedIssues.length} ${currentLang === 'zh' ? '项' : 'ปัญหา'})`;
+                badge.className = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded text-[11px] font-semibold';
+            } else {
+                badge.innerText = t.compareStatusOff;
+                badge.className = 'bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[11px]';
+            }
+        }
+
+        function getAvailableMonths() {
+            const monthsSet = new Set();
+            logsData.forEach(item => {
+                if (item.date && item.date.length >= 7) {
+                    monthsSet.add(item.date.substring(0, 7));
+                }
+            });
+            return [...monthsSet].sort().reverse();
+        }
+
+        function getAvailableIssuesSorted() {
+            const issueDowntimeMap = {};
+            const allIssues = new Set();
+            logsData.forEach(item => {
+                if (item.issue) {
+                    allIssues.add(item.issue);
+                    issueDowntimeMap[item.issue] = (issueDowntimeMap[item.issue] || 0) + (Number(item.downtime) || 0);
+                }
+            });
+            return [...allIssues].sort((a, b) => (issueDowntimeMap[b] || 0) - (issueDowntimeMap[a] || 0));
+        }
+
+        function renderCompareSelectors() {
+            const months = getAvailableMonths();
+            const monthsContainer = document.getElementById('compareMonthsContainer');
+            monthsContainer.innerHTML = '';
+
+            months.forEach(ym => {
+                const checked = compareSelectedMonths.includes(ym);
+                const labelEl = document.createElement('label');
+                labelEl.className = `flex items-center gap-1.5 px-2.5 py-1 rounded border cursor-pointer transition ${
+                    checked ? 'bg-amber-500/25 border-amber-400 text-amber-200 font-semibold' : 'bg-[#181c24] border-gray-700 text-gray-300 hover:border-gray-500'
+                }`;
+                labelEl.innerHTML = `
+                    <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCompareMonth('${ym}')" class="accent-amber-500 cursor-pointer">
+                    <span>${formatMonthLabel(ym)}</span>
+                `;
+                monthsContainer.appendChild(labelEl);
+            });
+
+            const issues = getAvailableIssuesSorted();
+            const issuesContainer = document.getElementById('compareIssuesContainer');
+            issuesContainer.innerHTML = '';
+
+            issues.forEach(issue => {
+                const checked = compareSelectedIssues.includes(issue);
+                const labelEl = document.createElement('label');
+                labelEl.className = `flex items-center gap-1.5 px-2 py-1 rounded border cursor-pointer transition truncate ${
+                    checked ? 'bg-sky-500/25 border-sky-400 text-sky-200 font-semibold' : 'bg-[#181c24] border-gray-700 text-gray-300 hover:border-gray-500'
+                }`;
+                labelEl.title = issue;
+                labelEl.innerHTML = `
+                    <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCompareIssue('${issue.replace(/'/g, "\\'")}')" class="accent-sky-400 cursor-pointer shrink-0">
+                    <span class="truncate">${issue}</span>
+                `;
+                issuesContainer.appendChild(labelEl);
+            });
+        }
+
+        function toggleCompareMonth(ym) {
+            const idx = compareSelectedMonths.indexOf(ym);
+            if (idx > -1) {
+                compareSelectedMonths.splice(idx, 1);
+            } else {
+                compareSelectedMonths.push(ym);
+            }
+            renderCompareSelectors();
+            if (isCompareMode) {
+                updateCompareStatusBadge();
+                updateDashboard();
+            }
+        }
+
+        function toggleCompareIssue(issue) {
+            const idx = compareSelectedIssues.indexOf(issue);
+            if (idx > -1) {
+                compareSelectedIssues.splice(idx, 1);
+            } else {
+                compareSelectedIssues.push(issue);
+            }
+            renderCompareSelectors();
+            if (isCompareMode) {
+                updateCompareStatusBadge();
+                updateDashboard();
+            }
+        }
+
+        function selectLastTwoMonths() {
+            const months = getAvailableMonths();
+            compareSelectedMonths = months.slice(0, 2);
+            renderCompareSelectors();
+            if (isCompareMode) {
+                updateCompareStatusBadge();
+                updateDashboard();
+            }
+        }
+
+        function selectTopIssues(limit = 5) {
+            const issues = getAvailableIssuesSorted();
+            compareSelectedIssues = issues.slice(0, limit);
+            renderCompareSelectors();
+            if (isCompareMode) {
+                updateCompareStatusBadge();
+                updateDashboard();
+            }
+        }
+
+        function clearSelectedIssues() {
+            compareSelectedIssues = [];
+            renderCompareSelectors();
+            if (isCompareMode) {
+                updateCompareStatusBadge();
+                updateDashboard();
+            }
+        }
+
+        function activateCompareMode() {
+            if (compareSelectedMonths.length === 0) {
+                selectLastTwoMonths();
+            }
+            if (compareSelectedIssues.length === 0) {
+                selectTopIssues(5);
+            }
+            isCompareMode = true;
+            currentPage = 1;
+            updateCompareStatusBadge();
+            updateDashboard();
+        }
+
+        function deactivateCompareMode() {
+            isCompareMode = false;
+            currentPage = 1;
+            updateCompareStatusBadge();
+            updateDashboard();
+        }
+
         function handleTimeChange() {
             const timeVal = document.getElementById('inputTime').value;
             if (!timeVal) return;
-            
             const [hours, minutes] = timeVal.split(':').map(Number);
             const totalMins = hours * 60 + minutes;
-            
-            const dayStart = 8 * 60;       // 08:00
-            const dayEnd = 19 * 60 + 50;   // 19:50
-
-            if (totalMins >= dayStart && totalMins <= dayEnd) {
+            if (totalMins >= 8 * 60 && totalMins <= 19 * 60 + 50) {
                 setInputShift('Day');
             } else {
                 setInputShift('Night');
             }
         }
 
-        // ฟังก์ชันเลือก Shift ผ่านปุ่มไอคอน
         function setInputShift(shiftName) {
             document.getElementById('inputShift').value = shiftName;
             const btnDay = document.getElementById('btnInputShiftDay');
             const btnNight = document.getElementById('btnInputShiftNight');
-
             if (shiftName === 'Day') {
                 btnDay.className = "flex-1 py-1 rounded bg-amber-500/20 border border-amber-500 text-amber-300 font-semibold transition flex items-center justify-center gap-1 text-xs shadow";
                 btnNight.className = "flex-1 py-1 rounded text-gray-400 hover:text-white transition flex items-center justify-center gap-1 text-xs font-medium";
@@ -539,11 +924,9 @@
             }
         }
 
-        // ฟังก์ชันเลือก Line ในฟอร์ม +ADD พร้อมไฮไลท์สีตามกราฟเส้น
         function setInputLine(lineName) {
             document.getElementById('inputLine').value = lineName;
             const lines = ['A', 'B', 'C', 'Bottom', 'DND'];
-            
             lines.forEach(l => {
                 const fullKey = l === 'Bottom' ? 'Bottom' : (l === 'DND' ? 'DND' : l + '-Door');
                 const btn = document.getElementById(`btnInputLine${l}`);
@@ -558,7 +941,6 @@
             });
         }
 
-        // ฟังก์ชันสำหรับบีบอัดและปรับขนาดรูปภาพก่อนอัปโหลด (Canvas API)
         function compressImage(file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -587,16 +969,12 @@
                                 reject(new Error('Canvas toBlob failed'));
                                 return;
                             }
-                            const compressedFile = new File([blob], file.name, {
-                                type: 'image/jpeg',
-                                lastModified: Date.now()
-                            });
-                            resolve(compressedFile);
+                            resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
                         }, 'image/jpeg', quality);
                     };
-                    img.onerror = (error) => reject(error);
+                    img.onerror = reject;
                 };
-                reader.onerror = (error) => reject(error);
+                reader.onerror = reject;
             });
         }
 
@@ -612,8 +990,8 @@
             document.getElementById('startDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('endDateFilter').addEventListener('change', () => { clearActiveQuickDateBtn(); currentPage = 1; updateDashboard(); });
             document.getElementById('inputDate').valueAsDate = new Date();
-            setInputShift('Day'); // ตั้งค่าเริ่มต้น Shift เป็น Day
-            setInputLine('A-Door'); // ตั้งค่าเริ่มต้น Line ในฟอร์มเป็น A-Door
+            setInputShift('Day');
+            setInputLine('A-Door');
 
             initImageUploaderSystem();
             initModalImageUploaderSystem();
@@ -632,25 +1010,20 @@
                         if (blob) {
                             const beforeInput = document.getElementById('inputBeforeImageFile');
                             const afterInput = document.getElementById('inputAfterImageFile');
-                            
                             const targetType = !beforeInput.files.length ? 'before' : 'after';
                             const fileInput = targetType === 'before' ? beforeInput : afterInput;
-                            
                             try {
                                 const compressedBlob = await compressImage(blob, 1000, 1000, 0.7);
-                                const dataTransfer = new DataTransfer();
-                                dataTransfer.items.add(compressedBlob);
-                                fileInput.files = dataTransfer.files;
-                                
+                                const dt = new DataTransfer();
+                                dt.items.add(compressedBlob);
+                                fileInput.files = dt.files;
                                 updateImagePreview(targetType, compressedBlob, compressedBlob.name || 'Pasted Image');
                             } catch (err) {
-                                console.error("Compression error on paste:", err);
-                                const dataTransfer = new DataTransfer();
-                                dataTransfer.items.add(blob);
-                                fileInput.files = dataTransfer.files;
+                                const dt = new DataTransfer();
+                                dt.items.add(blob);
+                                fileInput.files = dt.files;
                                 updateImagePreview(targetType, blob, blob.name || 'Pasted Image');
                             }
-
                             e.preventDefault();
                             break;
                         }
@@ -664,44 +1037,36 @@
             const fileInput = document.getElementById(`input${type.charAt(0).toUpperCase() + type.slice(1)}ImageFile`);
             const removeBtn = document.getElementById(`${type}RemoveBtn`);
 
-            dropZone.addEventListener('click', () => { fileInput.click(); });
-
+            dropZone.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', async () => {
                 if (fileInput.files && fileInput.files[0]) {
                     let file = fileInput.files[0];
                     try {
                         file = await compressImage(file, 1000, 1000, 0.7);
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        fileInput.files = dataTransfer.files;
-                    } catch (err) {
-                        console.error("Compression error on select:", err);
-                    }
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        fileInput.files = dt.files;
+                    } catch (err) {}
                     updateImagePreview(type, file, file.name);
                 }
             });
-
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); });
             dropZone.addEventListener('drop', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.remove('dragover');
+                e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover');
                 if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                     let file = e.dataTransfer.files[0];
                     try {
                         file = await compressImage(file, 1000, 1000, 0.7);
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        fileInput.files = dataTransfer.files;
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        fileInput.files = dt.files;
                     } catch (err) {
-                        console.error("Compression error on drop:", err);
                         fileInput.files = e.dataTransfer.files;
                     }
                     updateImagePreview(type, file, file.name);
                 }
             });
-
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 fileInput.value = '';
@@ -711,18 +1076,13 @@
         }
 
         function updateImagePreview(type, file, fileName) {
-            const initialPrompt = document.getElementById(`${type}InitialPrompt`);
-            const previewContainer = document.getElementById(`${type}PreviewContainer`);
-            const previewImg = document.getElementById(`${type}PreviewImg`);
-            const fileNameSpan = document.getElementById(`${type}FileName`);
-
             const reader = new FileReader();
             reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                fileNameSpan.innerText = fileName;
-                initialPrompt.classList.add('hidden');
-                previewContainer.classList.remove('hidden');
-            }
+                document.getElementById(`${type}PreviewImg`).src = e.target.result;
+                document.getElementById(`${type}FileName`).innerText = fileName;
+                document.getElementById(`${type}InitialPrompt`).classList.add('hidden');
+                document.getElementById(`${type}PreviewContainer`).classList.remove('hidden');
+            };
             reader.readAsDataURL(file);
         }
 
@@ -731,44 +1091,36 @@
             const fileInput = document.getElementById('existingImageFile');
             const removeBtn = document.getElementById('modalRemoveBtn');
 
-            dropZone.addEventListener('click', () => { fileInput.click(); });
-
+            dropZone.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', async () => {
                 if (fileInput.files && fileInput.files[0]) {
                     let file = fileInput.files[0];
                     try {
                         file = await compressImage(file, 1000, 1000, 0.7);
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        fileInput.files = dataTransfer.files;
-                    } catch (err) {
-                        console.error("Compression error in modal select:", err);
-                    }
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        fileInput.files = dt.files;
+                    } catch (err) {}
                     updateModalImagePreview(file, file.name);
                 }
             });
-
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover'); });
             dropZone.addEventListener('drop', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropZone.classList.remove('dragover');
+                e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('dragover');
                 if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                     let file = e.dataTransfer.files[0];
                     try {
                         file = await compressImage(file, 1000, 1000, 0.7);
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        fileInput.files = dataTransfer.files;
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        fileInput.files = dt.files;
                     } catch (err) {
-                        console.error("Compression error in modal drop:", err);
                         fileInput.files = e.dataTransfer.files;
                     }
                     updateModalImagePreview(file, file.name);
                 }
             });
-
             removeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 fileInput.value = '';
@@ -786,15 +1138,14 @@
                         if (blob) {
                             try {
                                 const compressedBlob = await compressImage(blob, 1000, 1000, 0.7);
-                                const dataTransfer = new DataTransfer();
-                                dataTransfer.items.add(compressedBlob);
-                                fileInput.files = dataTransfer.files;
+                                const dt = new DataTransfer();
+                                dt.items.add(compressedBlob);
+                                fileInput.files = dt.files;
                                 updateModalImagePreview(compressedBlob, compressedBlob.name || 'Pasted Image');
                             } catch (err) {
-                                console.error("Compression error in modal paste:", err);
-                                const dataTransfer = new DataTransfer();
-                                dataTransfer.items.add(blob);
-                                fileInput.files = dataTransfer.files;
+                                const dt = new DataTransfer();
+                                dt.items.add(blob);
+                                fileInput.files = dt.files;
                                 updateModalImagePreview(blob, blob.name || 'Pasted Image');
                             }
                             e.preventDefault();
@@ -806,27 +1157,20 @@
         }
 
         function updateModalImagePreview(file, fileName) {
-            const initialPrompt = document.getElementById('modalInitialPrompt');
-            const previewContainer = document.getElementById('modalPreviewContainer');
-            const previewImg = document.getElementById('modalPreviewImg');
-            const fileNameSpan = document.getElementById('modalFileName');
-            const submitBtn = document.getElementById('uploadSubmitBtn');
-
             const reader = new FileReader();
             reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                fileNameSpan.innerText = fileName;
-                initialPrompt.classList.add('hidden');
-                previewContainer.classList.remove('hidden');
-                submitBtn.disabled = false;
-            }
+                document.getElementById('modalPreviewImg').src = e.target.result;
+                document.getElementById('modalFileName').innerText = fileName;
+                document.getElementById('modalInitialPrompt').classList.add('hidden');
+                document.getElementById('modalPreviewContainer').classList.remove('hidden');
+                document.getElementById('uploadSubmitBtn').disabled = false;
+            };
             reader.readAsDataURL(file);
         }
 
         async function fetchLogs() {
             const statusEl = document.getElementById('loadingStatus');
             statusEl.classList.remove('hidden');
-
             try {
                 const { data, error } = await supabaseClient
                     .from('breakdown_logs')
@@ -836,10 +1180,10 @@
                     .order('id', { ascending: false });
 
                 if (error) throw error;
-
                 logsData = data || [];
                 updateLastUpdateLabel();
                 populateDropdowns();
+                renderCompareSelectors();
                 updateDashboard();
             } catch (err) {
                 console.error("Error fetching data:", err);
@@ -849,120 +1193,85 @@
             }
         }
 
-        // อัปเดตเวลา Update ล่าสุดจากข้อมูลในระบบ (รายการแรกสุด)
         function updateLastUpdateLabel() {
             const labelEl = document.getElementById('lastUpdateLabel');
+            const prefix = i18n[currentLang].lastUpdatePrefix;
             if (logsData.length > 0) {
                 const latest = logsData[0];
                 const dateStr = latest.date || '-';
-                const timeStr = latest.time ? ` เวลา ${latest.time}` : '';
-                labelEl.innerText = `Update ล่าสุด : ${dateStr}${timeStr}`;
+                const timeStr = latest.time ? ` ${latest.time}` : '';
+                labelEl.innerText = `${prefix}${dateStr}${timeStr}`;
             } else {
-                labelEl.innerText = `Update ล่าสุด : -`;
+                labelEl.innerText = `${prefix}-`;
             }
         }
 
-        // ฟังก์ชันอัปเดตรายการใน Dropdown แบบสัมพันธ์กับ Line ที่เลือก
         function populateDropdowns() {
             const lineVal = document.getElementById('lineFilter').value;
-            
-            // กรองข้อมูลเฉพาะ Line ที่เลือก (ถ้าเลือก All ให้ใช้ข้อมูลทั้งหมด)
             const subsetData = (lineVal === 'All') ? logsData : logsData.filter(item => item.line === lineVal);
 
-            // 1. Stations
+            // Stations
             const stationCounts = {};
             subsetData.forEach(item => {
-                const st = item.station;
-                if (st && st !== '-') { stationCounts[st] = (stationCounts[st] || 0) + 1; }
+                if (item.station && item.station !== '-') {
+                    stationCounts[item.station] = (stationCounts[item.station] || 0) + 1;
+                }
             });
             const sortedStations = Object.keys(stationCounts).sort((a, b) => stationCounts[b] - stationCounts[a]);
-            const allStationsSet = [...new Set(subsetData.map(item => item.station))].filter(Boolean);
-            const remainingStations = allStationsSet.filter(st => !stationCounts[st]).sort();
-            const finalStations = [...sortedStations, ...remainingStations];
-            
+            const remainingStations = [...new Set(subsetData.map(item => item.station))].filter(Boolean).filter(st => !stationCounts[st]).sort();
             const stationFilter = document.getElementById('stationFilter');
             const currentStation = stationFilter.value;
             stationFilter.innerHTML = '<option value="All">ทุก Station (All)</option>';
-            finalStations.forEach(st => {
-                const selected = st === currentStation ? 'selected' : '';
-                stationFilter.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
+            [...sortedStations, ...remainingStations].forEach(st => {
+                stationFilter.innerHTML += `<option value="${st}" ${st === currentStation ? 'selected' : ''}>${st}</option>`;
             });
 
-            // Input Station (สำหรับฟอร์ม Add)
             const inputStation = document.getElementById('inputStation');
             const currentInputStation = inputStation.value;
             inputStation.innerHTML = '<option value="-">-- เลือก Station --</option>';
-            const allGlobalStations = [...new Set(logsData.map(item => item.station))].filter(Boolean).sort();
-            allGlobalStations.forEach(st => {
-                const selected = st === currentInputStation ? 'selected' : '';
-                inputStation.innerHTML += `<option value="${st}" ${selected}>${st}</option>`;
+            [...new Set(logsData.map(item => item.station))].filter(Boolean).sort().forEach(st => {
+                inputStation.innerHTML += `<option value="${st}" ${st === currentInputStation ? 'selected' : ''}>${st}</option>`;
             });
 
-            // 2. Issues (ปัญหา) - เรียงตามจำนวนนาที มากสุด-น้อยสุด
+            // Issues (เรียงตามจำนวนนาที มากสุด-น้อยสุด)
             const issueDowntimeMap = {};
             subsetData.forEach(item => {
-                const issue = item.issue;
-                if (issue) {
-                    issueDowntimeMap[issue] = (issueDowntimeMap[issue] || 0) + (Number(item.downtime) || 0);
+                if (item.issue) {
+                    issueDowntimeMap[item.issue] = (issueDowntimeMap[item.issue] || 0) + (Number(item.downtime) || 0);
                 }
             });
             const sortedIssues = Object.keys(issueDowntimeMap).sort((a, b) => issueDowntimeMap[b] - issueDowntimeMap[a]);
-            const allIssuesSet = [...new Set(subsetData.map(item => item.issue))].filter(Boolean);
-            const remainingIssues = allIssuesSet.filter(issue => issueDowntimeMap[issue] === undefined);
-            const finalIssues = [...sortedIssues, ...remainingIssues];
-
+            const remainingIssues = [...new Set(subsetData.map(item => item.issue))].filter(Boolean).filter(issue => issueDowntimeMap[issue] === undefined);
             const issueFilter = document.getElementById('issueFilter');
             const currentIssue = issueFilter.value;
             issueFilter.innerHTML = '<option value="All">ทุกปัญหา (All)</option>';
-            finalIssues.forEach(issue => {
-                const selected = issue === currentIssue ? 'selected' : '';
-                issueFilter.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
+            [...sortedIssues, ...remainingIssues].forEach(issue => {
+                issueFilter.innerHTML += `<option value="${issue}" ${issue === currentIssue ? 'selected' : ''}>${issue}</option>`;
             });
 
-            // Input Issue (สำหรับฟอร์ม Add)
             const inputIssue = document.getElementById('inputIssue');
             const currentInputIssue = inputIssue.value;
             inputIssue.innerHTML = '<option value="">-- เลือกปัญหา --</option>';
-            const allGlobalIssues = [...new Set(logsData.map(item => item.issue))].filter(Boolean).sort();
-            allGlobalIssues.forEach(issue => {
-                const selected = issue === currentInputIssue ? 'selected' : '';
-                inputIssue.innerHTML += `<option value="${issue}" ${selected}>${issue}</option>`;
+            [...new Set(logsData.map(item => item.issue))].filter(Boolean).sort().forEach(issue => {
+                inputIssue.innerHTML += `<option value="${issue}" ${issue === currentInputIssue ? 'selected' : ''}>${issue}</option>`;
             });
 
-            // 3. Causes (สาเหตุ) - เรียงตามตัวอักษร A-Z, ก-ฮ
-            const allCausesSet = [...new Set(subsetData.map(item => item.cause))].filter(Boolean).filter(c => c !== '-');
-            allCausesSet.sort((a, b) => a.localeCompare(b, 'th'));
-
+            // Causes
+            const allCausesSet = [...new Set(subsetData.map(item => item.cause))].filter(Boolean).filter(c => c !== '-').sort((a, b) => a.localeCompare(b, 'th'));
             const causeFilter = document.getElementById('causeFilter');
             const currentCause = causeFilter.value;
             causeFilter.innerHTML = '<option value="All">ทุกสาเหตุ (All)</option>';
             allCausesSet.forEach(c => {
-                const selected = c === currentCause ? 'selected' : '';
-                causeFilter.innerHTML += `<option value="${c}" ${selected}>${c}</option>`;
+                causeFilter.innerHTML += `<option value="${c}" ${c === currentCause ? 'selected' : ''}>${c}</option>`;
             });
 
-            // Months Dropdown
+            // Months
             const monthFilter = document.getElementById('monthFilter');
             const currentMonth = monthFilter.value;
-            const monthsSet = new Set();
-            logsData.forEach(item => {
-                if (item.date && item.date.length >= 7) { monthsSet.add(item.date.substring(0, 7)); }
-            });
-            const sortedMonths = [...monthsSet].sort().reverse();
-
-            const thaiMonths = {
-                '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
-                '05': 'พฤษภาคม', '06': 'มิถุนายน', '07': 'กรกฎาคม', '08': 'สิงหาคม',
-                '09': 'กันยายน', '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม'
-            };
-
+            const sortedMonths = getAvailableMonths();
             monthFilter.innerHTML = '<option value="All">ทุกเดือน (All)</option>';
             sortedMonths.forEach(ym => {
-                const [year, monthNum] = ym.split('-');
-                const thaiYear = parseInt(year);
-                const label = `${thaiMonths[monthNum] || monthNum} ${thaiYear}`;
-                const selected = ym === currentMonth ? 'selected' : '';
-                monthFilter.innerHTML += `<option value="${ym}" ${selected}>${label}</option>`;
+                monthFilter.innerHTML += `<option value="${ym}" ${ym === currentMonth ? 'selected' : ''}>${formatMonthLabel(ym)}</option>`;
             });
         }
 
@@ -970,39 +1279,28 @@
             resetFormState();
             setInputLine('C-Door');
             document.getElementById('inputMachine').value = 'เครื่องฉีดโฟม';
-            
             const stationEl = document.getElementById('inputStation');
-            let foundStation = false;
-            for (let opt of stationEl.options) {
-                if (opt.value === 'Robot') { stationEl.value = 'Robot'; foundStation = true; break; }
+            if (![...stationEl.options].some(o => o.value === 'Robot')) {
+                stationEl.add(new Option('Robot', 'Robot'));
             }
-            if (!foundStation) {
-                const opt = document.createElement('option');
-                opt.value = 'Robot'; opt.text = 'Robot';
-                stationEl.add(opt); stationEl.value = 'Robot';
-            }
+            stationEl.value = 'Robot';
 
             const issueEl = document.getElementById('inputIssue');
-            let foundIssue = false;
-            for (let opt of issueEl.options) {
-                if (opt.value === 'จับฝาแล้วร่วงตก') { issueEl.value = 'จับฝาแล้วร่วงตก'; foundIssue = true; break; }
+            if (![...issueEl.options].some(o => o.value === 'จับฝาแล้วร่วงตก')) {
+                issueEl.add(new Option('จับฝาแล้วร่วงตก', 'จับฝาแล้วร่วงตก'));
             }
-            if (!foundIssue) {
-                const opt = document.createElement('option');
-                opt.value = 'จับฝาแล้วร่วงตก'; opt.text = 'จับฝาแล้วร่วงตก';
-                issueEl.add(opt); issueEl.value = 'จับฝาแล้วร่วงตก';
-            }
+            issueEl.value = 'จับฝาแล้วร่วงตก';
 
             document.getElementById('inputDowntime').value = 2;
             const formEl = document.getElementById('addLogForm');
-            if (formEl.classList.contains('hidden')) { formEl.classList.remove('hidden'); }
+            if (formEl.classList.contains('hidden')) formEl.classList.remove('hidden');
             window.scrollTo({ top: formEl.offsetTop - 50, behavior: 'smooth' });
         }
 
         function toggleForm() {
             const formEl = document.getElementById('addLogForm');
             formEl.classList.toggle('hidden');
-            if (formEl.classList.contains('hidden')) { resetFormState(); }
+            if (formEl.classList.contains('hidden')) resetFormState();
         }
 
         function resetFormState() {
@@ -1010,13 +1308,11 @@
             document.getElementById('inputDate').valueAsDate = new Date();
             setInputShift('Day');
             setInputLine('A-Door');
-            
             ['before', 'after'].forEach(type => {
                 document.getElementById(`${type}PreviewContainer`).classList.add('hidden');
                 document.getElementById(`${type}InitialPrompt`).classList.remove('hidden');
                 document.getElementById(`input${type.charAt(0).toUpperCase() + type.slice(1)}ImageFile`).value = '';
             });
-
             const btn = document.getElementById('submitBtn');
             btn.innerText = 'บันทึกข้อมูล';
             btn.className = 'bg-emerald-600 hover:bg-emerald-700 px-4 py-1.5 rounded text-white';
@@ -1042,13 +1338,10 @@
 
         async function handlePasswordSubmit(event) {
             event.preventDefault();
-            const passwordInput = document.getElementById('modalPasswordInput').value;
-
-            if (passwordInput !== 'Doorline') {
+            if (document.getElementById('modalPasswordInput').value !== 'Doorline') {
                 alert('รหัสผ่านไม่ถูกต้อง! ไม่อนุญาตให้ดำเนินการ');
                 return;
             }
-
             const idToProcess = targetId;
             closePasswordModal();
             executeDelete(idToProcess);
@@ -1060,22 +1353,18 @@
                     const targetLog = logsData.find(item => item.id === id);
                     if (targetLog) {
                         if (targetLog.before_image_url) {
-                            const urlParts = targetLog.before_image_url.split('/');
-                            const fileName = urlParts[urlParts.length - 1];
-                            if (fileName) { await supabaseClient.storage.from('issue-images').remove([fileName]); }
+                            const f = targetLog.before_image_url.split('/').pop();
+                            if (f) await supabaseClient.storage.from('issue-images').remove([f]);
                         }
                         if (targetLog.after_image_url) {
-                            const urlParts = targetLog.after_image_url.split('/');
-                            const fileName = urlParts[urlParts.length - 1];
-                            if (fileName) { await supabaseClient.storage.from('issue-images').remove([fileName]); }
+                            const f = targetLog.after_image_url.split('/').pop();
+                            if (f) await supabaseClient.storage.from('issue-images').remove([f]);
                         }
                     }
-
                     const { error } = await supabaseClient.from('breakdown_logs').delete().eq('id', id);
                     if (error) throw error;
                     await fetchLogs();
                 } catch (err) {
-                    console.error("Error deleting log:", err);
                     alert("ลบข้อมูลไม่สำเร็จ: " + err.message);
                 }
             }
@@ -1084,7 +1373,7 @@
         async function addNewLog(event) {
             event.preventDefault();
             const btn = document.getElementById('submitBtn');
-            const originalBtnText = btn.innerText;
+            const origText = btn.innerText;
             btn.innerText = 'กำลังบันทึก...';
             btn.disabled = true;
 
@@ -1096,26 +1385,19 @@
             try {
                 if (beforeFileInput.files.length > 0) {
                     const file = beforeFileInput.files[0];
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `before_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-                    const { error: uploadError } = await supabaseClient.storage.from('issue-images').upload(fileName, file);
-                    if (uploadError) throw uploadError;
-
-                    const { data: publicURLData } = supabaseClient.storage.from('issue-images').getPublicUrl(fileName);
-                    beforeImageUrl = publicURLData.publicUrl;
+                    const ext = file.name.split('.').pop();
+                    const fileName = `before_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+                    const { error } = await supabaseClient.storage.from('issue-images').upload(fileName, file);
+                    if (error) throw error;
+                    beforeImageUrl = supabaseClient.storage.from('issue-images').getPublicUrl(fileName).data.publicUrl;
                 }
-
                 if (afterFileInput.files.length > 0) {
                     const file = afterFileInput.files[0];
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `after_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-                    const { error: uploadError } = await supabaseClient.storage.from('issue-images').upload(fileName, file);
-                    if (uploadError) throw uploadError;
-
-                    const { data: publicURLData } = supabaseClient.storage.from('issue-images').getPublicUrl(fileName);
-                    afterImageUrl = publicURLData.publicUrl;
+                    const ext = file.name.split('.').pop();
+                    const fileName = `after_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+                    const { error } = await supabaseClient.storage.from('issue-images').upload(fileName, file);
+                    if (error) throw error;
+                    afterImageUrl = supabaseClient.storage.from('issue-images').getPublicUrl(fileName).data.publicUrl;
                 }
 
                 const logData = {
@@ -1141,10 +1423,9 @@
                 currentPage = 1;
                 await fetchLogs();
             } catch (err) {
-                console.error("Error saving log:", err);
                 alert("บันทึกข้อมูลไม่สำเร็จ: " + err.message);
             } finally {
-                btn.innerText = originalBtnText;
+                btn.innerText = origText;
                 btn.disabled = false;
             }
         }
@@ -1152,14 +1433,9 @@
         function openUploadModal(id, type) {
             selectedLogIdForImage = id;
             selectedImageType = type;
-            
-            const titleEl = document.getElementById('uploadModalTitle');
-            if (type === 'before') {
-                titleEl.innerText = 'จัดการรูปภาพก่อนแก้ไข (Before Image)';
-            } else {
-                titleEl.innerText = 'จัดการรูปภาพหลังแก้ไข (After Image)';
-            }
-
+            document.getElementById('uploadModalTitle').innerText = type === 'before'
+                ? 'จัดการรูปภาพก่อนแก้ไข (Before Image)'
+                : 'จัดการรูปภาพหลังแก้ไข (After Image)';
             document.getElementById('existingImageFile').value = '';
             document.getElementById('modalPreviewContainer').classList.add('hidden');
             document.getElementById('modalInitialPrompt').classList.remove('hidden');
@@ -1175,13 +1451,9 @@
 
         async function handleUploadExistingLog(event) {
             event.preventDefault();
-            if (!selectedLogIdForImage || !selectedImageType) {
-                alert('ข้อมูลระบุรูปภาพไม่ถูกต้อง');
-                return;
-            }
-
+            if (!selectedLogIdForImage || !selectedImageType) return;
             const fileInput = document.getElementById('existingImageFile');
-            if (fileInput.files.length === 0) return;
+            if (!fileInput.files.length) return;
 
             const btn = document.getElementById('uploadSubmitBtn');
             btn.innerText = 'กำลังบันทึก...';
@@ -1192,89 +1464,65 @@
                 if (targetLog) {
                     const oldUrl = selectedImageType === 'before' ? targetLog.before_image_url : targetLog.after_image_url;
                     if (oldUrl) {
-                        const urlParts = oldUrl.split('/');
-                        const fileName = urlParts[urlParts.length - 1];
-                        if (fileName) { await supabaseClient.storage.from('issue-images').remove([fileName]); }
+                        const f = oldUrl.split('/').pop();
+                        if (f) await supabaseClient.storage.from('issue-images').remove([f]);
                     }
                 }
 
                 const file = fileInput.files[0];
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${selectedImageType}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-
+                const ext = file.name.split('.').pop();
+                const fileName = `${selectedImageType}_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
                 const { error: uploadError } = await supabaseClient.storage.from('issue-images').upload(fileName, file);
                 if (uploadError) throw uploadError;
 
-                const { data: publicURLData } = supabaseClient.storage.from('issue-images').getPublicUrl(fileName);
-                const imageUrl = publicURLData.publicUrl;
-                
+                const imageUrl = supabaseClient.storage.from('issue-images').getPublicUrl(fileName).data.publicUrl;
                 const updateField = selectedImageType === 'before' ? { before_image_url: imageUrl } : { after_image_url: imageUrl };
-
-                const { error: updateError } = await supabaseClient
-                    .from('breakdown_logs')
-                    .update(updateField)
-                    .eq('id', selectedLogIdForImage);
-
+                const { error: updateError } = await supabaseClient.from('breakdown_logs').update(updateField).eq('id', selectedLogIdForImage);
                 if (updateError) throw updateError;
 
                 closeUploadModal();
                 await fetchLogs();
             } catch (err) {
-                console.error("Error uploading image:", err);
-                alert("อัปโหลดรูปไม่สำเร็จ: " + (err.message || JSON.stringify(err)));
+                alert("อัปโหลดรูปไม่สำเร็จ: " + err.message);
             } finally {
                 btn.innerText = 'อัปโหลด/บันทึก';
                 btn.disabled = false;
             }
         }
 
-        // ปุ่มกรอง Line แบบ Single-select
         function setLineFilter(lineName) {
             document.getElementById('lineFilter').value = lineName;
-            const lines = ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
-            lines.forEach(l => {
+            ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
                 const btn = document.getElementById(`btn-line-${l}`);
-                btn.className = (l === lineName) ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2 py-1 rounded text-gray-300 hover:text-white transition";
+                btn.className = (l === lineName)
+                    ? "px-2 py-1 rounded bg-orange-600 text-white font-medium transition"
+                    : "px-2 py-1 rounded text-gray-300 hover:text-white transition";
             });
-
-            // อัปเดต Dropdown Station, Issue, Cause ให้สัมพันธ์กับ Line ที่เลือก
             populateDropdowns();
-
             currentPage = 1;
             updateDashboard();
         }
 
-        // KPI Card แบบ Multi-select (คลิกเพื่อเลือก/ยกเลิกการเลือกหลายใบพร้อมกันได้)
         function toggleKpiCardFilter(lineName) {
-            const index = selectedKpiLines.indexOf(lineName);
-            if (index > -1) {
-                selectedKpiLines.splice(index, 1);
-            } else {
-                selectedKpiLines.push(lineName);
-            }
+            const idx = selectedKpiLines.indexOf(lineName);
+            if (idx > -1) selectedKpiLines.splice(idx, 1);
+            else selectedKpiLines.push(lineName);
 
-            const kpiLines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
-            kpiLines.forEach(l => {
+            ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
                 const card = document.getElementById(`card-${l}`);
-                if (card) {
-                    if (selectedKpiLines.includes(l)) {
-                        card.classList.add('kpi-card-highlight');
-                    } else {
-                        card.classList.remove('kpi-card-highlight');
-                    }
-                }
+                if (card) card.classList.toggle('kpi-card-highlight', selectedKpiLines.includes(l));
             });
-
             currentPage = 1;
             updateDashboard();
         }
 
         function setShiftFilter(shiftName) {
             document.getElementById('shiftFilter').value = shiftName;
-            const shifts = ['All', 'Day', 'Night'];
-            shifts.forEach(s => {
+            ['All', 'Day', 'Night'].forEach(s => {
                 const btn = document.getElementById(`btn-shift-${s}`);
-                btn.className = (s === shiftName) ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
+                btn.className = (s === shiftName)
+                    ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"
+                    : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
             });
             currentPage = 1;
             updateDashboard();
@@ -1288,13 +1536,13 @@
             setTimeout(() => {
                 ['all', 'today', 'week'].forEach(type => {
                     const btn = document.getElementById(`btn-date-${type}`);
-                    if (btn) { btn.className = type === 'all' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
+                    if (btn) btn.className = type === 'all' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
                 });
 
                 document.getElementById('lineFilter').value = 'All';
                 ['All', 'A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(l => {
                     const btn = document.getElementById(`btn-line-${l}`);
-                    if (btn) { btn.className = l === 'All' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
+                    if (btn) btn.className = l === 'All' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
                 });
 
                 selectedKpiLines = [];
@@ -1306,7 +1554,7 @@
                 document.getElementById('shiftFilter').value = 'All';
                 ['All', 'Day', 'Night'].forEach(s => {
                     const btn = document.getElementById(`btn-shift-${s}`);
-                    if (btn) { btn.className = s === 'All' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
+                    if (btn) btn.className = s === 'All' ? "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition" : "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
                 });
 
                 document.getElementById('stationFilter').value = 'All';
@@ -1327,7 +1575,7 @@
         function setQuickDate(type) {
             clearActiveQuickDateBtn();
             const targetBtn = document.getElementById(`btn-date-${type}`);
-            if (targetBtn) { targetBtn.className = "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition"; }
+            if (targetBtn) targetBtn.className = "px-2.5 py-1 rounded bg-orange-600 text-white font-medium transition";
 
             document.getElementById('startDateFilter').value = '';
             document.getElementById('endDateFilter').value = '';
@@ -1346,7 +1594,6 @@
                 document.getElementById('startDateFilter').value = formatDate(firstDay);
                 document.getElementById('endDateFilter').value = formatDate(today);
             }
-
             currentPage = 1;
             updateDashboard();
         }
@@ -1354,7 +1601,7 @@
         function clearActiveQuickDateBtn() {
             ['all', 'today', 'week'].forEach(type => {
                 const btn = document.getElementById(`btn-date-${type}`);
-                if (btn) { btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition"; }
+                if (btn) btn.className = "px-2.5 py-1 rounded text-gray-300 hover:text-white transition";
             });
         }
 
@@ -1371,22 +1618,31 @@
 
             return logsData.filter(item => {
                 const itemDate = item.date;
-                
                 if (lineVal !== 'All' && item.line !== lineVal) return false;
                 if (selectedKpiLines.length > 0 && !selectedKpiLines.includes(item.line)) return false;
                 if (shiftVal !== 'All' && item.shift !== shiftVal) return false;
                 if (stationVal !== 'All' && item.station !== stationVal) return false;
-                if (issueVal !== 'All' && item.issue !== issueVal) return false;
+
+                if (isCompareMode) {
+                    if (compareSelectedMonths.length > 0) {
+                        if (!itemDate || !compareSelectedMonths.some(ym => itemDate.startsWith(ym))) return false;
+                    }
+                    if (compareSelectedIssues.length > 0) {
+                        if (!compareSelectedIssues.includes(item.issue)) return false;
+                    }
+                } else {
+                    if (issueVal !== 'All' && item.issue !== issueVal) return false;
+                    if (monthVal && monthVal !== 'All') {
+                        if (!itemDate || !itemDate.startsWith(monthVal)) return false;
+                    }
+                    if (startDate && itemDate < startDate) return false;
+                    if (endDate && itemDate > endDate) return false;
+                }
+
                 if (causeVal !== 'All' && item.cause !== causeVal) return false;
                 if (causeSearchVal !== '') {
-                    const itemCause = (item.cause || '').toLowerCase();
-                    if (!itemCause.includes(causeSearchVal)) return false;
+                    if (!(item.cause || '').toLowerCase().includes(causeSearchVal)) return false;
                 }
-                if (monthVal && monthVal !== 'All') {
-                    if (!itemDate || !itemDate.startsWith(monthVal)) return false;
-                }
-                if (startDate && itemDate < startDate) return false;
-                if (endDate && itemDate > endDate) return false;
                 return true;
             });
         }
@@ -1407,7 +1663,7 @@
 
             const totalRows = data.length;
             const rowsPerPageVal = document.getElementById('rowsPerPageSelect').value;
-            
+
             if (totalRows === 0) {
                 tbody.innerHTML = '<tr><td colspan="13" class="p-4 text-center text-gray-500">ไม่มีข้อมูลในช่วงเวลาหรือเงื่อนไขที่เลือก</td></tr>';
                 document.getElementById('paginationInfo').innerText = 'แสดง 0 ถึง 0 จากทั้งหมด 0 รายการ';
@@ -1425,14 +1681,13 @@
                 totalPages = Math.ceil(totalRows / rpp);
                 if (currentPage > totalPages) currentPage = totalPages;
                 if (currentPage < 1) currentPage = 1;
-
                 startIndex = (currentPage - 1) * rpp;
                 endIndex = Math.min(startIndex + rpp, totalRows);
                 paginatedData = data.slice(startIndex, endIndex);
             }
 
             paginatedData.forEach(item => {
-                const beforeImageButton = item.before_image_url 
+                const beforeImageButton = item.before_image_url
                     ? `<div class="flex items-center justify-center gap-1">
                            <button onclick="openImageModal('${item.before_image_url}')" class="text-xs bg-blue-600/25 hover:bg-blue-600 text-blue-400 hover:text-white p-1 rounded transition" title="ดูรูปภาพ">🖼️ ดู</button>
                            <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-amber-600/25 hover:bg-amber-600 text-amber-400 hover:text-white p-1 rounded transition" title="เปลี่ยนรูปภาพ">✏️ แก้ไข</button>
@@ -1441,7 +1696,7 @@
                            <button onclick="openUploadModal(${item.id}, 'before')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white px-2 py-1 rounded transition border border-gray-700" title="เพิ่มรูปภาพ">➕ เพิ่ม</button>
                        </div>`;
 
-                const afterImageButton = item.after_image_url 
+                const afterImageButton = item.after_image_url
                     ? `<div class="flex items-center justify-center gap-1">
                            <button onclick="openImageModal('${item.after_image_url}')" class="text-xs bg-emerald-600/25 hover:bg-emerald-600 text-emerald-400 hover:text-white p-1 rounded transition" title="ดูรูปภาพ">🖼️ ดู</button>
                            <button onclick="openUploadModal(${item.id}, 'after')" class="text-xs bg-amber-600/25 hover:bg-amber-600 text-amber-400 hover:text-white p-1 rounded transition" title="เปลี่ยนรูปภาพ">✏️ แก้ไข</button>
@@ -1478,7 +1733,6 @@
 
             if (rowsPerPageVal !== 'All' && totalPages > 1) {
                 controlsEl.innerHTML += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled class="px-2 py-1 rounded bg-gray-800 text-gray-600 cursor-not-allowed"' : 'class="px-2 py-1 rounded bg-[#242b35] hover:bg-gray-700 text-gray-300"'}>&lt;</button>`;
-
                 for (let i = 1; i <= totalPages; i++) {
                     if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
                         const activeClass = i === currentPage ? 'bg-orange-600 text-white font-bold' : 'bg-[#242b35] hover:bg-gray-700 text-gray-300';
@@ -1487,7 +1741,6 @@
                         controlsEl.innerHTML += `<span class="px-1 text-gray-500">...</span>`;
                     }
                 }
-
                 controlsEl.innerHTML += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled class="px-2 py-1 rounded bg-gray-800 text-gray-600 cursor-not-allowed"' : 'class="px-2 py-1 rounded bg-[#242b35] hover:bg-gray-700 text-gray-300"'}>&gt;</button>`;
             }
         }
@@ -1511,25 +1764,12 @@
         }
 
         function updateKPIs(data) {
-            const lineA = data.filter(item => item.line === 'A-Door');
-            document.getElementById('kpi-a-mins').innerText = lineA.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
-            document.getElementById('kpi-a-count').innerText = lineA.length.toLocaleString();
-
-            const lineB = data.filter(item => item.line === 'B-Door');
-            document.getElementById('kpi-b-mins').innerText = lineB.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
-            document.getElementById('kpi-b-count').innerText = lineB.length.toLocaleString();
-
-            const lineC = data.filter(item => item.line === 'C-Door');
-            document.getElementById('kpi-c-mins').innerText = lineC.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
-            document.getElementById('kpi-c-count').innerText = lineC.length.toLocaleString();
-
-            const lineBottom = data.filter(item => item.line === 'Bottom');
-            document.getElementById('kpi-bottom-mins').innerText = lineBottom.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
-            document.getElementById('kpi-bottom-count').innerText = lineBottom.length.toLocaleString();
-
-            const lineDND = data.filter(item => item.line === 'DND');
-            document.getElementById('kpi-dnd-mins').innerText = lineDND.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
-            document.getElementById('kpi-dnd-count').innerText = lineDND.length.toLocaleString();
+            ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'].forEach(line => {
+                const sub = data.filter(item => item.line === line);
+                const prefix = line === 'Bottom' ? 'bottom' : (line === 'DND' ? 'dnd' : line[0].toLowerCase());
+                document.getElementById(`kpi-${prefix}-mins`).innerText = sub.reduce((sum, item) => sum + (Number(item.downtime) || 0), 0).toLocaleString();
+                document.getElementById(`kpi-${prefix}-count`).innerText = sub.length.toLocaleString();
+            });
         }
 
         function initCharts() {
@@ -1553,16 +1793,17 @@
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
             shiftChartInstance = new Chart(ctxShift, {
                 type: 'bar',
-                data: { 
-                    labels: [], 
-                    datasets: [{ 
+                data: {
+                    labels: [],
+                    datasets: [{
                         label: 'จำนวนครั้ง',
-                        data: [], 
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'], 
+                        data: [],
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'],
                         borderRadius: 4
-                    }] 
+                    }]
                 },
                 options: {
+                    indexAxis: 'x',
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
@@ -1577,26 +1818,22 @@
                             borderWidth: 1,
                             borderRadius: 4,
                             padding: 4,
-                            formatter: (value) => value > 0 ? value.toLocaleString() + ' ครั้ง' : ''
+                            formatter: (value) => value > 0 ? value.toLocaleString() : ''
                         },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    let sum = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
-                                    if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
-                                        let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
-                                        hiddenIssuesDetail.forEach(item => { details.push(` - ${item.issue}: ${item.count} ครั้ง`); });
-                                        return details;
-                                    }
-                                    return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
+                                    const val = context.parsed.x !== undefined && shiftChartInstance.options.indexAxis === 'y'
+                                        ? context.parsed.x
+                                        : context.raw;
+                                    return ` ${context.dataset.label || context.label}: ${Number(val).toLocaleString()}`;
                                 }
                             }
                         }
                     },
                     scales: {
-                        x: { ticks: { color: '#9ca3af', font: { size: 12 }, maxRotation: 25, minRotation: 0 }, grid: { display: false } },
-                        y: { beginAtZero: true, ticks: { color: '#9ca3af', precision: 0 }, grid: { color: '#242b35' } }
+                        x: { beginAtZero: true, ticks: { color: '#9ca3af', precision: 0 }, grid: { color: '#242b35' } },
+                        y: { ticks: { color: '#9ca3af', font: { size: 12 } }, grid: { display: false } }
                     }
                 },
                 plugins: [ChartDataLabels]
@@ -1608,21 +1845,54 @@
             const lineChartContainer = document.getElementById('lineChartContainer');
             const lineTop18Container = document.getElementById('lineTop18Container');
             const rightSectionTitle = document.getElementById('rightSectionTitle');
+            const t = i18n[currentLang];
 
-            // หากเลือกกรอง Line เฉพาะเจาะจง (ไม่ใช่ All) ให้แสดงตาราง TOP18 แทนกราฟเส้น
-            if (lineVal !== 'All') {
+            if (lineVal !== 'All' && !isCompareMode) {
                 lineChartContainer.classList.add('hidden');
                 lineTop18Container.classList.remove('hidden');
-                rightSectionTitle.innerText = `Top 18 สาเหตุปัญหา (Cause) ประจำ Line: ${lineVal} (เรียงตามนาที)`;
+                rightSectionTitle.innerText = `${t.top18TitlePrefix}${lineVal}${t.top18TitleSuffix}`;
                 renderLineTop18Tables(data);
                 return;
             }
 
-            // หากเลือก All ให้แสดงกราฟเส้นแนวโน้ม Downtime ตามปกติ
             lineChartContainer.classList.remove('hidden');
             lineTop18Container.classList.add('hidden');
-            rightSectionTitle.innerText = 'แนวโน้ม Downtime แยกตาม Line (นาที)';
+            lineChartInstance.options.scales.y.title.text = t.yAxisMin;
 
+            // โหมดเปรียบเทียบ: โชว์เส้นของแต่ละเดือนที่เลือก (เช่น พ.ย. vs ต.ค. หรือหลายเดือน)
+            if (isCompareMode && compareSelectedMonths.length > 0) {
+                rightSectionTitle.innerText = t.compareLineChartTitle;
+                const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+                const sortedMonths = [...compareSelectedMonths].sort();
+
+                const datasets = sortedMonths.map((ym, idx) => {
+                    const color = comparePalette[idx % comparePalette.length];
+                    const dataPerDay = days.map(dd => {
+                        const prefix = `${ym}-${dd}`;
+                        const totalMins = data
+                            .filter(item => item.date === prefix)
+                            .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
+                        return totalMins === 0 ? null : totalMins;
+                    });
+
+                    return {
+                        label: formatMonthLabel(ym),
+                        data: dataPerDay,
+                        borderColor: color,
+                        backgroundColor: color + '28',
+                        borderWidth: 2.5,
+                        pointRadius: 3,
+                        fill: false
+                    };
+                });
+
+                lineChartInstance.data.labels = days.map(d => `${currentLang === 'zh' ? '' : 'วันที่ '}${Number(d)}${currentLang === 'zh' ? '日' : ''}`);
+                lineChartInstance.data.datasets = datasets;
+                lineChartInstance.update();
+                return;
+            }
+
+            rightSectionTitle.innerText = t.defaultLineChartTitle;
             const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
             const lines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
             const colorMap = { 'A-Door': '#ef4444', 'B-Door': '#10b981', 'C-Door': '#f59e0b', 'Bottom': '#8b5cf6', 'DND': '#3b82f6' };
@@ -1651,41 +1921,28 @@
             lineChartInstance.update();
         }
 
-        // ฟังก์ชันประมวลผลและสร้างตาราง TOP 18 Cause เรียงตามจำนวนนาที (แบ่ง 2 ตาราง: 1-9 และ 10-18 โดยอันดับ 18 คือ "อื่นๆ")
         function renderLineTop18Tables(data) {
             const causeMap = {};
             data.forEach(item => {
                 const causeName = (item.cause && item.cause.trim() !== '') ? item.cause : 'ไม่ระบุสาเหตุ';
-                if (!causeMap[causeName]) {
-                    causeMap[causeName] = { count: 0, downtime: 0 };
-                }
+                if (!causeMap[causeName]) causeMap[causeName] = { count: 0, downtime: 0 };
                 causeMap[causeName].count += 1;
                 causeMap[causeName].downtime += Number(item.downtime) || 0;
             });
 
-            // จัดเรียงตามจำนวนนาทีมากไปน้อย (หากนาทีเท่ากัน เรียงตามจำนวนครั้ง)
             let sortedCauses = Object.entries(causeMap).map(([cause, obj]) => ({
-                cause,
-                count: obj.count,
-                downtime: obj.downtime
+                cause, count: obj.count, downtime: obj.downtime
             })).sort((a, b) => b.downtime - a.downtime || b.count - a.count);
 
-            let top18List = [];
+            let top18List = sortedCauses.length > 18 ? sortedCauses.slice(0, 17) : sortedCauses;
             if (sortedCauses.length > 18) {
-                top18List = sortedCauses.slice(0, 17);
-                let othersCount = 0;
-                let othersDowntime = 0;
+                let othersCount = 0, othersDowntime = 0;
                 for (let i = 17; i < sortedCauses.length; i++) {
                     othersCount += sortedCauses[i].count;
                     othersDowntime += sortedCauses[i].downtime;
                 }
                 top18List.push({ cause: 'อื่นๆ (รวม)', count: othersCount, downtime: othersDowntime });
-            } else {
-                top18List = sortedCauses;
             }
-
-            const list1to9 = top18List.slice(0, 9);
-            const list10to18 = top18List.slice(9, 18);
 
             const tbody1 = document.getElementById('lineTop1TableBody');
             const tbody2 = document.getElementById('lineTop2TableBody');
@@ -1693,12 +1950,12 @@
             tbody2.innerHTML = '';
 
             if (top18List.length === 0) {
-                tbody1.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
-                tbody2.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
+                tbody1.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">-</td></tr>';
+                tbody2.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-gray-500">-</td></tr>';
                 return;
             }
 
-            list1to9.forEach((item, idx) => {
+            top18List.slice(0, 9).forEach((item, idx) => {
                 tbody1.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
                         <td class="p-1.5 text-center font-bold text-orange-400">${idx + 1}</td>
@@ -1709,11 +1966,10 @@
                 `;
             });
 
-            list10to18.forEach((item, idx) => {
-                const rank = idx + 10;
+            top18List.slice(9, 18).forEach((item, idx) => {
                 tbody2.innerHTML += `
                     <tr class="hover:bg-[#1f242e] transition">
-                        <td class="p-1.5 text-center font-bold text-orange-400">${rank}</td>
+                        <td class="p-1.5 text-center font-bold text-orange-400">${idx + 10}</td>
                         <td class="p-1.5 font-medium text-gray-200 truncate max-w-[130px]" title="${item.cause}">${item.cause}</td>
                         <td class="p-1.5 text-right font-semibold text-emerald-400">${item.count.toLocaleString()}</td>
                         <td class="p-1.5 text-right font-semibold text-amber-400">${item.downtime.toLocaleString()}</td>
@@ -1725,47 +1981,71 @@
         function updateShiftChart(data) {
             const selectedIssueVal = document.getElementById('issueFilter').value;
             const chartTitleEl = document.getElementById('shiftChartTitle');
+            const t = i18n[currentLang];
 
-            if (selectedIssueVal !== 'All') {
-                chartTitleEl.innerText = `ปัญหา${selectedIssueVal}แยกตามวัน (จำนวนครั้ง)`;
+            // โหมดเปรียบเทียบ: แสดงกราฟแท่งแนวนอนเปรียบเทียบจำนวนครั้งของปัญหาที่เลือกแยกตามเดือน
+            if (isCompareMode && compareSelectedIssues.length > 0) {
+                const monthsToShow = compareSelectedMonths.length > 0 ? [...compareSelectedMonths].sort() : getAvailableMonths().slice(0, 2).sort();
+                chartTitleEl.innerText = `${t.compareShiftChartTitle} (${monthsToShow.map(formatMonthLabel).join(' vs ')})`;
 
-                const filteredByIssue = data.filter(item => item.issue === selectedIssueVal);
-                const dates = [...new Set(filteredByIssue.map(item => item.date))].filter(Boolean).sort();
+                shiftChartInstance.options.indexAxis = 'y';
+                shiftChartInstance.options.plugins.legend.display = true;
+                shiftChartInstance.options.plugins.legend.labels = { color: '#d1d5db', font: { size: 11 } };
+                shiftChartInstance.options.plugins.datalabels.display = true;
+                shiftChartInstance.options.plugins.datalabels.formatter = (v) => v > 0 ? `${v.toLocaleString()} ${t.unitCnt}` : '';
 
-                const countsPerDate = dates.map(d => {
-                    return filteredByIssue.filter(item => item.date === d).length;
+                const datasets = monthsToShow.map((ym, idx) => {
+                    const color = comparePalette[idx % comparePalette.length];
+                    const counts = compareSelectedIssues.map(issue => {
+                        return data.filter(item => item.issue === issue && item.date && item.date.startsWith(ym)).length;
+                    });
+                    return {
+                        label: formatMonthLabel(ym),
+                        data: counts,
+                        backgroundColor: color,
+                        borderRadius: 4
+                    };
                 });
 
-                shiftChartInstance.config.type = 'bar';
-                shiftChartInstance.data.labels = dates.length > 0 ? dates : ['ไม่มีข้อมูล'];
+                shiftChartInstance.data.labels = compareSelectedIssues;
+                shiftChartInstance.data.datasets = datasets;
+                shiftChartInstance.update();
+                return;
+            }
+
+            // กลับสู่กราฟแนวตั้งปกติ
+            shiftChartInstance.options.indexAxis = 'x';
+            shiftChartInstance.options.plugins.legend.display = false;
+            shiftChartInstance.options.plugins.datalabels.formatter = (value) => value > 0 ? `${value.toLocaleString()} ${t.unitCnt}` : '';
+
+            if (selectedIssueVal !== 'All') {
+                chartTitleEl.innerText = `${selectedIssueVal} (${t.yAxisCnt})`;
+                const filteredByIssue = data.filter(item => item.issue === selectedIssueVal);
+                const dates = [...new Set(filteredByIssue.map(item => item.date))].filter(Boolean).sort();
+                const countsPerDate = dates.map(d => filteredByIssue.filter(item => item.date === d).length);
+
+                shiftChartInstance.data.labels = dates.length > 0 ? dates : ['-'];
                 shiftChartInstance.data.datasets = [{
                     label: selectedIssueVal,
                     data: countsPerDate.length > 0 ? countsPerDate : [0],
                     backgroundColor: '#f59e0b',
                     borderRadius: 4
                 }];
-
                 shiftChartInstance.options.plugins.datalabels.display = false;
-                shiftChartInstance.options.plugins.tooltip.callbacks.label = function(context) {
-                    return ` วันที่ ${context.label}: ${context.raw.toLocaleString()} ครั้ง`;
-                };
-
                 shiftChartInstance.update();
                 return;
             }
 
-            chartTitleEl.innerText = 'Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)';
-            
-            shiftChartInstance.config.type = 'bar';
+            chartTitleEl.innerText = t.defaultShiftChartTitle;
             shiftChartInstance.options.plugins.datalabels.display = true;
 
             const issueCounts = {};
             data.forEach(item => {
-                const issue = item.issue || 'ไม่ระบุ';
+                const issue = item.issue || '-';
                 issueCounts[issue] = (issueCounts[issue] || 0) + 1;
             });
 
-            let sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
+            const sortedIssues = Object.entries(issueCounts).sort((a, b) => b[1] - a[1]);
             let finalLabels = [];
             let finalCounts = [];
             hiddenIssuesDetail = [];
@@ -1783,31 +2063,19 @@
                 finalLabels.push('ปัญหาอื่นๆ (รวม)');
                 finalCounts.push(othersSum);
             } else {
-                sortedIssues.forEach(item => {
-                    finalLabels.push(item[0]);
-                    finalCounts.push(item[1]);
+                sortedIssues.forEach(([k, v]) => {
+                    finalLabels.push(k);
+                    finalCounts.push(v);
                 });
             }
 
-            shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['ไม่มีข้อมูล'];
+            shiftChartInstance.data.labels = finalLabels.length > 0 ? finalLabels : ['-'];
             shiftChartInstance.data.datasets = [{
-                label: 'จำนวนครั้ง',
+                label: t.yAxisCnt,
                 data: finalCounts.length > 0 ? finalCounts : [0],
                 backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'],
                 borderRadius: 4
             }];
-
-            shiftChartInstance.options.plugins.tooltip.callbacks.label = function(context) {
-                let sum = context.dataset.data.reduce((a, b) => a + b, 0);
-                let percentage = sum > 0 ? ((context.raw * 100) / sum).toFixed(1) + '%' : '0%';
-                if (context.label === 'ปัญหาอื่นๆ (รวม)' && hiddenIssuesDetail.length > 0) {
-                    let details = [` ปัญหาอื่นๆ รวม ${context.raw.toLocaleString()} ครั้ง (${percentage}):`];
-                    hiddenIssuesDetail.forEach(item => { details.push(` - ${item.issue}: ${item.count} ครั้ง`); });
-                    return details;
-                }
-                return ` ${context.label}: ${context.raw.toLocaleString()} ครั้ง (${percentage})`;
-            };
-
             shiftChartInstance.update();
         }
     </script>
