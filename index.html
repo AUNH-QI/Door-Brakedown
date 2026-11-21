@@ -160,7 +160,7 @@
                 </div>
             </div>
 
-            <!-- Right Embedded Compare Box (Red Box Area) -->
+            <!-- Right Embedded Compare Box -->
             <div id="compareBox" class="w-full xl:w-[440px] shrink-0 bg-[#242b35] border border-amber-500/40 rounded-lg p-2.5 flex flex-col justify-between gap-2">
                 <!-- บรรทัดที่ 1: เลือกเดือน (ตัวย่อ พ.ย.26, ต.ค.26) -->
                 <div class="flex items-center gap-2">
@@ -550,7 +550,7 @@
                 defaultShiftChartTitle: 'Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)',
                 compareShiftChartTitle: 'เปรียบเทียบจำนวนครั้งแยกตามเดือน',
                 defaultLineChartTitle: 'แนวโน้ม Downtime แยกตาม Line (นาที)',
-                compareLineChartTitle: 'แนวโน้ม Downtime เปรียบเทียบรายเดือน (นาที)',
+                compareLineChartTitle: 'Downtime เปรียบเทียบรายเดือน แยกตาม Line (นาที)',
                 top18TitlePrefix: 'Top 18 สาเหตุปัญหา (Cause) ประจำ Line: ',
                 top18TitleSuffix: ' (เรียงตามนาที)',
                 logSectionTitle: 'Breakdown Log Data',
@@ -613,7 +613,7 @@
                 defaultShiftChartTitle: 'Top 5 设备故障统计（次数）',
                 compareShiftChartTitle: '各月问题发生次数对比',
                 defaultLineChartTitle: '各产线停机趋势 (分钟)',
-                compareLineChartTitle: '各月停机趋势对比 (分钟)',
+                compareLineChartTitle: '各月停机时长对比 - 按产线 (分钟)',
                 top18TitlePrefix: 'Top 18 问题原因 (Cause) - 产线: ',
                 top18TitleSuffix: '（按分钟排序）',
                 logSectionTitle: '停机记录明细 (Breakdown Log Data)',
@@ -1710,12 +1710,16 @@
                     maintainAspectRatio: false,
                     tension: 0.3,
                     spanGaps: true,
-                    plugins: { legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } } },
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 10 } } },
+                        datalabels: { display: false }
+                    },
                     scales: {
                         x: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' } },
-                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#242b35' }, title: { display: true, text: 'Downtime (นาที)', color: '#6b7280' } }
+                        y: { beginAtZero: true, ticks: { color: '#9ca3af' }, grid: { color: '#242b35' }, title: { display: true, text: 'Downtime (นาที)', color: '#6b7280' } }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
 
             const ctxShift = document.getElementById('shiftChart').getContext('2d');
@@ -1785,39 +1789,63 @@
             lineTop18Container.classList.add('hidden');
             lineChartInstance.options.scales.y.title.text = t.yAxisMin;
 
-            if (isCompareMode && compareSelectedMonths.length > 0) {
-                rightSectionTitle.innerText = t.compareLineChartTitle;
-                const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
-                const sortedMonths = [...compareSelectedMonths].sort();
+            if (isCompareMode) {
+                const monthsToShow = compareSelectedMonths.length > 0
+                    ? [...compareSelectedMonths].sort()
+                    : getAvailableMonths().slice(0, 2).sort();
+                const lines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
+                const shortLineLabels = ['A', 'B', 'C', 'Bottom', 'DND'];
 
-                const datasets = sortedMonths.map((ym, idx) => {
+                rightSectionTitle.innerText = `${t.compareLineChartTitle} (${monthsToShow.map(formatShortMonthLabel).join(' vs ')})`;
+                lineChartInstance.config.type = 'bar';
+                lineChartInstance.options.indexAxis = 'x';
+                lineChartInstance.options.plugins.legend.display = true;
+                lineChartInstance.options.plugins.legend.labels = { color: '#d1d5db', font: { size: 11 } };
+                lineChartInstance.options.plugins.datalabels = {
+                    display: true,
+                    color: '#ffffff',
+                    font: { size: 10, weight: 'bold' },
+                    anchor: 'end',
+                    align: 'top',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    borderRadius: 3,
+                    padding: 3,
+                    formatter: (value) => value > 0 ? `${Number(value).toLocaleString()} ${t.unitMin}` : ''
+                };
+                lineChartInstance.options.scales.x.grid.display = false;
+
+                const datasets = monthsToShow.map((ym, idx) => {
                     const color = comparePalette[idx % comparePalette.length];
-                    const dataPerDay = days.map(dd => {
-                        const prefix = `${ym}-${dd}`;
-                        const totalMins = data
-                            .filter(item => item.date === prefix)
+                    const dataPerLine = lines.map(lineName => {
+                        return data
+                            .filter(item => item.line === lineName && item.date && item.date.startsWith(ym))
                             .reduce((sum, item) => sum + (Number(item.downtime) || 0), 0);
-                        return totalMins === 0 ? null : totalMins;
                     });
 
                     return {
-                        label: formatMonthLabel(ym),
-                        data: dataPerDay,
+                        label: formatShortMonthLabel(ym),
+                        data: dataPerLine,
+                        backgroundColor: color,
                         borderColor: color,
-                        backgroundColor: color + '28',
-                        borderWidth: 2.5,
-                        pointRadius: 3,
-                        fill: false
+                        borderWidth: 1,
+                        borderRadius: 4
                     };
                 });
 
-                lineChartInstance.data.labels = days.map(d => `${currentLang === 'zh' ? '' : 'วันที่ '}${Number(d)}${currentLang === 'zh' ? '日' : ''}`);
+                lineChartInstance.data.labels = shortLineLabels;
                 lineChartInstance.data.datasets = datasets;
                 lineChartInstance.update();
                 return;
             }
 
             rightSectionTitle.innerText = t.defaultLineChartTitle;
+            lineChartInstance.config.type = 'line';
+            lineChartInstance.options.indexAxis = 'x';
+            lineChartInstance.options.plugins.legend.display = true;
+            lineChartInstance.options.plugins.legend.labels = { color: '#9ca3af', font: { size: 10 } };
+            lineChartInstance.options.plugins.datalabels = { display: false };
+            lineChartInstance.options.scales.x.grid.display = true;
+
             const dates = [...new Set(data.map(item => item.date))].filter(Boolean).sort();
             const lines = ['A-Door', 'B-Door', 'C-Door', 'Bottom', 'DND'];
             const colorMap = { 'A-Door': '#ef4444', 'B-Door': '#10b981', 'C-Door': '#f59e0b', 'Bottom': '#8b5cf6', 'DND': '#3b82f6' };
@@ -1915,7 +1943,7 @@
                     ? [...compareSelectedMonths].sort()
                     : getAvailableMonths().slice(0, 2).sort();
 
-                chartTitleEl.innerText = `${t.compareShiftChartTitle} (${monthsToShow.map(formatMonthLabel).join(' vs ')})`;
+                chartTitleEl.innerText = `${t.compareShiftChartTitle} (${monthsToShow.map(formatShortMonthLabel).join(' vs ')})`;
                 shiftChartInstance.options.plugins.legend.display = true;
                 shiftChartInstance.options.plugins.legend.labels = { color: '#d1d5db', font: { size: 11 } };
                 shiftChartInstance.options.plugins.datalabels.display = true;
@@ -1927,7 +1955,7 @@
                         return data.filter(item => item.issue === issue && item.date && item.date.startsWith(ym)).length;
                     });
                     return {
-                        label: formatMonthLabel(ym),
+                        label: formatShortMonthLabel(ym),
                         data: counts,
                         backgroundColor: color,
                         borderRadius: 4
