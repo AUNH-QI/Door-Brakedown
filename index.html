@@ -162,27 +162,27 @@
 
             <!-- Right Embedded Compare Box -->
             <div id="compareBox" class="w-full xl:w-[440px] shrink-0 bg-[#242b35] border border-amber-500/40 rounded-lg p-2.5 flex flex-col justify-between gap-2">
-                <!-- บรรทัดที่ 1: เลือกเดือน (ตัวย่อ พ.ย.26, ต.ค.26) -->
-                <div class="flex items-center gap-2">
-                    <span id="lblCompareMonthShort" class="text-[11px] text-amber-300 font-semibold shrink-0">เดือน:</span>
-                    <div id="compareMonthsContainer" class="flex items-center gap-1.5 overflow-x-auto py-0.5 flex-1"></div>
+                <!-- บรรทัดที่ 1: เลือกเดือน (แบ่ง 2 บรรทัดในกรอบ) -->
+                <div class="flex items-start gap-2">
+                    <span id="lblCompareMonthShort" class="text-[11px] text-amber-300 font-semibold shrink-0 pt-0.5">เดือน:</span>
+                    <div id="compareMonthsContainer" class="flex flex-wrap items-center gap-1.5 max-h-[56px] overflow-y-auto content-start py-0.5 flex-1"></div>
                 </div>
 
-                <!-- บรรทัดที่ 2: เลือกปัญหา (Dropdown + Tag) -->
-                <div class="flex items-center gap-2">
-                    <span id="lblCompareIssueShort" class="text-[11px] text-sky-300 font-semibold shrink-0">ปัญหา:</span>
-                    <select id="compareIssueDropdown" onchange="handleCompareIssueDropdownChange(this)" class="bg-gray-200 text-gray-900 font-semibold px-2 py-1 rounded border border-gray-400 focus:outline-none text-[11px] max-w-[165px] cursor-pointer">
+                <!-- บรรทัดที่ 2: เลือกปัญหา (Dropdown + แท็กแบ่ง 2 บรรทัดในกรอบ) -->
+                <div class="flex items-start gap-2">
+                    <span id="lblCompareIssueShort" class="text-[11px] text-sky-300 font-semibold shrink-0 pt-1">ปัญหา:</span>
+                    <select id="compareIssueDropdown" onchange="handleCompareIssueDropdownChange(this)" class="bg-gray-200 text-gray-900 font-semibold px-2 py-1 rounded border border-gray-400 focus:outline-none text-[11px] max-w-[155px] shrink-0 cursor-pointer">
                         <option value="">-- เลือกปัญหา --</option>
                     </select>
-                    <div id="compareSelectedIssueTags" class="flex items-center gap-1 overflow-x-auto flex-1 py-0.5"></div>
+                    <div id="compareSelectedIssueTags" class="flex flex-wrap items-center gap-1 max-h-[56px] overflow-y-auto content-start flex-1 py-0.5"></div>
                 </div>
 
-                <!-- บรรทัดที่ 3: ปุ่ม ใช้งานการเปรียบเทียบ & กลับสู่โหมดปกติ -->
+                <!-- บรรทัดที่ 3: ปุ่ม เปรียบเทียบ & Clear -->
                 <div class="flex items-center justify-between gap-2 pt-1 border-t border-gray-700/80">
                     <span id="compareStatusBadge" class="text-[10px] text-gray-400">ปิดอยู่</span>
                     <div class="flex items-center gap-1.5">
-                        <button type="button" onclick="deactivateCompareMode()" id="btnDisableCompare" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-2.5 py-1 rounded text-[11px] transition">กลับสู่โหมดปกติ</button>
-                        <button type="button" onclick="activateCompareMode()" id="btnApplyCompare" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded text-[11px] transition">ใช้งานการเปรียบเทียบ</button>
+                        <button type="button" onclick="deactivateCompareMode()" id="btnDisableCompare" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-2.5 py-1 rounded text-[11px] transition">Clear</button>
+                        <button type="button" onclick="activateCompareMode()" id="btnApplyCompare" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded text-[11px] transition">เปรียบเทียบ</button>
                     </div>
                 </div>
             </div>
@@ -527,8 +527,8 @@
                 lblCompareIssueShort: 'ปัญหา:',
                 compareStatusOff: 'ปิดอยู่',
                 compareStatusOn: 'กำลังเปรียบเทียบ',
-                btnApplyCompare: 'ใช้งานการเปรียบเทียบ',
-                btnDisableCompare: 'กลับสู่โหมดปกติ',
+                btnApplyCompare: 'เปรียบเทียบ',
+                btnDisableCompare: 'Clear',
                 dropdownPlaceholder: '-- เลือกปัญหา --',
                 lblLineFilter: 'เลือก Line (Single)',
                 lblShiftFilter: 'กะ (Shift)',
@@ -592,8 +592,8 @@
                 lblCompareIssueShort: '问题:',
                 compareStatusOff: '已关闭',
                 compareStatusOn: '对比中',
-                btnApplyCompare: '启用对比',
-                btnDisableCompare: '返回普通模式',
+                btnApplyCompare: '对比',
+                btnDisableCompare: 'Clear',
                 dropdownPlaceholder: '-- 选择问题 --',
                 lblLineFilter: '选择产线 (单选)',
                 lblShiftFilter: '班次 (Shift)',
@@ -891,7 +891,10 @@
 
         function deactivateCompareMode() {
             isCompareMode = false;
+            compareSelectedMonths = [];
+            compareSelectedIssues = [];
             currentPage = 1;
+            renderCompareSelectors();
             updateCompareStatusBadge();
             updateDashboard();
         }
