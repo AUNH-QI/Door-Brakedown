@@ -1830,6 +1830,9 @@
                     padding: 4,
                     formatter: (value) => value > 0 ? `${Number(value).toLocaleString()} ${t.unitMin}` : ''
                 };
+                // จัดกลุ่มแท่งกราฟให้อยู่กึ่งกลางเหมือนกราฟเปรียบเทียบจำนวนครั้ง
+                // จำเป็นต้องเปิด offset เพราะกราฟนี้สลับมาจากกราฟเส้น
+                lineChartInstance.options.scales.x.offset = true;
                 lineChartInstance.options.scales.x.grid.display = false;
                 lineChartInstance.options.scales.x.ticks = {
                     color: '#9ca3af',
