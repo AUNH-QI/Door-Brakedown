@@ -379,6 +379,31 @@
             updateCompareButtonUI();
         }
 
+        function getCompareRankingSourceData() {
+            let source = allData;
+            if (selectedLineFilter !== '') {
+                source = source.filter(item => {
+                    const l = (item.line || '').trim();
+                    if (selectedLineFilter === 'DND') return l === 'DND' || l === 'DND Door';
+                    return l === selectedLineFilter;
+                });
+            }
+            if (selectedLineFilters.length > 0) {
+                source = source.filter(item => {
+                    const l = (item.line || '').trim();
+                    return selectedLineFilters.some(selected => {
+                        if (selected === 'DND') return l === 'DND' || l === 'DND Door';
+                        return l === selected;
+                    });
+                });
+            }
+            if (compareSelectedMonths.length > 0) {
+                const monthFiltered = source.filter(item => compareSelectedMonths.includes(getItemYearMonth(item)));
+                if (monthFiltered.length > 0) return monthFiltered;
+            }
+            return source.length > 0 ? source : allData;
+        }
+
         function renderCompareSelectors() {
             const monthsContainer = document.getElementById('compareMonthsContainer');
             monthsContainer.innerHTML = '';
@@ -398,28 +423,54 @@
                 monthsContainer.appendChild(btn);
             });
 
+            const rankingSource = getCompareRankingSourceData();
+
+            // Aggregate and sort Department descending by Quantity
+            const deptQtyMap = {};
+            rankingSource.forEach(item => {
+                const dept = (item.department || '').trim();
+                if (!dept) return;
+                const qty = parseInt(item.quantity, 10) || 0;
+                deptQtyMap[dept] = (deptQtyMap[dept] || 0) + qty;
+            });
+
+            const sortedDepts = Object.entries(deptQtyMap)
+                .map(([name, qty]) => ({ name, qty }))
+                .sort((a, b) => b.qty - a.qty || a.name.localeCompare(b.name, 'th'));
+
             const deptSelect = document.getElementById('compareDeptSelect');
-            const departments = Array.from(new Set(allData.map(item => (item.department || '').trim()).filter(Boolean))).sort();
             deptSelect.innerHTML = '<option value="ALL">ทุก Department (All)</option>';
-            departments.forEach(dept => {
+            sortedDepts.forEach(d => {
                 const opt = document.createElement('option');
-                opt.value = dept;
-                opt.textContent = dept;
+                opt.value = d.name;
+                opt.textContent = `${d.name} (${d.qty.toLocaleString()} ฝา)`;
                 deptSelect.appendChild(opt);
             });
-            deptSelect.value = departments.includes(compareSelectedDept) ? compareSelectedDept : 'ALL';
+            deptSelect.value = sortedDepts.some(d => d.name === compareSelectedDept) ? compareSelectedDept : 'ALL';
             compareSelectedDept = deptSelect.value;
 
+            // Aggregate and sort Problem descending by Quantity
+            const probQtyMap = {};
+            rankingSource.forEach(item => {
+                const prob = (item.problem || '').trim();
+                if (!prob) return;
+                const qty = parseInt(item.quantity, 10) || 0;
+                probQtyMap[prob] = (probQtyMap[prob] || 0) + qty;
+            });
+
+            const sortedProbs = Object.entries(probQtyMap)
+                .map(([name, qty]) => ({ name, qty }))
+                .sort((a, b) => b.qty - a.qty || a.name.localeCompare(b.name, 'th'));
+
             const problemSelect = document.getElementById('compareProblemSelect');
-            const problems = Array.from(new Set(allData.map(item => (item.problem || '').trim()).filter(Boolean))).sort();
             problemSelect.innerHTML = '<option value="ALL">ทุก Problem (All)</option>';
-            problems.forEach(prob => {
+            sortedProbs.forEach(p => {
                 const opt = document.createElement('option');
-                opt.value = prob;
-                opt.textContent = prob;
+                opt.value = p.name;
+                opt.textContent = `${p.name} (${p.qty.toLocaleString()} ฝา)`;
                 problemSelect.appendChild(opt);
             });
-            problemSelect.value = problems.includes(compareSelectedProblem) ? compareSelectedProblem : 'ALL';
+            problemSelect.value = sortedProbs.some(p => p.name === compareSelectedProblem) ? compareSelectedProblem : 'ALL';
             compareSelectedProblem = problemSelect.value;
         }
 
@@ -447,8 +498,8 @@
         function applyCompareMode() {
             if (compareSelectedMonths.length === 0) {
                 compareSelectedMonths = getAvailableYearMonths().slice(0, 2);
-                renderCompareSelectors();
             }
+            renderCompareSelectors();
             compareSelectedDept = document.getElementById('compareDeptSelect').value;
             compareSelectedProblem = document.getElementById('compareProblemSelect').value;
             isCompareMode = true;
@@ -721,6 +772,7 @@
         function setLineFilter(lineValue) {
             selectedLineFilter = lineValue;
             updateLineUIState();
+            renderCompareSelectors();
             applyFilters();
         }
 
@@ -732,6 +784,7 @@
                 selectedLineFilters.push(lineValue);
             }
             updateLineUIState();
+            renderCompareSelectors();
             applyFilters();
         }
 
@@ -790,6 +843,7 @@
             document.getElementById('endDate').value = '';
             document.getElementById('searchLog').value = '';
 
+            renderCompareSelectors();
             applyFilters();
         }
 
@@ -848,7 +902,7 @@
             if (searchInput) {
                 filtered = filtered.filter(row => {
                     const text = Object.values(row).join(' ').toLowerCase();
-                    return text.includes(input);
+                    return text.includes(searchInput);
                 });
             }
 
