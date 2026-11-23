@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- FontAwesome Icons -->
@@ -487,12 +488,29 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    layout: { padding: { top: 20, right: 10, left: 10, bottom: 0 } },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            display: (context) => isCompareMode && context.chart.config.type === 'bar',
+                            color: '#ffffff',
+                            font: { family: 'Prompt', size: 11, weight: 'bold' },
+                            anchor: 'center',
+                            align: 'center',
+                            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                            borderColor: '#000000',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            padding: 4,
+                            formatter: (value) => value > 0 ? `${Number(value).toLocaleString()} ฝา` : ''
+                        }
+                    },
                     scales: {
                         x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#94a3b8', font: { family: 'Prompt' } } },
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
 
             // Top 5 Problems Bar Chart
@@ -511,7 +529,7 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } }, 
+                    plugins: { legend: { display: false }, datalabels: { display: false } }, 
                     scales: { 
                         x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Prompt' }, maxRotation: 20 } }, 
                         y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' }, beginAtZero: true } 
@@ -571,7 +589,7 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } } 
+                    plugins: { legend: { display: false }, datalabels: { display: false } } 
                 },
                 plugins: [{
                     id: 'doughnutLabels',
@@ -830,7 +848,7 @@
             if (searchInput) {
                 filtered = filtered.filter(row => {
                     const text = Object.values(row).join(' ').toLowerCase();
-                    return text.includes(searchInput);
+                    return text.includes(input);
                 });
             }
 
