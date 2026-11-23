@@ -1,3 +1,15 @@
+ปรับให้เรียบร้อยครับ เมื่อเลือก **"ปัญหาทั้งหมด (All)"** ในโหมดเปรียบเทียบ จะไม่แสดงแท็กปัญหาย่อยๆ ให้รกกรอบ และในกราฟเปรียบเทียบจำนวนครั้งแยกตามเดือนจะรวมเป็นภาพรวมต่อเดือนแทนการแตกแกน X เป็นปัญหาย่อยๆ ที่เบียดและทับตัวเลขกันครับ
+
+### สรุปการปรับปรุง
+
+* **เลือกปัญหาทั้งหมดแล้วไม่โชว์แท็ก**: เพิ่มสถานะ `compareAllIssuesSelected` เมื่อเลือก `ปัญหาทั้งหมด (All)` จะไม่สร้างแท็กย่อยใน `#compareSelectedIssueTags` (หากเลือกปัญหาเฉพาะรายข้อภายหลัง ระบบจะแสดงแท็กเฉพาะข้อที่เลือก และเมื่อกด `Clear` จะล้างสถานะนี้กลับสู่ค่าเริ่มต้น)
+
+
+* **กราฟเปรียบเทียบจำนวนครั้งไม่แยกปัญหาย่อย**: เมื่ออยู่ในโหมดเปรียบเทียบและเลือก "ปัญหาทั้งหมด" กราฟซ้ายจะรวมจำนวนครั้งของทุกปัญหาในแต่ละเดือนเป็นแท่งเปรียบเทียบตามเดือนที่เลือก (คล้ายฝั่งขวา) อ่านตัวเลขได้ชัดเจนไม่ทับกัน
+
+
+
+```html
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -514,6 +526,7 @@
         let isCompareMode = false;
         let compareSelectedMonths = [];
         let compareSelectedIssues = [];
+        let compareAllIssuesSelected = false;
 
         // Language State ('th' | 'zh')
         let currentLang = 'th';
@@ -527,6 +540,7 @@
                 lblCompareIssueShort: 'ปัญหา:',
                 compareStatusOff: 'ปิดอยู่',
                 compareStatusOn: 'กำลังเปรียบเทียบ',
+                compareAllBadgeLabel: 'ทั้งหมด',
                 btnApplyCompare: 'เปรียบเทียบ',
                 btnDisableCompare: 'Clear',
                 dropdownPlaceholder: '-- เลือกปัญหา --',
@@ -550,6 +564,7 @@
                 unitCnt: 'ครั้ง',
                 defaultShiftChartTitle: 'Top 5 สถิติปัญหาเครื่องจักรขัดข้อง (จำนวนครั้ง)',
                 compareShiftChartTitle: 'เปรียบเทียบจำนวนครั้งแยกตามเดือน',
+                compareShiftChartTitleAll: 'จำนวนครั้งเปรียบเทียบรายเดือน ปัญหาทั้งหมด (ครั้ง)',
                 defaultLineChartTitle: 'แนวโน้ม Downtime แยกตาม Line (นาที)',
                 compareLineChartTitleAll: 'Downtime เปรียบเทียบรายเดือน รวมทุก Line (นาที)',
                 compareLineChartTitleLine: 'Downtime เปรียบเทียบรายเดือน: ',
@@ -593,6 +608,7 @@
                 lblCompareIssueShort: '问题:',
                 compareStatusOff: '已关闭',
                 compareStatusOn: '对比中',
+                compareAllBadgeLabel: '全部',
                 btnApplyCompare: '对比',
                 btnDisableCompare: 'Clear',
                 dropdownPlaceholder: '-- 选择问题 --',
@@ -616,6 +632,7 @@
                 unitCnt: '次',
                 defaultShiftChartTitle: 'Top 5 设备故障统计（次数）',
                 compareShiftChartTitle: '各月问题发生次数对比',
+                compareShiftChartTitleAll: '各月发生次数对比 - 全部问题 (次)',
                 defaultLineChartTitle: '各产线停机趋势 (分钟)',
                 compareLineChartTitleAll: '各月停机时长对比 - 全部产线汇总 (分钟)',
                 compareLineChartTitleLine: '各月停机时长对比: ',
@@ -750,7 +767,8 @@
             const badge = document.getElementById('compareStatusBadge');
             const t = i18n[currentLang];
             if (isCompareMode) {
-                badge.innerText = `${t.compareStatusOn} (${compareSelectedMonths.length}/${compareSelectedIssues.length})`;
+                const issueLabel = compareAllIssuesSelected ? t.compareAllBadgeLabel : compareSelectedIssues.length;
+                badge.innerText = `${t.compareStatusOn} (${compareSelectedMonths.length}/${issueLabel})`;
                 badge.className = 'text-[10px] text-emerald-300 font-semibold';
             } else {
                 badge.innerText = t.compareStatusOff;
@@ -804,12 +822,11 @@
             const issues = getAvailableIssuesSorted();
             const dropdown = document.getElementById('compareIssueDropdown');
             dropdown.innerHTML = `<option value="">${t.dropdownPlaceholder}</option>`;
-            const allSelected = issues.length > 0 && issues.every(issue => compareSelectedIssues.includes(issue));
-            dropdown.innerHTML += `<option value="__ALL__">${allSelected ? '✓ ' : ''}${t.allIssuesOption}</option>`;
+            dropdown.innerHTML += `<option value="__ALL__">${compareAllIssuesSelected ? '✓ ' : ''}${t.allIssuesOption}</option>`;
             issues.forEach(issue => {
                 const opt = document.createElement('option');
                 opt.value = issue;
-                opt.textContent = compareSelectedIssues.includes(issue) ? `✓ ${issue}` : issue;
+                opt.textContent = (!compareAllIssuesSelected && compareSelectedIssues.includes(issue)) ? `✓ ${issue}` : issue;
                 dropdown.appendChild(opt);
             });
 
@@ -819,6 +836,10 @@
         function renderCompareIssueTags() {
             const tagsContainer = document.getElementById('compareSelectedIssueTags');
             tagsContainer.innerHTML = '';
+
+            if (compareAllIssuesSelected) {
+                return;
+            }
 
             compareSelectedIssues.forEach(issue => {
                 const tagEl = document.createElement('span');
@@ -844,14 +865,16 @@
             const val = selectEl.value;
             if (!val) return;
             if (val === '__ALL__') {
-                const allIssues = getAvailableIssuesSorted();
-                allIssues.forEach(issue => {
-                    if (!compareSelectedIssues.includes(issue)) {
-                        compareSelectedIssues.push(issue);
-                    }
-                });
-            } else if (!compareSelectedIssues.includes(val)) {
-                compareSelectedIssues.push(val);
+                compareAllIssuesSelected = true;
+                compareSelectedIssues = [];
+            } else {
+                if (compareAllIssuesSelected) {
+                    compareAllIssuesSelected = false;
+                    compareSelectedIssues = [];
+                }
+                if (!compareSelectedIssues.includes(val)) {
+                    compareSelectedIssues.push(val);
+                }
             }
             selectEl.value = '';
             renderCompareSelectors();
@@ -893,7 +916,7 @@
 
         function activateCompareMode() {
             if (compareSelectedMonths.length === 0) selectLastTwoMonths();
-            if (compareSelectedIssues.length === 0) selectTopIssues(5);
+            if (!compareAllIssuesSelected && compareSelectedIssues.length === 0) selectTopIssues(5);
             isCompareMode = true;
             currentPage = 1;
             updateCompareStatusBadge();
@@ -904,6 +927,7 @@
             isCompareMode = false;
             compareSelectedMonths = [];
             compareSelectedIssues = [];
+            compareAllIssuesSelected = false;
             currentPage = 1;
             renderCompareSelectors();
             updateCompareStatusBadge();
@@ -1578,7 +1602,7 @@
                     if (compareSelectedMonths.length > 0) {
                         if (!itemDate || !compareSelectedMonths.some(ym => itemDate.startsWith(ym))) return false;
                     }
-                    if (compareSelectedIssues.length > 0) {
+                    if (!compareAllIssuesSelected && compareSelectedIssues.length > 0) {
                         if (!compareSelectedIssues.includes(item.issue)) return false;
                     }
                 } else {
@@ -1981,34 +2005,58 @@
 
             shiftChartInstance.options.indexAxis = 'x';
 
-            if (isCompareMode && compareSelectedIssues.length > 0) {
+            if (isCompareMode) {
                 const monthsToShow = compareSelectedMonths.length > 0
                     ? [...compareSelectedMonths].sort()
                     : getAvailableMonths().slice(0, 2).sort();
+                const monthLabels = monthsToShow.map(formatShortMonthLabel);
 
-                chartTitleEl.innerText = `${t.compareShiftChartTitle} (${monthsToShow.map(formatShortMonthLabel).join(' vs ')})`;
                 shiftChartInstance.options.plugins.legend.display = true;
                 shiftChartInstance.options.plugins.legend.labels = { color: '#d1d5db', font: { size: 11 } };
                 shiftChartInstance.options.plugins.datalabels.display = true;
                 shiftChartInstance.options.plugins.datalabels.formatter = (v) => v > 0 ? `${v.toLocaleString()} ${t.unitCnt}` : '';
 
-                const datasets = monthsToShow.map((ym, idx) => {
-                    const color = comparePalette[idx % comparePalette.length];
-                    const counts = compareSelectedIssues.map(issue => {
-                        return data.filter(item => item.issue === issue && item.date && item.date.startsWith(ym)).length;
+                if (compareAllIssuesSelected) {
+                    chartTitleEl.innerText = `${t.compareShiftChartTitleAll} (${monthLabels.join(' vs ')})`;
+                    const datasets = monthsToShow.map((ym, idx) => {
+                        const color = comparePalette[idx % comparePalette.length];
+                        const totalCount = data.filter(item => item.date && item.date.startsWith(ym)).length;
+                        return {
+                            label: formatShortMonthLabel(ym),
+                            data: [totalCount],
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: 1,
+                            borderRadius: 4
+                        };
                     });
-                    return {
-                        label: formatShortMonthLabel(ym),
-                        data: counts,
-                        backgroundColor: color,
-                        borderRadius: 4
-                    };
-                });
 
-                shiftChartInstance.data.labels = compareSelectedIssues;
-                shiftChartInstance.data.datasets = datasets;
-                shiftChartInstance.update();
-                return;
+                    shiftChartInstance.data.labels = [t.allIssuesOption];
+                    shiftChartInstance.data.datasets = datasets;
+                    shiftChartInstance.update();
+                    return;
+                }
+
+                if (compareSelectedIssues.length > 0) {
+                    chartTitleEl.innerText = `${t.compareShiftChartTitle} (${monthLabels.join(' vs ')})`;
+                    const datasets = monthsToShow.map((ym, idx) => {
+                        const color = comparePalette[idx % comparePalette.length];
+                        const counts = compareSelectedIssues.map(issue => {
+                            return data.filter(item => item.issue === issue && item.date && item.date.startsWith(ym)).length;
+                        });
+                        return {
+                            label: formatShortMonthLabel(ym),
+                            data: counts,
+                            backgroundColor: color,
+                            borderRadius: 4
+                        };
+                    });
+
+                    shiftChartInstance.data.labels = compareSelectedIssues;
+                    shiftChartInstance.data.datasets = datasets;
+                    shiftChartInstance.update();
+                    return;
+                }
             }
 
             shiftChartInstance.options.plugins.legend.display = false;
@@ -2076,3 +2124,7 @@
     </script>
 </body>
 </html>
+
+```
+
+ลองนำไปทับ `index.html` แล้วเลือก **ปัญหาทั้งหมด (All)** ในโหมดเปรียบเทียบดูครับ ว่าแท็กไม่ขึ้นและกราฟเปรียบเทียบจำนวนครั้งดูสะอาดตาขึ้นไหมครับ?
