@@ -70,6 +70,11 @@
                     </select>
                 </div>
 
+                <!-- Compare Toggle Button in Filter Bar -->
+                <button type="button" onclick="toggleComparePanel()" id="btnToggleCompareBar" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-code-compare"></i> เปรียบเทียบ
+                </button>
+
                 <!-- Clear Filters Button -->
                 <button onclick="resetAllFilters()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium px-3.5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5" title="ล้างตัวกรองทั้งหมด">
                     <i class="fa-solid fa-rotate-left"></i> ล้างตัวกรอง
@@ -79,6 +84,47 @@
 
         <!-- Main Dashboard Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+            <!-- Embedded Compare Box -->
+            <section id="comparePanel" class="hidden bg-slate-900 border border-amber-500/40 rounded-2xl p-4 shadow-xl">
+                <div class="flex flex-col gap-3">
+                    <!-- Row 1: Months Multi-select -->
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <span class="text-xs font-semibold text-amber-300 shrink-0 w-24">เดือน:</span>
+                        <div id="compareMonthsContainer" class="flex flex-wrap items-center gap-1.5 flex-1"></div>
+                    </div>
+
+                    <!-- Row 2: Department & Problem Dropdowns -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
+                        <div class="flex items-center gap-2">
+                            <label for="compareDeptSelect" class="text-xs font-semibold text-sky-300 shrink-0">Department:</label>
+                            <select id="compareDeptSelect" onchange="handleCompareDropdownChange()" class="bg-slate-200 text-slate-900 text-xs font-semibold border border-slate-400 rounded-xl px-3 py-2 outline-none flex-1 cursor-pointer">
+                                <option value="ALL">ทุก Department (All)</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <label for="compareProblemSelect" class="text-xs font-semibold text-sky-300 shrink-0">Problem:</label>
+                            <select id="compareProblemSelect" onchange="handleCompareDropdownChange()" class="bg-slate-200 text-slate-900 text-xs font-semibold border border-slate-400 rounded-xl px-3 py-2 outline-none flex-1 cursor-pointer">
+                                <option value="ALL">ทุก Problem (All)</option>
+                            </select>
+                        </div>
+
+                        <div class="text-xs text-slate-400 flex items-center">
+                            <span id="compareStatusLabel" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-medium">ปิดอยู่</span>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2">
+                            <button type="button" onclick="clearCompareMode()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium px-3.5 py-2 rounded-xl transition cursor-pointer">
+                                Clear
+                            </button>
+                            <button type="button" onclick="applyCompareMode()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow cursor-pointer">
+                                เปรียบเทียบ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
             
             <!-- KPI Top Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -114,22 +160,40 @@
 
             <!-- Charts Section 1 -->
             <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
-                <!-- Trend Line Chart -->
+                <!-- Trend Chart (Line in normal mode, Bar in compare mode) -->
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-7">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-chart-line text-amber-500 mr-2"></i> แนวโน้มจำนวนชิ้นงานเสียแยกตามวัน (Daily Scrap Trend)</h2>
-                        <span class="text-xs text-slate-400">สถิติตามช่วงเวลา</span>
+                        <h2 id="trendChartTitle" class="text-sm font-bold text-white"><i id="trendChartIcon" class="fa-solid fa-chart-line text-amber-500 mr-2"></i> แนวโน้มจำนวนชิ้นงานเสียแยกตามวัน (Daily Scrap Trend)</h2>
+                        <span id="trendChartBadge" class="text-xs text-slate-400">สถิติตามช่วงเวลา</span>
                     </div>
                     <div class="h-72 relative">
                         <canvas id="trendChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Doughnut Chart: Department -->
+                <!-- Right Panel: Doughnut Chart in normal mode, Sorted Table in compare mode -->
                 <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between shadow-xl lg:col-span-3">
-                    <h2 class="text-sm font-bold text-white mb-2">Tickets By Department</h2>
-                    <div class="h-64 relative flex items-center justify-center">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 id="rightPanelTitle" class="text-sm font-bold text-white">Tickets By Department</h2>
+                        <span id="rightPanelBadge" class="hidden text-[11px] text-amber-300 font-medium">เรียงตาม Quantity</span>
+                    </div>
+
+                    <div id="departmentChartContainer" class="h-64 relative flex items-center justify-center">
                         <canvas id="departmentChart"></canvas>
+                    </div>
+
+                    <div id="compareDeptTableContainer" class="hidden h-64 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/60">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-800/90 text-slate-300 uppercase font-semibold sticky top-0">
+                                <tr>
+                                    <th class="p-2 text-center w-12">อันดับ</th>
+                                    <th class="p-2">Cause</th>
+                                    <th class="p-2 text-right">Quantity</th>
+                                    <th class="p-2">Department</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compareDeptTableBody" class="divide-y divide-slate-800/80"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -230,13 +294,179 @@
         let currentPage = 1;
         let rowsPerPage = 10;
 
+        // Compare Mode State
+        let isCompareMode = false;
+        let compareSelectedMonths = [];
+        let compareSelectedDept = 'ALL';
+        let compareSelectedProblem = 'ALL';
+
+        const shortMonthNames = [
+            "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+            "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+        ];
+
+        const compareBarColors = ['#38bdf8', '#fb923c', '#34d399', '#f472b6', '#a78bfa', '#facc15'];
+
         document.addEventListener("DOMContentLoaded", () => {
             initCharts();
             fetchScrapData();
         });
 
+        function formatShortMonth(ym) {
+            if (!ym || !ym.includes('-')) return ym;
+            const [year, month] = ym.split('-');
+            const mIdx = parseInt(month, 10) - 1;
+            const yy = String(year).slice(-2);
+            return `${shortMonthNames[mIdx] || month}${yy}`;
+        }
+
+        function getItemYearMonth(item) {
+            if (!item || !item.date) return '';
+            const rawDate = String(item.date).trim();
+            if (/^\d{4}-\d{2}/.test(rawDate)) {
+                return rawDate.slice(0, 7);
+            }
+            const d = new Date(rawDate);
+            if (isNaN(d.getTime())) return '';
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function getAvailableYearMonths() {
+            const set = new Set();
+            allData.forEach(item => {
+                const ym = getItemYearMonth(item);
+                if (ym) set.add(ym);
+            });
+            return Array.from(set).sort((a, b) => b.localeCompare(a));
+        }
+
+        function toggleComparePanel() {
+            const panel = document.getElementById('comparePanel');
+            const willOpen = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden');
+
+            if (willOpen && !isCompareMode) {
+                if (compareSelectedMonths.length === 0) {
+                    compareSelectedMonths = getAvailableYearMonths().slice(0, 2);
+                }
+                renderCompareSelectors();
+            } else if (!willOpen && isCompareMode) {
+                clearCompareMode();
+            }
+            updateCompareButtonUI();
+        }
+
+        function updateCompareButtonUI() {
+            const btn = document.getElementById('btnToggleCompareBar');
+            const panelOpen = !document.getElementById('comparePanel').classList.contains('hidden');
+            if (isCompareMode || panelOpen) {
+                btn.className = "bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer ring-2 ring-amber-400/60";
+            } else {
+                btn.className = "bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer";
+            }
+        }
+
+        function updateCompareStatusUI() {
+            const badge = document.getElementById('compareStatusLabel');
+            if (isCompareMode) {
+                badge.innerText = `กำลังเปรียบเทียบ (${compareSelectedMonths.length} เดือน)`;
+                badge.className = "px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 font-semibold";
+            } else {
+                badge.innerText = "ปิดอยู่";
+                badge.className = "px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-medium";
+            }
+            updateCompareButtonUI();
+        }
+
+        function renderCompareSelectors() {
+            const monthsContainer = document.getElementById('compareMonthsContainer');
+            monthsContainer.innerHTML = '';
+
+            const availableMonths = getAvailableYearMonths();
+            compareSelectedMonths = compareSelectedMonths.filter(ym => availableMonths.includes(ym));
+
+            availableMonths.forEach(ym => {
+                const isSelected = compareSelectedMonths.includes(ym);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = isSelected
+                    ? "px-3 py-1 rounded-xl border text-xs font-bold bg-amber-500/25 border-amber-400 text-amber-200 transition cursor-pointer shadow"
+                    : "px-3 py-1 rounded-xl border text-xs font-medium bg-slate-950 border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white transition cursor-pointer";
+                btn.textContent = `${isSelected ? '✓ ' : ''}${formatShortMonth(ym)}`;
+                btn.onclick = () => toggleCompareMonth(ym);
+                monthsContainer.appendChild(btn);
+            });
+
+            const deptSelect = document.getElementById('compareDeptSelect');
+            const departments = Array.from(new Set(allData.map(item => (item.department || '').trim()).filter(Boolean))).sort();
+            deptSelect.innerHTML = '<option value="ALL">ทุก Department (All)</option>';
+            departments.forEach(dept => {
+                const opt = document.createElement('option');
+                opt.value = dept;
+                opt.textContent = dept;
+                deptSelect.appendChild(opt);
+            });
+            deptSelect.value = departments.includes(compareSelectedDept) ? compareSelectedDept : 'ALL';
+            compareSelectedDept = deptSelect.value;
+
+            const problemSelect = document.getElementById('compareProblemSelect');
+            const problems = Array.from(new Set(allData.map(item => (item.problem || '').trim()).filter(Boolean))).sort();
+            problemSelect.innerHTML = '<option value="ALL">ทุก Problem (All)</option>';
+            problems.forEach(prob => {
+                const opt = document.createElement('option');
+                opt.value = prob;
+                opt.textContent = prob;
+                problemSelect.appendChild(opt);
+            });
+            problemSelect.value = problems.includes(compareSelectedProblem) ? compareSelectedProblem : 'ALL';
+            compareSelectedProblem = problemSelect.value;
+        }
+
+        function toggleCompareMonth(ym) {
+            const idx = compareSelectedMonths.indexOf(ym);
+            if (idx > -1) {
+                compareSelectedMonths.splice(idx, 1);
+            } else {
+                compareSelectedMonths.push(ym);
+            }
+            renderCompareSelectors();
+            if (isCompareMode) {
+                applyFilters();
+            }
+        }
+
+        function handleCompareDropdownChange() {
+            compareSelectedDept = document.getElementById('compareDeptSelect').value;
+            compareSelectedProblem = document.getElementById('compareProblemSelect').value;
+            if (isCompareMode) {
+                applyFilters();
+            }
+        }
+
+        function applyCompareMode() {
+            if (compareSelectedMonths.length === 0) {
+                compareSelectedMonths = getAvailableYearMonths().slice(0, 2);
+                renderCompareSelectors();
+            }
+            compareSelectedDept = document.getElementById('compareDeptSelect').value;
+            compareSelectedProblem = document.getElementById('compareProblemSelect').value;
+            isCompareMode = true;
+            updateCompareStatusUI();
+            applyFilters();
+        }
+
+        function clearCompareMode() {
+            isCompareMode = false;
+            compareSelectedMonths = [];
+            compareSelectedDept = 'ALL';
+            compareSelectedProblem = 'ALL';
+            renderCompareSelectors();
+            updateCompareStatusUI();
+            applyFilters();
+        }
+
         function initCharts() {
-            // Trend Line Chart
+            // Trend Chart (switches between 'line' and 'bar' in compare mode)
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
             trendChart = new Chart(ctxTrend, {
                 type: 'line',
@@ -346,6 +576,7 @@
                 plugins: [{
                     id: 'doughnutLabels',
                     afterDatasetsDraw(chart) {
+                        if (isCompareMode) return;
                         const { ctx } = chart;
                         const dataset = chart.data.datasets[0];
                         const meta = chart.getDatasetMeta(0);
@@ -396,6 +627,7 @@
             if (data) {
                 allData = data;
                 populateMonthDropdown();
+                renderCompareSelectors();
                 applyFilters();
             }
         }
@@ -413,11 +645,8 @@
 
             const availableMonths = new Set();
             allData.forEach(item => {
-                if (!item.date) return;
-                const d = new Date(item.date);
-                const year = d.getFullYear();
-                const month = d.getMonth() + 1;
-                availableMonths.add(`${year}-${String(month).padStart(2, '0')}`);
+                const ym = getItemYearMonth(item);
+                if (ym) availableMonths.add(ym);
             });
 
             const sortedMonths = Array.from(availableMonths).sort((a, b) => new Date(a) - new Date(b));
@@ -471,14 +700,12 @@
             });
         }
 
-        // ฟังก์ชันจัดการการคลิกเลือก Line ด้านบนแบบ Single-select
         function setLineFilter(lineValue) {
             selectedLineFilter = lineValue;
             updateLineUIState();
             applyFilters();
         }
 
-        // ฟังก์ชันจัดการการคลิก KPI cards ด้านล่างแบบ Multi-select
         function toggleKpiFilter(lineValue) {
             const index = selectedLineFilters.indexOf(lineValue);
             if (index > -1) {
@@ -490,9 +717,7 @@
             applyFilters();
         }
 
-        // อัปเดตสถานะหน้าตาปุ่มด้านบน (Single-select) และ KPI Cards (Multi-select) ให้สอดคล้องกัน
         function updateLineUIState() {
-            // อัปเดตปุ่ม All ด้านบน
             const btnAll = document.getElementById('btn-line-all');
             if (selectedLineFilter === '') {
                 btnAll.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white transition shadow";
@@ -500,7 +725,6 @@
                 btnAll.className = "line-btn px-3 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white transition";
             }
 
-            // อัปเดตปุ่ม Line แต่ละตัวด้านบน (Single-select highlight)
             ['A-Door', 'B-Door', 'C-Door', 'DND'].forEach(line => {
                 const btn = document.getElementById(`btn-line-${line}`);
                 if (btn) {
@@ -512,7 +736,6 @@
                 }
             });
 
-            // อัปเดตไฮไลต์ที่ KPI Cards ด้านล่าง (Multi-select highlight)
             const cards = {
                 'A-Door': document.getElementById('card-adoor'),
                 'B-Door': document.getElementById('card-bdoor'),
@@ -552,14 +775,14 @@
             applyFilters();
         }
 
-        function applyFilters() {
+        function getBaseFilteredData() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const monthYM = document.getElementById('filterMonth').value;
-            
+            const searchInput = document.getElementById('searchLog').value.toLowerCase();
+
             let filtered = allData;
 
-            // กรองตามปุ่ม Line ด้านบน (Single-select)
             if (selectedLineFilter !== '') {
                 filtered = filtered.filter(item => {
                     const l = (item.line || '').trim();
@@ -570,7 +793,6 @@
                 });
             }
 
-            // กรองตาม KPI Cards ด้านล่าง (Multi-select)
             if (selectedLineFilters.length > 0) {
                 filtered = filtered.filter(item => {
                     const l = (item.line || '').trim();
@@ -583,25 +805,41 @@
                 });
             }
 
-            if (monthYM) {
-                filtered = filtered.filter(item => {
-                    if (!item.date) return false;
-                    const d = new Date(item.date);
-                    const itemYM = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                    return itemYM === monthYM;
+            if (isCompareMode) {
+                if (compareSelectedMonths.length > 0) {
+                    filtered = filtered.filter(item => compareSelectedMonths.includes(getItemYearMonth(item)));
+                }
+                if (compareSelectedDept && compareSelectedDept !== 'ALL') {
+                    filtered = filtered.filter(item => (item.department || '').trim() === compareSelectedDept);
+                }
+                if (compareSelectedProblem && compareSelectedProblem !== 'ALL') {
+                    filtered = filtered.filter(item => (item.problem || '').trim() === compareSelectedProblem);
+                }
+            } else {
+                if (monthYM) {
+                    filtered = filtered.filter(item => getItemYearMonth(item) === monthYM);
+                }
+                if (startDate) {
+                    filtered = filtered.filter(item => item.date >= startDate);
+                }
+                if (endDate) {
+                    filtered = filtered.filter(item => item.date <= endDate);
+                }
+            }
+
+            if (searchInput) {
+                filtered = filtered.filter(row => {
+                    const text = Object.values(row).join(' ').toLowerCase();
+                    return text.includes(searchInput);
                 });
             }
 
-            if (startDate) {
-                filtered = filtered.filter(item => item.date >= startDate);
-            }
+            return filtered;
+        }
 
-            if (endDate) {
-                filtered = filtered.filter(item => item.date <= endDate);
-            }
-
+        function applyFilters() {
             currentPage = 1;
-            updateDashboard(filtered);
+            updateDashboard(getBaseFilteredData());
         }
 
         function updateDashboard(data) {
@@ -751,19 +989,107 @@
         }
 
         function updateChartsData(data) {
-            // 1. Trend Line Chart
-            const dateMap = {};
-            data.forEach(item => {
-                if (!item.date) return;
-                const d = item.date;
-                const qty = parseInt(item.quantity) || 0;
-                dateMap[d] = (dateMap[d] || 0) + qty;
-            });
+            const trendTitle = document.getElementById('trendChartTitle');
+            const trendBadge = document.getElementById('trendChartBadge');
+            const deptChartContainer = document.getElementById('departmentChartContainer');
+            const compareDeptTableContainer = document.getElementById('compareDeptTableContainer');
+            const rightPanelTitle = document.getElementById('rightPanelTitle');
+            const rightPanelBadge = document.getElementById('rightPanelBadge');
 
-            const sortedDates = Object.keys(dateMap).sort();
-            trendChart.data.labels = sortedDates;
-            trendChart.data.datasets[0].data = sortedDates.map(d => dateMap[d]);
-            trendChart.update();
+            if (isCompareMode) {
+                const monthsSorted = (compareSelectedMonths.length > 0 ? [...compareSelectedMonths] : getAvailableYearMonths().slice(0, 2)).sort();
+                const monthLabels = monthsSorted.map(formatShortMonth);
+
+                trendTitle.innerHTML = `<i id="trendChartIcon" class="fa-solid fa-chart-column text-amber-500 mr-2"></i> เปรียบเทียบจำนวนชิ้นงานเสียรายเดือน (${monthLabels.join(' vs ')})`;
+                trendBadge.innerText = 'เปรียบเทียบรายเดือน (ฝา)';
+
+                trendChart.config.type = 'bar';
+                trendChart.options.plugins.legend = {
+                    display: true,
+                    position: 'top',
+                    labels: { color: '#cbd5e1', font: { family: 'Prompt', size: 11 } }
+                };
+                trendChart.options.scales.x.grid.display = false;
+                trendChart.options.scales.x.offset = true;
+
+                const datasets = monthsSorted.map((ym, idx) => {
+                    const color = compareBarColors[idx % compareBarColors.length];
+                    const totalQty = data
+                        .filter(item => getItemYearMonth(item) === ym)
+                        .reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+                    return {
+                        label: formatShortMonth(ym),
+                        data: [totalQty],
+                        backgroundColor: color,
+                        borderColor: color,
+                        borderWidth: 1,
+                        borderRadius: 6
+                    };
+                });
+
+                trendChart.data.labels = [
+                    `${compareSelectedDept === 'ALL' ? 'ทุก Dept' : compareSelectedDept} / ${compareSelectedProblem === 'ALL' ? 'ทุก Problem' : compareSelectedProblem}`
+                ];
+                trendChart.data.datasets = datasets;
+                trendChart.update();
+
+                // Switch right panel from Doughnut Chart to Table sorted by Quantity DESC
+                deptChartContainer.classList.add('hidden');
+                compareDeptTableContainer.classList.remove('hidden');
+                rightPanelTitle.innerText = 'สรุปสาเหตุและแผนก (Tickets By Department)';
+                rightPanelBadge.classList.remove('hidden');
+                renderCompareDepartmentTable(data);
+            } else {
+                trendTitle.innerHTML = `<i id="trendChartIcon" class="fa-solid fa-chart-line text-amber-500 mr-2"></i> แนวโน้มจำนวนชิ้นงานเสียแยกตามวัน (Daily Scrap Trend)`;
+                trendBadge.innerText = 'สถิติตามช่วงเวลา';
+
+                trendChart.config.type = 'line';
+                trendChart.options.plugins.legend = { display: false };
+                trendChart.options.scales.x.grid.display = true;
+                trendChart.options.scales.x.offset = false;
+
+                const dateMap = {};
+                data.forEach(item => {
+                    if (!item.date) return;
+                    const d = item.date;
+                    const qty = parseInt(item.quantity) || 0;
+                    dateMap[d] = (dateMap[d] || 0) + qty;
+                });
+
+                const sortedDates = Object.keys(dateMap).sort();
+                trendChart.data.labels = sortedDates;
+                trendChart.data.datasets = [{
+                    label: 'จำนวนชิ้นงานเสีย (ฝา)',
+                    data: sortedDates.map(d => dateMap[d]),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointRadius: 4
+                }];
+                trendChart.update();
+
+                deptChartContainer.classList.remove('hidden');
+                compareDeptTableContainer.classList.add('hidden');
+                rightPanelTitle.innerText = 'Tickets By Department';
+                rightPanelBadge.classList.add('hidden');
+
+                const deptQtyMap = {};
+                data.forEach(item => {
+                    const dept = item.department || 'Unassigned';
+                    const qty = parseInt(item.quantity) || 0;
+                    deptQtyMap[dept] = (deptQtyMap[dept] || 0) + qty;
+                });
+
+                const sortedDepts = Object.keys(deptQtyMap).map(dept => ({ dept, totalQty: deptQtyMap[dept] }))
+                                    .sort((a, b) => b.totalQty - a.totalQty);
+
+                deptChart.data.labels = sortedDepts.map(x => x.dept);
+                deptChart.data.datasets[0].data = sortedDepts.map(x => x.totalQty);
+                deptChart.update();
+            }
 
             // 2. Top Problems Bar Chart
             const problemCounts = {};
@@ -778,67 +1104,48 @@
             topProblemsChart.data.labels = sortedProbs.map(x => x.p);
             topProblemsChart.data.datasets[0].data = sortedProbs.map(x => x.count);
             topProblemsChart.update();
+        }
 
-            // 3. Department Doughnut Chart
-            const deptQtyMap = {};
+        function renderCompareDepartmentTable(data) {
+            const tbody = document.getElementById('compareDeptTableBody');
+            tbody.innerHTML = '';
+
+            const grouped = {};
             data.forEach(item => {
-                const dept = item.department || 'Unassigned';
+                const cause = (item.cause && item.cause.trim() !== '') ? item.cause.trim() : '-';
+                const dept = (item.department && item.department.trim() !== '') ? item.department.trim() : 'Unassigned';
                 const qty = parseInt(item.quantity) || 0;
-                deptQtyMap[dept] = (deptQtyMap[dept] || 0) + qty;
+                const key = `${cause}|||${dept}`;
+
+                if (!grouped[key]) {
+                    grouped[key] = { cause, dept, quantity: 0 };
+                }
+                grouped[key].quantity += qty;
             });
 
-            const sortedDepts = Object.keys(deptQtyMap).map(dept => ({ dept, totalQty: deptQtyMap[dept] }))
-                                .sort((a, b) => b.totalQty - a.totalQty);
+            const rows = Object.values(grouped).sort((a, b) => b.quantity - a.quantity || a.cause.localeCompare(b.cause, 'th'));
 
-            deptChart.data.labels = sortedDepts.map(x => x.dept);
-            deptChart.data.datasets[0].data = sortedDepts.map(x => x.totalQty);
-            deptChart.update();
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">ไม่มีข้อมูลตามเงื่อนไขที่เลือก</td></tr>';
+                return;
+            }
+
+            rows.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/50 transition";
+                tr.innerHTML = `
+                    <td class="p-2 text-center font-bold text-amber-400">${index + 1}</td>
+                    <td class="p-2 font-medium text-white max-w-[130px] truncate" title="${row.cause}">${row.cause}</td>
+                    <td class="p-2 text-right font-bold text-emerald-400">${row.quantity.toLocaleString()}</td>
+                    <td class="p-2"><span class="bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-900 text-[11px]">${row.dept}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function searchTable() {
-            const input = document.getElementById('searchLog').value.toLowerCase();
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const monthYM = document.getElementById('filterMonth').value;
-            
-            let filtered = allData;
-
-            if (selectedLineFilter !== '') {
-                filtered = filtered.filter(item => {
-                    const l = (item.line || '').trim();
-                    if (selectedLineFilter === 'DND') return l === 'DND' || l === 'DND Door';
-                    return l === selectedLineFilter;
-                });
-            }
-            if (selectedLineFilters.length > 0) {
-                filtered = filtered.filter(item => {
-                    const l = (item.line || '').trim();
-                    return selectedLineFilters.some(selected => {
-                        if (selected === 'DND') return l === 'DND' || l === 'DND Door';
-                        return l === selected;
-                    });
-                });
-            }
-            if (monthYM) {
-                filtered = filtered.filter(item => {
-                    if (!item.date) return false;
-                    const d = new Date(item.date);
-                    const itemYM = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                    return itemYM === monthYM;
-                });
-            }
-            if (startDate) filtered = filtered.filter(item => item.date >= startDate);
-            if (endDate) filtered = filtered.filter(item => item.date <= endDate);
-
-            if (input) {
-                filtered = filtered.filter(row => {
-                    const text = Object.values(row).join(' ').toLowerCase();
-                    return text.includes(input);
-                });
-            }
-
             currentPage = 1;
-            renderTableWithPagination(filtered);
+            renderTableWithPagination(getBaseFilteredData());
         }
     </script>
 </body>
