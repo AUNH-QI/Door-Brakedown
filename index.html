@@ -171,7 +171,7 @@
                 <!-- บรรทัดที่ 2: เลือกปัญหา (Dropdown + แท็กแบ่ง 2 บรรทัดในกรอบ) -->
                 <div class="flex items-start gap-2">
                     <span id="lblCompareIssueShort" class="text-[11px] text-sky-300 font-semibold shrink-0 pt-1">ปัญหา:</span>
-                    <select id="compareIssueDropdown" onchange="handleCompareIssueDropdownChange(this)" class="bg-gray-200 text-gray-900 font-semibold px-2 py-1 rounded border border-gray-400 focus:outline-none text-[11px] max-w-[155px] shrink-0 cursor-pointer">
+                    <select id="compareIssueDropdown" onchange="handleCompareIssueDropdownChange(this)" class="bg-gray-200 text-gray-900 font-semibold px-2 py-1 rounded border border-gray-400 focus:outline-none text-[11px] max-w-[165px] shrink-0 cursor-pointer">
                         <option value="">-- เลือกปัญหา --</option>
                     </select>
                     <div id="compareSelectedIssueTags" class="flex flex-wrap items-center gap-1 max-h-[56px] overflow-y-auto content-start flex-1 py-0.5"></div>
@@ -530,6 +530,7 @@
                 btnApplyCompare: 'เปรียบเทียบ',
                 btnDisableCompare: 'Clear',
                 dropdownPlaceholder: '-- เลือกปัญหา --',
+                allIssuesOption: 'ปัญหาทั้งหมด (All)',
                 lblLineFilter: 'เลือก Line (Single)',
                 lblShiftFilter: 'กะ (Shift)',
                 lblQuickDate: 'ช่วงเวลา',
@@ -595,6 +596,7 @@
                 btnApplyCompare: '对比',
                 btnDisableCompare: 'Clear',
                 dropdownPlaceholder: '-- 选择问题 --',
+                allIssuesOption: '全部问题 (All)',
                 lblLineFilter: '选择产线 (单选)',
                 lblShiftFilter: '班次 (Shift)',
                 lblQuickDate: '时间范围',
@@ -802,6 +804,8 @@
             const issues = getAvailableIssuesSorted();
             const dropdown = document.getElementById('compareIssueDropdown');
             dropdown.innerHTML = `<option value="">${t.dropdownPlaceholder}</option>`;
+            const allSelected = issues.length > 0 && issues.every(issue => compareSelectedIssues.includes(issue));
+            dropdown.innerHTML += `<option value="__ALL__">${allSelected ? '✓ ' : ''}${t.allIssuesOption}</option>`;
             issues.forEach(issue => {
                 const opt = document.createElement('option');
                 opt.value = issue;
@@ -839,7 +843,14 @@
         function handleCompareIssueDropdownChange(selectEl) {
             const val = selectEl.value;
             if (!val) return;
-            if (!compareSelectedIssues.includes(val)) {
+            if (val === '__ALL__') {
+                const allIssues = getAvailableIssuesSorted();
+                allIssues.forEach(issue => {
+                    if (!compareSelectedIssues.includes(issue)) {
+                        compareSelectedIssues.push(issue);
+                    }
+                });
+            } else if (!compareSelectedIssues.includes(val)) {
                 compareSelectedIssues.push(val);
             }
             selectEl.value = '';
